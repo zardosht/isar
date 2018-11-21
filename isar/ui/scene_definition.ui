@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>950</width>
+    <width>959</width>
     <height>734</height>
    </rect>
   </property>
@@ -127,15 +127,15 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="QWidget" name="camera_view" native="true">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>95</verstretch>
-               </sizepolicy>
-              </property>
+             <widget class="QLabel" name="camera_view">
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(215, 255, 223);</string>
+               <string notr="true">background-color: rgb(224, 255, 241);</string>
+              </property>
+              <property name="text">
+               <string>Camera Stream</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
              </widget>
             </item>
