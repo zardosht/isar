@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QPushButton, 
 
 from isar.camera.camera import CameraService
 from isar.services import servicemanager
+from isar.services.servicemanager import ServiceNames
 
 logger = logging.getLogger("isar.scene")
 
@@ -17,7 +18,7 @@ class SceneDefinitionWindow(QDialog):
 
         # self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
 
-        self.camera_service: CameraService = servicemanager.services[CameraService.service_name]
+        self.camera_service: CameraService = servicemanager.get_service(ServiceNames.CAMERA1)
         self.camera_service.start_capture()
 
         self._timer = QTimer()

@@ -1,17 +1,25 @@
+from enum import Enum
+
 from isar.camera.camera import CameraService
 
-services = {}
+
+_services = {}
+
+
+class ServiceNames(Enum):
+    CAMERA1 = 1
 
 
 def start_services():
-    camera_service = CameraService()
-    camera_service.start()
-    services[CameraService.service_name] = camera_service
+    camera1_service = CameraService(ServiceNames.CAMERA1, 0)
+    camera1_service.start()
+    _services[ServiceNames.CAMERA1] = camera1_service
 
 
 def stop_services():
-    for service in services.values():
+    for service in _services.values():
         service.stop()
 
 
-
+def get_service(service_name):
+    return _services[service_name]

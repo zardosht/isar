@@ -13,10 +13,8 @@ class CameraService(Service):
     Starts the OpenCV capturing and puts the frame in order in the FIFO queue
     """
 
-    service_name = "CameraService"
-
-    def __init__(self, cam_id=0):
-        super().__init__()
+    def __init__(self, service_name=None, cam_id=0):
+        super().__init__(service_name)
         _queue_size = 5
         self._queue = Queue(_queue_size)
         self.cam_id = cam_id
