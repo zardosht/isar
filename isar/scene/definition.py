@@ -30,6 +30,10 @@ class SceneDefinitionWindow(QDialog):
 
     def setup_ui(self):
         uic.loadUi("isar/ui/scene_definition.ui", self)
+        self.new_scene_btn.clicked.connect(self.aaa)
+
+    def aaa(self):
+        self.scenes_view.model().change_scene_name("aa" + str(time.time()))
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
