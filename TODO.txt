@@ -1,0 +1,8 @@
+* Show camera stream in SceneDefinition windows
+* Add classes for domain model
+* Implement the Model/View Controller for Scenes, Objects, and Annotations
+* Impelement Tracking
+* Implement persistence of Scene Definitions
+
+
+
