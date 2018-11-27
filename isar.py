@@ -41,6 +41,5 @@ def main():
     servicemanager.stop_services()
 
 
-
 if __name__ == "__main__":
     main()

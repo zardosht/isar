@@ -1,4 +1,6 @@
-* Show camera stream in SceneDefinition windows
+* Show camera stream in SceneDefinition windows -- Done
+* Setup service manager -- Done
+
 * Add classes for domain model
 * Implement the Model/View Controller for Scenes, Objects, and Annotations
 * Impelement Tracking
