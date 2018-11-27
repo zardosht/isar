@@ -1,8 +1,11 @@
 import logging
 import sys
+import time
 from PyQt5 import QtWidgets
-
+from PyQt5.QtWidgets import QDialog
+from isar.services import servicemanager
 from isar.scene.definition import SceneDefinitionWindow
+
 
 
 def configure_logging():
@@ -27,11 +30,16 @@ def configure_logging():
 
 def main():
     configure_logging()
+    servicemanager.start_services()
 
     app = QtWidgets.QApplication(sys.argv)
-    window = SceneDefinitionWindow()
-    window.show()
-    sys.exit(app.exec_())
+    scene_def_window : QDialog = SceneDefinitionWindow()
+    scene_def_window.exec()
+
+    time.sleep(0.5)
+
+    servicemanager.stop_services()
+
 
 
 if __name__ == "__main__":

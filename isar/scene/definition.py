@@ -2,21 +2,23 @@ import logging
 from PyQt5 import QtWidgets, uic, QtCore
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QPushButton, QWidget, QLabel
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QPushButton, QWidget, QLabel, QDialog
 
 from isar.camera.camera import CameraService
+from isar.services import servicemanager
 
 logger = logging.getLogger("isar.scene")
 
 
-class SceneDefinitionWindow(QWidget):
+class SceneDefinitionWindow(QDialog):
     def __init__(self):
         super().__init__()
         uic.loadUi("ui/scene_definition.ui", self)
-        self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
 
-        self.camera_service = CameraService()
-        self.camera_service.start()
+        # self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
+
+        self.camera_service: CameraService = servicemanager.services[CameraService.service_name]
+        self.camera_service.start_capture()
 
         self._timer = QTimer()
         self._timer.timeout.connect(self.update_camera_view)
@@ -40,7 +42,7 @@ class SceneDefinitionWindow(QWidget):
 
     def closeEvent(self, QCloseEvent):
         self._timer.stop()
-        self.camera_service.stop()
+        self.camera_service.stop_capture()
 
 
 
