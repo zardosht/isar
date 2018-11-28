@@ -35,23 +35,23 @@ class SceneDefinitionWindow(QDialog):
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
 
     def new_scene_btn_clicked(self):
-        selected_index = self.scenes_view.selectionModel().currentIndex()
-        self.scenes_view.model().new_scene(selected_index)
+        selected_index = self.scenes_list.selectionModel().currentIndex()
+        self.scenes_list.model().new_scene(selected_index)
 
     def clone_scene_btn_clicked(self):
-        selected_index = self.scenes_view.selectionModel().currentIndex()
-        self.scenes_view.model().clone_scene(selected_index)
+        selected_index = self.scenes_list.selectionModel().currentIndex()
+        self.scenes_list.model().clone_scene(selected_index)
 
     def delete_scene_btn_clicked(self):
         # TODO: show confirm dialog. cannot be undone. then call delete scene on scene model
-        selected_index = self.scenes_view.selectionModel().currentIndex()
-        if selected_index.row() == self.scenes_view.model().rowCount(None) - 1:
+        selected_index = self.scenes_list.selectionModel().currentIndex()
+        if selected_index.row() == self.scenes_list.model().rowCount(None) - 1:
             # it was the last scene in view, update the selection to previous one
-            new_selection = self.scenes_view.model().createIndex(selected_index.row() - 1, 0)
-            self.scenes_view.selectionModel().select(new_selection, QItemSelectionModel.Select)
-            self.scenes_view.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
+            new_selection = self.scenes_list.model().createIndex(selected_index.row() - 1, 0)
+            self.scenes_list.selectionModel().select(new_selection, QItemSelectionModel.Select)
+            self.scenes_list.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
 
-        self.scenes_view.model().delete_scene(selected_index)
+        self.scenes_list.model().delete_scene(selected_index)
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
@@ -64,7 +64,7 @@ class SceneDefinitionWindow(QDialog):
 
     def setup_models(self):
         scenes_model = model.create_dummy_scenes_model()
-        self.scenes_view.setModel(scenes_model)
+        self.scenes_list.setModel(scenes_model)
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame()

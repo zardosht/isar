@@ -45,7 +45,6 @@ class ScenesModel(QAbstractListModel):
         return is_valid
 
     def flags(self, index):
-        # answer to requests for cell flags from QTableView
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
     def new_scene(self, at_index):
@@ -85,3 +84,5 @@ class Scene:
         self.name = name
         self.physical_objects = []
         self.annotation = []
+
+
