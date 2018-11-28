@@ -3,7 +3,7 @@ import logging
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QItemSelectionModel
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QWidget
 
 from isar.camera.camera import CameraService
 from isar.scene import model
@@ -33,6 +33,12 @@ class SceneDefinitionWindow(QDialog):
         self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
         self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
+
+        # scene_view = QWidget()
+        # self.camera_frame.add
+        #
+        # camera_frame =
+        print(self.camera_view.parent())
 
     def new_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()

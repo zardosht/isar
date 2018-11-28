@@ -1,0 +1,33 @@
+
+
+Let each annotation draw itself. 
+
+Let each annotation has its own select method for authoring time and select method for runtime. 
+
+
+The SceneView widget has an active annotation tool. 
+It forward the mouse down, mouse
+
+
+
+==================================================
+
+A scene consists of SceneNodes. 
+
+The scene's root node is at the (0,0) position.
+
+Each scene node corresponds to an object or an annotation.
+
+Each scene node can have children scene nodes.
+
+All children of a scene node have their positions relative to its position. 
+
+We deliver the OpenCV frame with drawings for all scene nodes
+
+Each scene node has a paint method.
+
+When that paint method is called it draws itself on the given OpenCV frame, and calls recursively the paint method on all its children. 
+
+
+=================================================
+
