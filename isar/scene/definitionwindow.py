@@ -3,10 +3,11 @@ import logging
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QItemSelectionModel
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog, QWidget
+from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout
 
 from isar.camera.camera import CameraService
 from isar.scene import model
+from isar.scene.cameraview import CameraView
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
 
@@ -17,6 +18,7 @@ logger = logging.getLogger("isar.scene")
 class SceneDefinitionWindow(QDialog):
     def __init__(self):
         super().__init__()
+        self.camera_view = None
         self.setup_ui()
 
         self._camera_service: CameraService = None
@@ -34,11 +36,10 @@ class SceneDefinitionWindow(QDialog):
         self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
 
-        # scene_view = QWidget()
-        # self.camera_frame.add
-        #
-        # camera_frame =
-        print(self.camera_view.parent())
+        self.camera_view_container.setLayout(QHBoxLayout())
+        self.camera_view = CameraView(self.camera_view_container)
+        self.camera_view_container.layout().setContentsMargins(0, 0, 0, 0)
+        self.camera_view_container.layout().addWidget(self.camera_view, stretch=1)
 
     def new_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
@@ -74,20 +75,8 @@ class SceneDefinitionWindow(QDialog):
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame()
-        img = camera_frame.image
-        qfromat = QImage.Format_Indexed8
+        self.camera_view.set_camera_frame(camera_frame)
 
-        if len(img.shape) == 3: # sahpe[0] = rows, [1] = cols, [2] = channels
-            if img.shape[2] == 4:
-                qfromat = QImage.Format_RGBA8888
-            else:
-                qfromat = QImage.Format_RGB888
-
-        out_image = QImage(img, img.shape[1], img.shape[0], img.strides[0], qfromat)
-        out_image = out_image.rgbSwapped()
-        out_image = out_image.mirrored(horizontal=True, vertical=False)
-        self.camera_view.setPixmap(QPixmap.fromImage(out_image))
-        self.camera_view.setScaledContents(True)
 
     def closeEvent(self, QCloseEvent):
         self._timer.stop()
