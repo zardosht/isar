@@ -1,6 +1,7 @@
+import copy
+
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QAbstractItemModel, QAbstractListModel, QModelIndex
+from PyQt5.QtCore import Qt, QAbstractListModel
 
 
 class ScenesModel(QAbstractListModel):
@@ -13,7 +14,7 @@ class ScenesModel(QAbstractListModel):
     def rowCount(self, parent):
         return len(self.scenes)
 
-    def data(self, index:QModelIndex, role):
+    def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
             return self.scenes[index.row()].name
 
@@ -47,10 +48,36 @@ class ScenesModel(QAbstractListModel):
         # answer to requests for cell flags from QTableView
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
-    def change_scene_name(self, new_name):
-        changed_index = self.index(0, 0)
-        self.scenes[0].name = new_name
-        self.dataChanged.emit(changed_index, changed_index, [Qt.DisplayRole])
+    def new_scene(self, at_index):
+        self.insertRow(at_index.row())
+        new_scene = Scene("New Scene")
+        self.scenes.append(new_scene)
+        self.update_view(at_index)
+
+    def clone_scene(self, selected_index):
+        if len(self.scenes) <= selected_index.row():
+            return
+
+        selected_scene = self.scenes[selected_index.row()]
+        cloned_scene = copy.deepcopy(selected_scene)
+        cloned_scene.name = "Cloned - " + selected_scene.name
+        self.scenes.append(cloned_scene)
+        self.update_view(selected_index)
+
+    def delete_scene(self, selected_index):
+        if len(self.scenes) == 1:    # keep at least one scene
+            return
+
+        if len(self.scenes) <= selected_index.row():
+            return
+
+        del self.scenes[selected_index.row()]
+        self.removeRow(selected_index.row())
+
+        self.update_view(selected_index)
+
+    def update_view(self, index):
+        self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
 
 class Scene:
