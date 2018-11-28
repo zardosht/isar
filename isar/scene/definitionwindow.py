@@ -1,15 +1,15 @@
 import logging
-import time
 
-from PyQt5 import QtWidgets, uic, QtCore
+from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QItemSelectionModel
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QPushButton, QWidget, QLabel, QDialog
+from PyQt5.QtWidgets import QDialog
 
 from isar.camera.camera import CameraService
 from isar.scene import model
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
+
 
 logger = logging.getLogger("isar.scene")
 
@@ -79,6 +79,7 @@ class SceneDefinitionWindow(QDialog):
 
         out_image = QImage(img, img.shape[1], img.shape[0], img.strides[0], qfromat)
         out_image = out_image.rgbSwapped()
+        out_image = out_image.mirrored(horizontal=True, vertical=False)
         self.camera_view.setPixmap(QPixmap.fromImage(out_image))
         self.camera_view.setScaledContents(True)
 
@@ -86,15 +87,4 @@ class SceneDefinitionWindow(QDialog):
         self._timer.stop()
         self._camera_service.stop_capture()
 
-
-
-# OpenCV Python GUI Development Tutorial 10: Display WebCam Video Feed on QLabel
-#
-# https://www.youtube.com/watch?v=MUpC6z32bCA
-#
-'''
-* Import
-
-
-'''
 

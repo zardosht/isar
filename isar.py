@@ -4,8 +4,7 @@ import time
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog
 from isar.services import servicemanager
-from isar.scene.definition import SceneDefinitionWindow
-
+from isar.scene.definitionwindow import SceneDefinitionWindow
 
 
 def configure_logging():
