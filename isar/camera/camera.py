@@ -70,13 +70,17 @@ class CameraService(Service):
     def stop_capture(self):
         self._do_capture = False
 
-    def get_frame(self):
+    def get_frame(self, flipped=False):
         """
         Return the frame from FIFO queue
         It blocks if the queue is empty.
         :return:
         """
-        return self._queue.get()
+        camera_frame = self._queue.get()
+        if flipped:
+            camera_frame.image = cv2.flip(camera_frame.image, 1)
+
+        return camera_frame
 
 
 class CameraFrame:

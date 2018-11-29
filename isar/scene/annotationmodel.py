@@ -3,16 +3,9 @@ from isar.scene.physicalobjectmodel import PhysicalObject
 
 class Annotation:
     def __init__(self):
-        self.type = ""
         self.position = [0.0, 0.0]
         self.attached_to: PhysicalObject = None
         self.updateOrientation = False
-
-
-class AnnotationTool:
-    def __init__(self):
-        pass
-
 
 
 """
@@ -55,8 +48,9 @@ class LineAnnotation(Annotation):
     def __init__(self):
         super().__init__()
         self.start = [0.0, 0.0]
-        self.end = [0.0, 0.0]
-        self.thikness = 1
+        self.end = None
+        self.thikness = 2
+        self.color = (0, 0, 255)
 
 
 class RectangleAnnotation(Annotation):

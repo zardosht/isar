@@ -74,9 +74,8 @@ class SceneDefinitionWindow(QDialog):
         self.scenes_list.setModel(scenes_model)
 
     def update_camera_view(self):
-        camera_frame = self._camera_service.get_frame()
+        camera_frame = self._camera_service.get_frame(flipped=True)
         self.camera_view.set_camera_frame(camera_frame)
-
 
     def closeEvent(self, QCloseEvent):
         self._timer.stop()
