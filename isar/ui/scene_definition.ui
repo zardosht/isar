@@ -169,6 +169,15 @@
                   <iconset>
                    <normaloff>images/select.png</normaloff>images/select.png</iconset>
                  </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="autoExclusive">
+                  <bool>true</bool>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">annotation_buttons</string>
+                 </attribute>
                 </widget>
                </item>
                <item>
@@ -344,9 +353,18 @@
                 <iconset>
                  <normaloff>images/text.png</normaloff>images/text.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
                <property name="autoRaise">
                 <bool>false</bool>
                </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -358,6 +376,15 @@
                 <iconset>
                  <normaloff>images/audio.png</normaloff>images/audio.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -369,6 +396,15 @@
                 <iconset>
                  <normaloff>images/arrow.png</normaloff>images/arrow.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -380,6 +416,15 @@
                 <iconset>
                  <normaloff>images/select_box.png</normaloff>images/select_box.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -391,6 +436,15 @@
                 <iconset>
                  <normaloff>images/video.png</normaloff>images/video.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -402,6 +456,15 @@
                 <iconset>
                  <normaloff>images/relationship.png</normaloff>images/relationship.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -413,6 +476,15 @@
                 <iconset>
                  <normaloff>images/timer.png</normaloff>images/timer.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -424,6 +496,15 @@
                 <iconset>
                  <normaloff>images/image.png</normaloff>images/image.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -435,6 +516,15 @@
                 <iconset>
                  <normaloff>images/rectangle.png</normaloff>images/rectangle.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -446,6 +536,15 @@
                 <iconset>
                  <normaloff>images/line.png</normaloff>images/line.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -457,6 +556,15 @@
                 <iconset>
                  <normaloff>images/circle.png</normaloff>images/circle.png</iconset>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">annotation_buttons</string>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -486,4 +594,7 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="annotation_buttons"/>
+ </buttongroups>
 </ui>

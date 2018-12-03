@@ -1,10 +1,9 @@
-from PyQt5 import QtGui, QtCore
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QWidget, QLabel
+from PyQt5.QtWidgets import QLabel
 
-from isar.scene.annotationtool import LineAnnotationTool
-from isar.scene.scenemodel import Scene
 from isar.scene import annotationtool
+from isar.scene.annotationtool import LineAnnotationTool, RectangleAnnotationTool, CircleAnnotationTool, \
+    SelectAnnotationTool
 
 
 class CameraView(QLabel):
@@ -12,11 +11,7 @@ class CameraView(QLabel):
         def __init__(self, parent=None):
             super(CameraView, self).__init__(parent)
             self.opencv_img = None
-
-            # TODO: this must be set from definition window whenever a tool button is clicked and is active.
-            # TODO: the buttons in definition window must be toggle buttons
-            self.active_annotation_tool = LineAnnotationTool()
-
+            self.active_annotation_tool = None
             self.scene = None
 
         def set_camera_frame(self, camera_frame):
@@ -24,9 +19,10 @@ class CameraView(QLabel):
 
             self.draw_scene_annotations()
 
-            self.active_annotation_tool.img = self.opencv_img
-            self.active_annotation_tool.scene = self.scene
-            self.active_annotation_tool.draw()
+            if self.active_annotation_tool:
+                self.active_annotation_tool.img = self.opencv_img
+                self.active_annotation_tool.scene = self.scene
+                self.active_annotation_tool.draw()
 
             qfromat = QImage.Format_Indexed8
             if len(self.opencv_img.shape) == 3:  # sahpe[0] = rows, [1] = cols, [2] = channels
@@ -52,13 +48,33 @@ class CameraView(QLabel):
                 annotationtool.draw_annotation(self.opencv_img, annotation)
 
         def mousePressEvent(self, event):
-            self.active_annotation_tool.mouse_press_event(self, event)
+            if self.active_annotation_tool:
+                self.active_annotation_tool.mouse_press_event(self, event)
+
             super().mousePressEvent(event)
 
         def mouseMoveEvent(self, event):
-            self.active_annotation_tool.mouse_move_event(self, event)
+            if self.active_annotation_tool:
+                self.active_annotation_tool.mouse_move_event(self, event)
+
             super().mouseMoveEvent(event)
 
         def mouseReleaseEvent(self, event):
-            self.active_annotation_tool.mouse_release_event(self, event)
+            if self.active_annotation_tool:
+                self.active_annotation_tool.mouse_release_event(self, event)
+
             super().mouseReleaseEvent(event)
+
+        def set_active_annotation_tool(self, annotation_btn_name):
+            if not annotation_btn_name:
+                self.active_annotation_tool = None
+            else:
+                self.active_annotation_tool = annotation_tool_btns[annotation_btn_name]()
+
+
+annotation_tool_btns = {
+    "line_btn": LineAnnotationTool,
+    "rectangle_btn": RectangleAnnotationTool,
+    "circle_btn": CircleAnnotationTool,
+    "select_btn": SelectAnnotationTool
+}

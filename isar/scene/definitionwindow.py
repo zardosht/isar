@@ -1,9 +1,10 @@
+import functools
 import logging
 
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QItemSelectionModel
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton
 
 from isar.camera.camera import CameraService
 from isar.scene import model
@@ -16,6 +17,9 @@ logger = logging.getLogger("isar.scene")
 
 
 class SceneDefinitionWindow(QDialog):
+
+    SELECT_BTN_ID = 10
+
     def __init__(self):
         super().__init__()
         self.camera_view = None
@@ -39,27 +43,43 @@ class SceneDefinitionWindow(QDialog):
         self.camera_view_container.layout().setContentsMargins(0, 0, 0, 0)
         self.camera_view_container.layout().addWidget(self.camera_view, stretch=1)
 
+        self.annotation_buttons.setId(self.select_btn, SceneDefinitionWindow.SELECT_BTN_ID)
+
     def setup_signals(self):
+        # scenes list
         self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
         self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
         self.scenes_list.selectionModel().selectionChanged.connect(self.sceneslist_current_changed)
 
+        # annotation buttons
+        for btn in self.annotation_buttons.buttons():
+            btn.clicked.connect(functools.partial(self.annotation_btn_clicked, btn))
+
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.selectionModel().select(current_index, QItemSelectionModel.Select)
         self.scenes_list.model().set_current_scene(current_index)
         self.camera_view.scene = self.scenes_list.model().current_scene
+        self.camera_view.set_active_annotation_tool(None)
+        if self.annotation_buttons.checkedButton():
+            select_btn = self.annotation_buttons.button(SceneDefinitionWindow.SELECT_BTN_ID)
+            if select_btn:
+                select_btn.setChecked(True)
+
+    def annotation_btn_clicked(self, btn):
+        if btn.isChecked():
+            btn.setAutoExclusive(False)
+        else:
+            btn.setAutoExclusive(True)
+
+        self.camera_view.set_active_annotation_tool(btn.objectName())
 
     def new_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.model().new_scene(selected_index)
-
         self.sceneslist_current_changed()
-        # new_selection = self.scenes_list.model().createIndex(selected_index.row() + 1, 0)
-        # self.scenes_list.selectionModel().select(new_selection, QItemSelectionModel.Select)
-        # self.scenes_list.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
 
     def clone_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()

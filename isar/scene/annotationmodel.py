@@ -35,7 +35,7 @@ class ArrowAnnotation(Annotation):
         self.text = ""
         self.start = [0.0, 0.0]
         self.end = [0.0, 0.0]
-        self.thikness = 1
+        self.thikness = 3
 
 
 class SelectButtonAnnotation(Annotation):
@@ -49,25 +49,26 @@ class LineAnnotation(Annotation):
         super().__init__()
         self.start = [0.0, 0.0]
         self.end = None
-        self.thikness = 2
-        self.color = (0, 0, 255)
+        self.thikness = 3
+        self.color = (0, 255, 255)
 
 
 class RectangleAnnotation(Annotation):
     def __init__(self):
         super(RectangleAnnotation, self).__init__()
-        self.color = ""
-        self.thikness = 0
-        self.width = 0
-        self.height = 0
+        self.color = (255, 0, 255)
+        self.thikness = 3
+        self.vertex1 = [0.0, 0.0]
+        self.vertex2 = None
 
 
 class CircleAnnotation(Annotation):
     def __init__(self):
         super(CircleAnnotation, self).__init__()
-        self.color = ""
-        self.radius = 0
-        self.thikness = 0
+        self.center = [0.0, 0.0]
+        self.color = (125, 125, 255)
+        self.radius = None
+        self.thikness = 3
 
 
 class RelationshipAnnotation(Annotation):

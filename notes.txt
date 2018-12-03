@@ -6,7 +6,9 @@ Let each annotation has its own select method for authoring time and select meth
 
 
 The SceneView widget has an active annotation tool. 
-It forward the mouse down, mouse
+The SceneView widget forwards the mouse down, mouse mouse, mouse release events to its active annotation tool. 
+
+
 
 
 
