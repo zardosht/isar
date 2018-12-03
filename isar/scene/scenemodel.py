@@ -1,7 +1,7 @@
 import copy
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QAbstractListModel
+from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
 
 class ScenesModel(QAbstractListModel):
@@ -49,23 +49,27 @@ class ScenesModel(QAbstractListModel):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
     def new_scene(self, at_index):
+        self.beginInsertRows(QModelIndex(), at_index.row(), at_index.row())
         self.insertRow(at_index.row())
         new_scene = Scene("New Scene")
         self.scenes.append(new_scene)
         self.current_scene = new_scene
-        self.update_view(at_index)
+        self.endInsertRows()
 
     def clone_scene(self, selected_index):
         if len(self.scenes) <= selected_index.row():
             return
 
-        selected_scene = self.scenes[selected_index.row()]
-        cloned_scene = copy.deepcopy(selected_scene)
-        cloned_scene.name = "Cloned - " + selected_scene.name
-        self.scenes.append(cloned_scene)
-        self.update_view(selected_index)
+        self.beginInsertRows(QModelIndex(), selected_index.row(), selected_index.row())
+        self.insertRow(selected_index.row())
+        cloned_scene = copy.deepcopy(self.current_scene)
+        cloned_scene.name = "Cloned - " + self.current_scene.name
+        self.scenes.insert(selected_index.row() + 1, cloned_scene)
+        self.endInsertRows()
 
     def delete_scene(self, selected_index):
+        # TODO: remove properly using remove rows (see insert rows)
+
         if len(self.scenes) == 1:    # keep at least one scene
             return
 
@@ -74,7 +78,6 @@ class ScenesModel(QAbstractListModel):
 
         del self.scenes[selected_index.row()]
         self.removeRow(selected_index.row())
-
         self.update_view(selected_index)
 
     def update_view(self, index):

@@ -45,6 +45,9 @@ class CameraView(QLabel):
             self.update()
 
         def draw_scene_annotations(self):
+            if not self.scene or not self.scene.annotations:
+                return
+
             for annotation in self.scene.annotations:
                 annotationtool.draw_annotation(self.opencv_img, annotation)
 

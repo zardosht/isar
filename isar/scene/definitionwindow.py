@@ -43,18 +43,20 @@ class SceneDefinitionWindow(QDialog):
         self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
         self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
-        self.scenes_list.selectionModel().currentChanged.connect(self.scenes_list_current_changed)
+        self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
+        self.scenes_list.selectionModel().selectionChanged.connect(self.sceneslist_current_changed)
 
-    def scenes_list_current_changed(self):
-        selected_index = self.scenes_list.selectionModel().currentIndex()
-        self.scenes_list.selectionModel().select(selected_index, QItemSelectionModel.Select)
-        self.scenes_list.model().set_current_scene(selected_index)
+    def sceneslist_current_changed(self):
+        current_index = self.scenes_list.selectionModel().currentIndex()
+        self.scenes_list.selectionModel().select(current_index, QItemSelectionModel.Select)
+        self.scenes_list.model().set_current_scene(current_index)
         self.camera_view.scene = self.scenes_list.model().current_scene
 
     def new_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.model().new_scene(selected_index)
 
+        self.sceneslist_current_changed()
         # new_selection = self.scenes_list.model().createIndex(selected_index.row() + 1, 0)
         # self.scenes_list.selectionModel().select(new_selection, QItemSelectionModel.Select)
         # self.scenes_list.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
@@ -62,6 +64,7 @@ class SceneDefinitionWindow(QDialog):
     def clone_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.model().clone_scene(selected_index)
+        self.sceneslist_current_changed()
 
     def delete_scene_btn_clicked(self):
         # TODO: show confirm dialog. cannot be undone. then call delete scene on scene model
@@ -73,6 +76,7 @@ class SceneDefinitionWindow(QDialog):
             self.scenes_list.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
 
         self.scenes_list.model().delete_scene(selected_index)
+        self.sceneslist_current_changed()
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
@@ -86,10 +90,7 @@ class SceneDefinitionWindow(QDialog):
     def setup_models(self):
         scenes_model = model.create_dummy_scenes_model()
         self.scenes_list.setModel(scenes_model)
-
-
-
-        self.camera_view.scene = self.scenes_list.selectionModel().currentIndex()
+        self.camera_view.scene = self.scenes_list.model().current_scene
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame(flipped=True)
