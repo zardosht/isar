@@ -66,6 +66,8 @@ class SceneDefinitionWindow(QDialog):
         self.camera_view.set_active_annotation_tool(None)
         self.select_btn.setChecked(True)
         if self.annotation_buttons.checkedButton():
+            btn = self.annotation_buttons.checkedButton()
+            btn.setChecked(False)
             select_btn = self.annotation_buttons.button(SceneDefinitionWindow.SELECT_BTN_ID)
             if select_btn:
                 select_btn.setChecked(True)
