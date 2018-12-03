@@ -44,6 +44,7 @@ class SceneDefinitionWindow(QDialog):
         self.camera_view_container.layout().addWidget(self.camera_view, stretch=1)
 
         self.annotation_buttons.setId(self.select_btn, SceneDefinitionWindow.SELECT_BTN_ID)
+        self.select_btn.setChecked(True)
 
     def setup_signals(self):
         # scenes list
@@ -63,6 +64,7 @@ class SceneDefinitionWindow(QDialog):
         self.scenes_list.model().set_current_scene(current_index)
         self.camera_view.scene = self.scenes_list.model().current_scene
         self.camera_view.set_active_annotation_tool(None)
+        self.select_btn.setChecked(True)
         if self.annotation_buttons.checkedButton():
             select_btn = self.annotation_buttons.button(SceneDefinitionWindow.SELECT_BTN_ID)
             if select_btn:

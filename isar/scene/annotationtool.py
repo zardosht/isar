@@ -199,10 +199,10 @@ class SelectAnnotationTool(AnnotationTool):
         pass
 
     def mouse_release_event(self, camera_view, event):
-       pass
+        pass
 
     def draw(self):
-       pass
+        pass
 
 
 annotation_tools = {

@@ -173,7 +173,7 @@
                   <bool>true</bool>
                  </property>
                  <property name="autoExclusive">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </property>
                  <attribute name="buttonGroup">
                   <string notr="true">annotation_buttons</string>
@@ -357,7 +357,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <property name="autoRaise">
                 <bool>false</bool>
@@ -380,7 +380,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -400,7 +400,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -420,7 +420,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -440,7 +440,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -460,7 +460,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -480,7 +480,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -500,7 +500,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -520,7 +520,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -540,7 +540,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
@@ -560,7 +560,7 @@
                 <bool>true</bool>
                </property>
                <property name="autoExclusive">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">annotation_buttons</string>
