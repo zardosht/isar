@@ -30,20 +30,34 @@ class SceneDefinitionWindow(QDialog):
         # self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
         self.setup_models()
 
+        self.setup_signals()
+
     def setup_ui(self):
         uic.loadUi("isar/ui/scene_definition.ui", self)
-        self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
-        self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
-        self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
-
         self.camera_view_container.setLayout(QHBoxLayout())
         self.camera_view = CameraView(self.camera_view_container)
         self.camera_view_container.layout().setContentsMargins(0, 0, 0, 0)
         self.camera_view_container.layout().addWidget(self.camera_view, stretch=1)
 
+    def setup_signals(self):
+        self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
+        self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
+        self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
+        self.scenes_list.selectionModel().currentChanged.connect(self.scenes_list_current_changed)
+
+    def scenes_list_current_changed(self):
+        selected_index = self.scenes_list.selectionModel().currentIndex()
+        self.scenes_list.selectionModel().select(selected_index, QItemSelectionModel.Select)
+        self.scenes_list.model().set_current_scene(selected_index)
+        self.camera_view.scene = self.scenes_list.model().current_scene
+
     def new_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.model().new_scene(selected_index)
+
+        # new_selection = self.scenes_list.model().createIndex(selected_index.row() + 1, 0)
+        # self.scenes_list.selectionModel().select(new_selection, QItemSelectionModel.Select)
+        # self.scenes_list.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
 
     def clone_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
@@ -72,6 +86,10 @@ class SceneDefinitionWindow(QDialog):
     def setup_models(self):
         scenes_model = model.create_dummy_scenes_model()
         self.scenes_list.setModel(scenes_model)
+
+
+
+        self.camera_view.scene = self.scenes_list.selectionModel().currentIndex()
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame(flipped=True)

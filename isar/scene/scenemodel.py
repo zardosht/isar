@@ -9,7 +9,8 @@ class ScenesModel(QAbstractListModel):
 
     def __init__(self):
         super().__init__()
-        self.scenes = []
+        self.scenes = [Scene("New Scene")]
+        self.current_scene = self.scenes[0]
 
     def rowCount(self, parent):
         return len(self.scenes)
@@ -51,6 +52,7 @@ class ScenesModel(QAbstractListModel):
         self.insertRow(at_index.row())
         new_scene = Scene("New Scene")
         self.scenes.append(new_scene)
+        self.current_scene = new_scene
         self.update_view(at_index)
 
     def clone_scene(self, selected_index):
@@ -78,11 +80,14 @@ class ScenesModel(QAbstractListModel):
     def update_view(self, index):
         self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
+    def set_current_scene(self, selected_index):
+        self.current_scene = self.scenes[selected_index.row()]
+
 
 class Scene:
     def __init__(self, name):
         self.name = name
         self.physical_objects = []
-        self.annotation = []
+        self.annotations = []
 
 
