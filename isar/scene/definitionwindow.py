@@ -13,7 +13,7 @@ from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
 
 
-logger = logging.getLogger("isar.scene")
+logger = logging.getLogger("isar.definitionwindow")
 
 
 class SceneDefinitionWindow(QDialog):

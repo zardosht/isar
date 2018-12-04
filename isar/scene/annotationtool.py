@@ -1,9 +1,11 @@
+import logging
 import math
-
 import cv2
-from PyQt5.QtCore import QSize
+from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
+    VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
+    SelectBoxAnnotation
 
-from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation
+logger = logging.getLogger("isar.annotationtool")
 
 
 class AnnotationTool:
@@ -193,15 +195,186 @@ class SelectAnnotationTool(AnnotationTool):
         super(SelectAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
         pass
 
     def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
         pass
 
     def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
         pass
 
     def draw(self):
+        pass
+
+
+class TimerAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(TimerAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
+        pass
+
+
+class VideoAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(VideoAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
+        pass
+
+
+class AudioAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(AudioAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
+        pass
+
+
+class ImageAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(ImageAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
+        pass
+
+
+class TextAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(TextAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
+        pass
+
+
+class RelationshipAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(RelationshipAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
+        pass
+
+
+class ArrowAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(ArrowAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
+        pass
+
+
+class SelectBoxAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(SelectBoxAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_move_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        logger.info("Not implemented.")
+        pass
+
+    def draw(self):
+        logger.info("Not implemented.")
         pass
 
 
@@ -209,6 +382,12 @@ annotation_tools = {
     LineAnnotation.__name__: LineAnnotationTool,
     RectangleAnnotation.__name__: RectangleAnnotationTool,
     CircleAnnotation.__name__: CircleAnnotationTool,
-    SelectAnnotationTool.__name__: SelectAnnotationTool
-
+    TimerAnnotation.__name__: TimerAnnotationTool,
+    VideoAnnotation.__name__: VideoAnnotationTool,
+    AudioAnnotation.__name__: AudioAnnotationTool,
+    ImageAnnotation.__name__: ImageAnnotationTool,
+    TextAnnotation.__name__: TextAnnotationTool,
+    ArrowAnnotation.__name__: ArrowAnnotationTool,
+    RelationshipAnnotation.__name__: RelationshipAnnotationTool,
+    SelectBoxAnnotation.__name__: SelectBoxAnnotationTool
 }

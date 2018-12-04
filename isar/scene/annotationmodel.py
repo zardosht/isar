@@ -1,5 +1,9 @@
+import logging
+
 from isar.scene.physicalobjectmodel import PhysicalObject
 
+
+logger = logging.getLogger("isar.annotationmodel")
 
 class Annotation:
     def __init__(self):
@@ -38,7 +42,7 @@ class ArrowAnnotation(Annotation):
         self.thikness = 3
 
 
-class SelectButtonAnnotation(Annotation):
+class SelectBoxAnnotation(Annotation):
     def __init__(self):
         super().__init__()
         self.text = ""

@@ -1,10 +1,14 @@
+import logging
+
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QLabel
 
 from isar.scene import annotationtool
 from isar.scene.annotationtool import LineAnnotationTool, RectangleAnnotationTool, CircleAnnotationTool, \
-    SelectAnnotationTool
+    SelectAnnotationTool, SelectBoxAnnotationTool, TextAnnotationTool, TimerAnnotationTool, VideoAnnotationTool, \
+    AudioAnnotationTool, RelationshipAnnotationTool, ArrowAnnotationTool, ImageAnnotationTool
 
+logger = logging.getLogger("isar.cameraview")
 
 class CameraView(QLabel):
 
@@ -76,5 +80,13 @@ annotation_tool_btns = {
     "line_btn": LineAnnotationTool,
     "rectangle_btn": RectangleAnnotationTool,
     "circle_btn": CircleAnnotationTool,
-    "select_btn": SelectAnnotationTool
+    "select_btn": SelectAnnotationTool,
+    "select_box_btn": SelectBoxAnnotationTool,
+    "text_btn": TextAnnotationTool,
+    "timer_btn": TimerAnnotationTool,
+    "video_btn": VideoAnnotationTool,
+    "audio_btn": AudioAnnotationTool,
+    "relationship_btn": RelationshipAnnotationTool,
+    "arrow_btn": ArrowAnnotationTool,
+    "image_btn": ImageAnnotationTool
 }
