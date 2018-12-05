@@ -1,9 +1,78 @@
 import logging
 
+from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex
+from qtconsole.qt import QtCore
+
+from isar.scene import util
 from isar.scene.physicalobjectmodel import PhysicalObject
 
 
 logger = logging.getLogger("isar.annotationmodel")
+
+
+class AnnotationsModel(QAbstractListModel):
+    editCompleted = QtCore.pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.annotations = []
+        self.current_annotation = None
+
+    def rowCount(self, parent):
+        return len(self.annotations)
+
+    def data(self, index, role):
+        if role == QtCore.Qt.DisplayRole:
+            return self.annotations[index.row()].name
+
+    def setData(self, index, value, role):
+        if role == Qt.EditRole:
+            new_name = self.annotations[index.row()].name
+            try:
+                if util.is_valid_name(str(value)):
+                    new_name = str(value)
+            except Exception as e:
+                print("Error editing annotation name", e)
+                return False
+
+            self.annotations[index.row()].name = new_name
+            self.editCompleted.emit(new_name)
+
+        return True  # edit was done correctly
+
+    def flags(self, index):
+        return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
+
+    def new_annotation(self, new_annotation):
+        at_row = self.rowCount(None) + 1
+        self.beginInsertRows(QModelIndex(), at_row, at_row)
+        self.insertRow(at_row)
+        class_name = new_annotation.__class__.__name__
+        new_annotation.name = new_annotation.__class__.__name__ + str(annotation_counters[class_name])
+        self.annotations.append(new_annotation)
+        annotation_counters[class_name] += 1
+        self.current_annotation = new_annotation
+        self.endInsertRows()
+
+    def delete_annotation(self, selected_index):
+        # TODO: remove properly using remove rows (see insert rows)
+
+        if len(self.annotations) == 0:    # keep at least one scene
+            return
+
+        if len(self.annotations) <= selected_index.row():
+            return
+
+        del self.annotations[selected_index.row()]
+        self.removeRow(selected_index.row())
+        self.update_view(selected_index)
+
+    def update_view(self, index):
+        self.dataChanged.emit(index, index, [Qt.DisplayRole])
+
+    def set_current_annotation(self, selected_index):
+        self.current_annotation = self.annotations[selected_index.row()]
+
 
 class Annotation:
     def __init__(self):
@@ -106,4 +175,19 @@ class TimerAnnotation(Annotation):
     def __init__(self):
         super(TimerAnnotation, self).__init__()
         self.duration = 10
+
+
+annotation_counters = {
+    LineAnnotation.__name__: 0,
+    RectangleAnnotation.__name__: 0,
+    CircleAnnotation.__name__: 0,
+    TimerAnnotation.__name__: 0,
+    VideoAnnotation.__name__: 0,
+    AudioAnnotation.__name__: 0,
+    ImageAnnotation.__name__: 0,
+    TextAnnotation.__name__: 0,
+    ArrowAnnotation.__name__: 0,
+    RelationshipAnnotation.__name__: 0,
+    SelectBoxAnnotation.__name__: 0
+}
 

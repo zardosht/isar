@@ -7,8 +7,8 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton
 
 from isar.camera.camera import CameraService
-from isar.scene import model
 from isar.scene.cameraview import CameraView
+from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
 
@@ -61,9 +61,14 @@ class SceneDefinitionWindow(QDialog):
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.selectionModel().select(current_index, QItemSelectionModel.Select)
-        self.scenes_list.model().set_current_scene(current_index)
+        scenes_model = self.scenes_list.model()
+        scenes_model.set_current_scene(current_index)
+
+        self.annotations_list.setModel(scenes_model.current_scene.annotations_model)
+
         self.camera_view.scene = self.scenes_list.model().current_scene
         self.camera_view.set_active_annotation_tool(None)
+
         self.select_btn.setChecked(True)
         if self.annotation_buttons.checkedButton():
             btn = self.annotation_buttons.checkedButton()
@@ -112,9 +117,10 @@ class SceneDefinitionWindow(QDialog):
         self._timer.start(5)
 
     def setup_models(self):
-        scenes_model = model.create_dummy_scenes_model()
+        scenes_model = ScenesModel()
         self.scenes_list.setModel(scenes_model)
         self.camera_view.scene = self.scenes_list.model().current_scene
+        self.annotations_list.setModel(scenes_model.current_scene.annotations_model)
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame(flipped=True)

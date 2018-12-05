@@ -91,7 +91,7 @@ class CircleAnnotationTool(AnnotationTool):
             self.annotation.radius = calc_distance(self.annotation.center, (rel_x, rel_y))
 
     def mouse_release_event(self, camera_view, event):
-        self.scene.annotations.append(self.annotation)
+        self.scene.add_annotation(self.annotation)
         self.drawing = False
 
     def draw(self):
@@ -131,7 +131,7 @@ class RectangleAnnotationTool(AnnotationTool):
             self.annotation.vertex2 = (rel_x, rel_y)
 
     def mouse_release_event(self, camera_view, event):
-        self.scene.annotations.append(self.annotation)
+        self.scene.add_annotation(self.annotation)
         self.drawing = False
 
     def draw(self):
@@ -171,7 +171,7 @@ class LineAnnotationTool(AnnotationTool):
             self.annotation.end = (rel_x, rel_y)
 
     def mouse_release_event(self, camera_view, event):
-        self.scene.annotations.append(self.annotation)
+        self.scene.add_annotation(self.annotation)
         self.drawing = False
 
     def draw(self):
@@ -391,3 +391,19 @@ annotation_tools = {
     RelationshipAnnotation.__name__: RelationshipAnnotationTool,
     SelectBoxAnnotation.__name__: SelectBoxAnnotationTool
 }
+
+annotation_tool_btns = {
+    "line_btn": LineAnnotationTool,
+    "rectangle_btn": RectangleAnnotationTool,
+    "circle_btn": CircleAnnotationTool,
+    "select_btn": SelectAnnotationTool,
+    "select_box_btn": SelectBoxAnnotationTool,
+    "text_btn": TextAnnotationTool,
+    "timer_btn": TimerAnnotationTool,
+    "video_btn": VideoAnnotationTool,
+    "audio_btn": AudioAnnotationTool,
+    "relationship_btn": RelationshipAnnotationTool,
+    "arrow_btn": ArrowAnnotationTool,
+    "image_btn": ImageAnnotationTool
+}
+

@@ -4,14 +4,11 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QLabel
 
 from isar.scene import annotationtool
-from isar.scene.annotationtool import LineAnnotationTool, RectangleAnnotationTool, CircleAnnotationTool, \
-    SelectAnnotationTool, SelectBoxAnnotationTool, TextAnnotationTool, TimerAnnotationTool, VideoAnnotationTool, \
-    AudioAnnotationTool, RelationshipAnnotationTool, ArrowAnnotationTool, ImageAnnotationTool
 
 logger = logging.getLogger("isar.cameraview")
 
-class CameraView(QLabel):
 
+class CameraView(QLabel):
         def __init__(self, parent=None):
             super(CameraView, self).__init__(parent)
             self.opencv_img = None
@@ -45,10 +42,10 @@ class CameraView(QLabel):
             self.update()
 
         def draw_scene_annotations(self):
-            if not self.scene or not self.scene.annotations:
+            if not self.scene or not self.scene.get_annotations():
                 return
 
-            for annotation in self.scene.annotations:
+            for annotation in self.scene.get_annotations():
                 annotationtool.draw_annotation(self.opencv_img, annotation)
 
         def mousePressEvent(self, event):
@@ -73,20 +70,5 @@ class CameraView(QLabel):
             if not annotation_btn_name:
                 self.active_annotation_tool = None
             else:
-                self.active_annotation_tool = annotation_tool_btns[annotation_btn_name]()
+                self.active_annotation_tool = annotationtool.annotation_tool_btns[annotation_btn_name]()
 
-
-annotation_tool_btns = {
-    "line_btn": LineAnnotationTool,
-    "rectangle_btn": RectangleAnnotationTool,
-    "circle_btn": CircleAnnotationTool,
-    "select_btn": SelectAnnotationTool,
-    "select_box_btn": SelectBoxAnnotationTool,
-    "text_btn": TextAnnotationTool,
-    "timer_btn": TimerAnnotationTool,
-    "video_btn": VideoAnnotationTool,
-    "audio_btn": AudioAnnotationTool,
-    "relationship_btn": RelationshipAnnotationTool,
-    "arrow_btn": ArrowAnnotationTool,
-    "image_btn": ImageAnnotationTool
-}

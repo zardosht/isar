@@ -3,13 +3,16 @@ import copy
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
+from isar.scene import util
+from isar.scene.annotationmodel import AnnotationsModel
+
 
 class ScenesModel(QAbstractListModel):
     editCompleted = QtCore.pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        self.scenes = [Scene("New Scene")]
+        self.scenes = [Scene("New Scene", AnnotationsModel())]
         self.current_scene = self.scenes[0]
 
     def rowCount(self, parent):
@@ -23,7 +26,7 @@ class ScenesModel(QAbstractListModel):
         if role == Qt.EditRole:
             new_name = self.scenes[index.row()].name
             try:
-                if ScenesModel.is_valid_scene_name(str(value)):
+                if util.is_valid_name(str(value)):
                     new_name = str(value)
             except Exception as e:
                 print("Error editing scene name", e)
@@ -34,24 +37,13 @@ class ScenesModel(QAbstractListModel):
 
         return True  # edit was done correctly
 
-    @staticmethod
-    def is_valid_scene_name(name):
-        if len(name)==0: return False
-        is_valid = False
-        is_valid = all(c.isalnum() or
-                       c.isspace() or
-                       c == "-" or
-                       c == "_"
-                       for c in name)
-        return is_valid
-
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
     def new_scene(self, at_index):
         self.beginInsertRows(QModelIndex(), at_index.row(), at_index.row())
         self.insertRow(at_index.row())
-        new_scene = Scene("New Scene")
+        new_scene = Scene("New Scene", AnnotationsModel())
         self.scenes.append(new_scene)
         self.current_scene = new_scene
         self.endInsertRows()
@@ -88,9 +80,15 @@ class ScenesModel(QAbstractListModel):
 
 
 class Scene:
-    def __init__(self, name):
+    def __init__(self, name, annotations_model):
         self.name = name
         self.physical_objects = []
-        self.annotations = []
+        self.__annotations = []
+        self.annotations_model = annotations_model
 
+    def add_annotation(self, annotation):
+        self.__annotations.append(annotation)
+        self.annotations_model.new_annotation(annotation)
 
+    def get_annotations(self):
+        return self.__annotations
