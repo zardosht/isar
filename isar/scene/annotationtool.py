@@ -13,7 +13,7 @@ class AnnotationTool:
         self.img = None
         self.drawing = False
         self.annotation = None
-        self.scene = None
+        self.annotations_model = None
 
     def mouse_press_event(self, qwidget, event):
         pass
@@ -45,7 +45,7 @@ def distance_to_image_coordinates(opencv_img_shape, rel_distance):
 
 
 def draw_annotation(opencv_img, annotation):
-    annotation_tool = annotation_tools[annotation.__class__.__name__]()
+    annotation_tool = annotation_tools[annotation.__class__.__name__]
     annotation_tool.img = opencv_img
     annotation_tool.drawing = True
     annotation_tool.annotation = annotation
@@ -91,7 +91,7 @@ class CircleAnnotationTool(AnnotationTool):
             self.annotation.radius = calc_distance(self.annotation.center, (rel_x, rel_y))
 
     def mouse_release_event(self, camera_view, event):
-        self.scene.add_annotation(self.annotation)
+        self.annotations_model.add_annotation(self.annotation)
         self.drawing = False
 
     def draw(self):
@@ -131,7 +131,7 @@ class RectangleAnnotationTool(AnnotationTool):
             self.annotation.vertex2 = (rel_x, rel_y)
 
     def mouse_release_event(self, camera_view, event):
-        self.scene.add_annotation(self.annotation)
+        self.annotations_model.add_annotation(self.annotation)
         self.drawing = False
 
     def draw(self):
@@ -171,7 +171,7 @@ class LineAnnotationTool(AnnotationTool):
             self.annotation.end = (rel_x, rel_y)
 
     def mouse_release_event(self, camera_view, event):
-        self.scene.add_annotation(self.annotation)
+        self.annotations_model.add_annotation(self.annotation)
         self.drawing = False
 
     def draw(self):
@@ -379,31 +379,31 @@ class SelectBoxAnnotationTool(AnnotationTool):
 
 
 annotation_tools = {
-    LineAnnotation.__name__: LineAnnotationTool,
-    RectangleAnnotation.__name__: RectangleAnnotationTool,
-    CircleAnnotation.__name__: CircleAnnotationTool,
-    TimerAnnotation.__name__: TimerAnnotationTool,
-    VideoAnnotation.__name__: VideoAnnotationTool,
-    AudioAnnotation.__name__: AudioAnnotationTool,
-    ImageAnnotation.__name__: ImageAnnotationTool,
-    TextAnnotation.__name__: TextAnnotationTool,
-    ArrowAnnotation.__name__: ArrowAnnotationTool,
-    RelationshipAnnotation.__name__: RelationshipAnnotationTool,
-    SelectBoxAnnotation.__name__: SelectBoxAnnotationTool
+    LineAnnotation.__name__: LineAnnotationTool(),
+    RectangleAnnotation.__name__: RectangleAnnotationTool(),
+    CircleAnnotation.__name__: CircleAnnotationTool(),
+    TimerAnnotation.__name__: TimerAnnotationTool(),
+    VideoAnnotation.__name__: VideoAnnotationTool(),
+    AudioAnnotation.__name__: AudioAnnotationTool(),
+    ImageAnnotation.__name__: ImageAnnotationTool(),
+    TextAnnotation.__name__: TextAnnotationTool(),
+    ArrowAnnotation.__name__: ArrowAnnotationTool(),
+    RelationshipAnnotation.__name__: RelationshipAnnotationTool(),
+    SelectBoxAnnotation.__name__: SelectBoxAnnotationTool()
 }
 
 annotation_tool_btns = {
-    "line_btn": LineAnnotationTool,
-    "rectangle_btn": RectangleAnnotationTool,
-    "circle_btn": CircleAnnotationTool,
-    "select_btn": SelectAnnotationTool,
-    "select_box_btn": SelectBoxAnnotationTool,
-    "text_btn": TextAnnotationTool,
-    "timer_btn": TimerAnnotationTool,
-    "video_btn": VideoAnnotationTool,
-    "audio_btn": AudioAnnotationTool,
-    "relationship_btn": RelationshipAnnotationTool,
-    "arrow_btn": ArrowAnnotationTool,
-    "image_btn": ImageAnnotationTool
+    "line_btn": LineAnnotationTool(),
+    "rectangle_btn": RectangleAnnotationTool(),
+    "circle_btn": CircleAnnotationTool(),
+    "select_btn": SelectAnnotationTool(),
+    "select_box_btn": SelectBoxAnnotationTool(),
+    "text_btn": TextAnnotationTool(),
+    "timer_btn": TimerAnnotationTool(),
+    "video_btn": VideoAnnotationTool(),
+    "audio_btn": AudioAnnotationTool(),
+    "relationship_btn": RelationshipAnnotationTool(),
+    "arrow_btn": ArrowAnnotationTool(),
+    "image_btn": ImageAnnotationTool()
 }
 

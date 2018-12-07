@@ -12,7 +12,7 @@ class ScenesModel(QAbstractListModel):
 
     def __init__(self):
         super().__init__()
-        self.scenes = [Scene("New Scene", AnnotationsModel())]
+        self.scenes = [Scene("New Scene")]
         self.current_scene = self.scenes[0]
 
     def rowCount(self, parent):
@@ -43,7 +43,7 @@ class ScenesModel(QAbstractListModel):
     def new_scene(self, at_index):
         self.beginInsertRows(QModelIndex(), at_index.row(), at_index.row())
         self.insertRow(at_index.row())
-        new_scene = Scene("New Scene", AnnotationsModel())
+        new_scene = Scene("New Scene")
         self.scenes.append(new_scene)
         self.current_scene = new_scene
         self.endInsertRows()
@@ -80,15 +80,13 @@ class ScenesModel(QAbstractListModel):
 
 
 class Scene:
-    def __init__(self, name, annotations_model):
+    def __init__(self, name):
         self.name = name
         self.physical_objects = []
         self.__annotations = []
-        self.annotations_model = annotations_model
 
     def add_annotation(self, annotation):
         self.__annotations.append(annotation)
-        self.annotations_model.new_annotation(annotation)
 
     def get_annotations(self):
         return self.__annotations

@@ -13,7 +13,7 @@ class CameraView(QLabel):
             super(CameraView, self).__init__(parent)
             self.opencv_img = None
             self.active_annotation_tool = None
-            self.scene = None
+            self.annotations_model = None
 
         def set_camera_frame(self, camera_frame):
             self.opencv_img = camera_frame.image
@@ -22,7 +22,7 @@ class CameraView(QLabel):
 
             if self.active_annotation_tool:
                 self.active_annotation_tool.img = self.opencv_img
-                self.active_annotation_tool.scene = self.scene
+                self.active_annotation_tool.annotations_model = self.annotations_model
                 self.active_annotation_tool.draw()
 
             qfromat = QImage.Format_Indexed8
@@ -42,10 +42,10 @@ class CameraView(QLabel):
             self.update()
 
         def draw_scene_annotations(self):
-            if not self.scene or not self.scene.get_annotations():
+            if not self.annotations_model or not self.annotations_model.get_annotations():
                 return
 
-            for annotation in self.scene.get_annotations():
+            for annotation in self.annotations_model.get_annotations():
                 annotationtool.draw_annotation(self.opencv_img, annotation)
 
         def mousePressEvent(self, event):
@@ -66,9 +66,10 @@ class CameraView(QLabel):
 
             super().mouseReleaseEvent(event)
 
-        def set_active_annotation_tool(self, annotation_btn_name):
+        def set_active_annotation_tool(self, annotation_btn_name, ):
             if not annotation_btn_name:
                 self.active_annotation_tool = None
             else:
-                self.active_annotation_tool = annotationtool.annotation_tool_btns[annotation_btn_name]()
+                self.active_annotation_tool = annotationtool.annotation_tool_btns[annotation_btn_name]
+                self.active_annotation_tool.annotations_model = self.annotations_model
 
