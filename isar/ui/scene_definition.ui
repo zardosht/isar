@@ -18,7 +18,7 @@
     <widget class="QFrame" name="frame_1">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>2</horstretch>
+       <horstretch>15</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
@@ -73,7 +73,7 @@
     <widget class="QFrame" name="frame_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>8</horstretch>
+       <horstretch>85</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
@@ -109,7 +109,7 @@
           <widget class="QFrame" name="camers_view_frame">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>70</horstretch>
+             <horstretch>65</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
@@ -280,7 +280,7 @@
           <widget class="QFrame" name="properties_view_frame">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>15</horstretch>
+             <horstretch>25</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
@@ -299,7 +299,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QTreeView" name="properties_view"/>
+             <widget class="QTableView" name="properties_view"/>
             </item>
            </layout>
           </widget>

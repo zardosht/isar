@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolBut
 
 from isar.camera.camera import CameraService
 from isar.scene.annotationmodel import AnnotationsModel
+from isar.scene.annotationpropertymodel import AnnotationPropertiesModel
 from isar.scene.cameraview import CameraView
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
@@ -59,6 +60,9 @@ class SceneDefinitionWindow(QDialog):
         for btn in self.annotation_buttons.buttons():
             btn.clicked.connect(functools.partial(self.annotation_btn_clicked, btn))
 
+        self.annotations_list.selectionModel().currentChanged.connect(self.annotationslist_current_changed)
+        self.annotations_list.selectionModel().selectionChanged.connect(self.annotationslist_current_changed)
+
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.selectionModel().select(current_index, QItemSelectionModel.Select)
@@ -77,6 +81,12 @@ class SceneDefinitionWindow(QDialog):
             select_btn = self.annotation_buttons.button(SceneDefinitionWindow.SELECT_BTN_ID)
             if select_btn:
                 select_btn.setChecked(True)
+
+    def annotationslist_current_changed(self):
+        current_index = self.annotations_list.selectionModel().currentIndex()
+        annotationsmodel = self.annotations_list.model()
+        annotationsmodel.set_current_annotation(current_index)
+        self.properties_view.model().set_annotation(annotationsmodel.current_annotation)
 
     def annotation_btn_clicked(self, btn):
         if btn.isChecked():
@@ -121,10 +131,14 @@ class SceneDefinitionWindow(QDialog):
         scenes_model = ScenesModel()
         self.scenes_list.setModel(scenes_model)
         current_scene = self.scenes_list.model().current_scene
+
         annotations_model = AnnotationsModel()
         annotations_model.set_scene(current_scene)
         self.camera_view.annotations_model = annotations_model
         self.annotations_list.setModel(annotations_model)
+
+        properties_model = AnnotationPropertiesModel()
+        self.properties_view.setModel(properties_model)
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame(flipped=True)

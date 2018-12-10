@@ -162,13 +162,13 @@ class LineAnnotationTool(AnnotationTool):
         # convert mouse coordinates to relative image coordinates
         rel_x = event.x() / camera_view.size().width()
         rel_y = event.y() / camera_view.size().height()
-        self.annotation.start = (rel_x, rel_y)
+        self.annotation.start.set_value((rel_x, rel_y))
 
     def mouse_move_event(self, camera_view, event):
         if self.drawing:
             rel_x = event.x() / camera_view.size().width()
             rel_y = event.y() / camera_view.size().height()
-            self.annotation.end = (rel_x, rel_y)
+            self.annotation.end.set_value((rel_x, rel_y))
 
     def mouse_release_event(self, camera_view, event):
         self.annotations_model.add_annotation(self.annotation)
@@ -178,16 +178,16 @@ class LineAnnotationTool(AnnotationTool):
         if not self.drawing:
             return
 
-        if not self.annotation or not self.annotation.end:
+        if not self.annotation or not self.annotation.end.get_value():
             return
 
-        start = relative_to_image_coordinates(self.img.shape, *self.annotation.start)
-        end = relative_to_image_coordinates(self.img.shape, *self.annotation.end)
+        start = relative_to_image_coordinates(self.img.shape, *self.annotation.start.get_value())
+        end = relative_to_image_coordinates(self.img.shape, *self.annotation.end.get_value())
         self.img = cv2.line(self.img,
                             start,
                             end,
-                            self.annotation.color,
-                            self.annotation.thikness)
+                            self.annotation.color.get_value(),
+                            self.annotation.thikness.get_value())
 
 
 class SelectAnnotationTool(AnnotationTool):

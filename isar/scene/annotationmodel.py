@@ -4,6 +4,8 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex
 
 from isar.scene import util
+from isar.scene.annotationpropertymodel import FloatTupleAnnotationProperty, IntAnnotationProperty, \
+    ColorAnnotationProperty
 from isar.scene.physicalobjectmodel import PhysicalObject
 
 
@@ -15,12 +17,17 @@ class AnnotationsModel(QAbstractListModel):
 
     def __init__(self):
         super().__init__()
+        self.current_annotation = None
         self.__scene = None
         self.__annotations = None
 
     def set_scene(self, scene):
         self.__scene = scene
         self.__annotations = scene.get_annotations()
+        if len(self.__annotations) > 0:
+            self.current_annotation = self.__annotations[0]
+        else:
+            self.current_annotation = None
 
     def rowCount(self, parent):
         if self.__annotations is None:
@@ -51,7 +58,7 @@ class AnnotationsModel(QAbstractListModel):
             self.__annotations[index.row()].name = new_name
             self.editCompleted.emit(new_name)
 
-        return True  # edit was done correctly
+        return True
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
@@ -69,6 +76,7 @@ class AnnotationsModel(QAbstractListModel):
         self.__annotations.append(new_annotation)
 
         annotation_counters[class_name] += 1
+        self.current_annotation = new_annotation
         self.endInsertRows()
 
     def delete_annotation(self, selected_index):
@@ -89,6 +97,12 @@ class AnnotationsModel(QAbstractListModel):
     def update_view(self, index):
         self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
+    def set_current_annotation(self, selected_index):
+        if self.__annotations is None:
+            return
+
+        self.current_annotation = self.__annotations[selected_index.row()]
+
     def get_annotations(self):
         if self.__annotations:
             return tuple(self.__annotations)
@@ -98,9 +112,10 @@ class AnnotationsModel(QAbstractListModel):
 
 class Annotation:
     def __init__(self):
-        self.position = [0.0, 0.0]
+        self.position = None
         self.attached_to: PhysicalObject = None
         self.updateOrientation = False
+        self.properties = None
 
 
 """
@@ -142,10 +157,15 @@ class SelectBoxAnnotation(Annotation):
 class LineAnnotation(Annotation):
     def __init__(self):
         super().__init__()
-        self.start = [0.0, 0.0]
-        self.end = None
-        self.thikness = 3
-        self.color = (0, 255, 255)
+        self.properties = []
+        self.start = FloatTupleAnnotationProperty("Start", [0.0, 0.0])
+        self.properties.append(self.start)
+        self.end = FloatTupleAnnotationProperty("End", None)
+        self.properties.append(self.end)
+        self.thikness = IntAnnotationProperty("Thikness", 3)
+        self.properties.append(self.thikness)
+        self.color = ColorAnnotationProperty("Color", (0, 255, 255))
+        self.properties.append(self.color)
 
 
 class RectangleAnnotation(Annotation):
