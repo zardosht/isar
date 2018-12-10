@@ -15,7 +15,6 @@ class AnnotationsModel(QAbstractListModel):
 
     def __init__(self):
         super().__init__()
-        self.current_annotation = None
         self.__scene = None
         self.__annotations = None
 
@@ -70,7 +69,6 @@ class AnnotationsModel(QAbstractListModel):
         self.__annotations.append(new_annotation)
 
         annotation_counters[class_name] += 1
-        self.current_annotation = new_annotation
         self.endInsertRows()
 
     def delete_annotation(self, selected_index):
@@ -91,12 +89,6 @@ class AnnotationsModel(QAbstractListModel):
     def update_view(self, index):
         self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
-    def set_current_annotation(self, selected_index):
-        if self.__annotations is None:
-            return
-
-        self.current_annotation = self.__annotations[selected_index.row()]
-
     def get_annotations(self):
         if self.__annotations:
             return tuple(self.__annotations)
@@ -109,10 +101,6 @@ class Annotation:
         self.position = [0.0, 0.0]
         self.attached_to: PhysicalObject = None
         self.updateOrientation = False
-
-
-# class AnnotationPropertyItem:
-#     def __init__(self):
 
 
 """
