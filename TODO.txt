@@ -1,9 +1,13 @@
+1. Data conversion in AnnotationProperty sub-classes from string to their value,
+2. Editors implementation for color and file path and physical object
+
+
 * Show camera stream in SceneDefinition windows -- Done
 * Setup service manager -- Done
 
 * Add classes for domain model
 * Implement the Model/View Controller for Scenes, Objects, and Annotations
-* Impelement Tracking
+* Impalement Tracking
 * Implement persistence of Scene Definitions
 
 
