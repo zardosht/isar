@@ -1,3 +1,5 @@
+Promise to Bernd, Next Friday: Integrated Object Recognition, and attach to combo and drag and drop
+
 2. Editors implementation for color and file path and physical object
 
 
