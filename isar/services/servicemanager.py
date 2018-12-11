@@ -1,25 +1,30 @@
 from enum import Enum
 
 from isar.camera.camera import CameraService
+from isar.tracking.objectdetection import ObjectDetectionService
 
-
-_services = {}
+__services = {}
 
 
 class ServiceNames(Enum):
     CAMERA1 = 1
+    OBJECT_DETECTION = 2
 
 
 def start_services():
     camera1_service = CameraService(ServiceNames.CAMERA1, 0)
     camera1_service.start()
-    _services[ServiceNames.CAMERA1] = camera1_service
+    __services[ServiceNames.CAMERA1] = camera1_service
+
+    objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION)
+    objectdetection_service.start()
+    __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
 
 
 def stop_services():
-    for service in _services.values():
+    for service in __services.values():
         service.stop()
 
 
 def get_service(service_name):
-    return _services[service_name]
+    return __services[service_name]
