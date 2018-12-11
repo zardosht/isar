@@ -5,7 +5,7 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex
 
 from isar.scene import util
 from isar.scene.annotationpropertymodel import FloatTupleAnnotationProperty, IntAnnotationProperty, \
-    ColorAnnotationProperty
+    ColorAnnotationProperty, FloatAnnotationProperty
 from isar.scene.physicalobjectmodel import PhysicalObject
 
 
@@ -155,35 +155,64 @@ class SelectBoxAnnotation(Annotation):
 
 
 class LineAnnotation(Annotation):
+
+    MINIMUM_LENGTH = 0.001
+
     def __init__(self):
         super().__init__()
         self.properties = []
+
         self.start = FloatTupleAnnotationProperty("Start", [0.0, 0.0])
         self.properties.append(self.start)
+
         self.end = FloatTupleAnnotationProperty("End", None)
         self.properties.append(self.end)
+
         self.thikness = IntAnnotationProperty("Thikness", 3)
         self.properties.append(self.thikness)
+
         self.color = ColorAnnotationProperty("Color", (0, 255, 255))
         self.properties.append(self.color)
 
 
 class RectangleAnnotation(Annotation):
+
+    MINIMUM_AREA = 0.00001
+
     def __init__(self):
         super(RectangleAnnotation, self).__init__()
-        self.color = (255, 0, 255)
-        self.thikness = 3
-        self.vertex1 = [0.0, 0.0]
-        self.vertex2 = None
+        self.properties = []
+        self.color = ColorAnnotationProperty("Color", (255, 0, 255))
+        self.properties.append(self.color)
+
+        self.thikness = IntAnnotationProperty("Thikness", 3)
+        self.properties.append(self.thikness)
+
+        self.vertex1 = FloatTupleAnnotationProperty("Vertex1", [0.0, 0.0])
+        self.properties.append(self.vertex1)
+
+        self.vertex2 = FloatTupleAnnotationProperty("Vertex2", None)
+        self.properties.append(self.vertex2)
 
 
 class CircleAnnotation(Annotation):
+
+    MINIMUM_RADIUS = 0.001
+
     def __init__(self):
         super(CircleAnnotation, self).__init__()
-        self.center = [0.0, 0.0]
-        self.color = (125, 125, 255)
-        self.radius = None
-        self.thikness = 3
+        self.properties = []
+        self.color = ColorAnnotationProperty("Color", (125, 125, 255))
+        self.properties.append(self.color)
+
+        self.center = FloatTupleAnnotationProperty("Center", [0.0, 0.0])
+        self.properties.append(self.center)
+
+        self.radius = FloatAnnotationProperty("Radius", None)
+        self.properties.append(self.radius)
+
+        self.thikness = IntAnnotationProperty("Thikness", 3)
+        self.properties.append(self.thikness)
 
 
 class RelationshipAnnotation(Annotation):

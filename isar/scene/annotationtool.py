@@ -1,6 +1,8 @@
 import logging
 import math
 import cv2
+
+from isar.scene import util
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
     SelectBoxAnnotation
@@ -52,10 +54,6 @@ def draw_annotation(opencv_img, annotation):
     annotation_tool.draw()
 
 
-def calc_distance(p1, p2):
-    return math.sqrt(math.pow(p1[0] - p2[0], 2) + math.pow(p1[1] - p2[1], 2))
-
-
 """
 Text
 Arrow
@@ -82,33 +80,45 @@ class CircleAnnotationTool(AnnotationTool):
         # convert mouse coordinates to relative image coordinates
         rel_x = event.x() / camera_view.size().width()
         rel_y = event.y() / camera_view.size().height()
-        self.annotation.center = (rel_x, rel_y)
+        self.annotation.center.set_value((rel_x, rel_y))
 
     def mouse_move_event(self, camera_view, event):
         if self.drawing:
             rel_x = event.x() / camera_view.size().width()
             rel_y = event.y() / camera_view.size().height()
-            self.annotation.radius = calc_distance(self.annotation.center, (rel_x, rel_y))
+            radius = util.calc_distance(self.annotation.center.get_value(), (rel_x, rel_y))
+            self.annotation.radius.set_value(radius)
 
     def mouse_release_event(self, camera_view, event):
-        self.annotations_model.add_annotation(self.annotation)
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
         self.drawing = False
+
+    def is_annotation_valid(self):
+        # Has the circle the minimum radius?
+        radius = self.annotation.radius.get_value()
+        if radius is None:
+            return False
+        if radius < CircleAnnotation.MINIMUM_RADIUS:
+            return False
+
+        return True
 
     def draw(self):
         if not self.drawing:
             return
 
-        if not self.annotation or not self.annotation.radius:
+        if not self.annotation or not self.annotation.radius.get_value():
             return
 
-        center = relative_to_image_coordinates(self.img.shape, *self.annotation.center)
-        radius = distance_to_image_coordinates(self.img.shape, self.annotation.radius)
+        center = relative_to_image_coordinates(self.img.shape, *self.annotation.center.get_value())
+        radius = distance_to_image_coordinates(self.img.shape, self.annotation.radius.get_value())
 
         cv2.circle(self.img,
                    center,
                    radius,
-                   self.annotation.color,
-                   self.annotation.thikness)
+                   self.annotation.color.get_value(),
+                   self.annotation.thikness.get_value())
 
 
 class RectangleAnnotationTool(AnnotationTool):
@@ -122,33 +132,45 @@ class RectangleAnnotationTool(AnnotationTool):
         # convert mouse coordinates to relative image coordinates
         rel_x = event.x() / camera_view.size().width()
         rel_y = event.y() / camera_view.size().height()
-        self.annotation.vertex1 = (rel_x, rel_y)
+        self.annotation.vertex1.set_value((rel_x, rel_y))
 
     def mouse_move_event(self, camera_view, event):
         if self.drawing:
             rel_x = event.x() / camera_view.size().width()
             rel_y = event.y() / camera_view.size().height()
-            self.annotation.vertex2 = (rel_x, rel_y)
+            self.annotation.vertex2.set_value((rel_x, rel_y))
 
     def mouse_release_event(self, camera_view, event):
-        self.annotations_model.add_annotation(self.annotation)
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
+
         self.drawing = False
+
+    def is_annotation_valid(self):
+        # Has the rectangle the minimum area?
+        area = util.calc_rect_area(self.annotation.vertex1.get_value(), self.annotation.vertex2.get_value())
+        if area is None:
+            return False
+        if area < RectangleAnnotation.MINIMUM_AREA:
+            return False
+
+        return True
 
     def draw(self):
         if not self.drawing:
             return
 
-        if not self.annotation or not self.annotation.vertex2:
+        if not self.annotation or not self.annotation.vertex2.get_value():
             return
 
-        vertex1 = relative_to_image_coordinates(self.img.shape, *self.annotation.vertex1)
-        vertex2 = relative_to_image_coordinates(self.img.shape, *self.annotation.vertex2)
+        vertex1 = relative_to_image_coordinates(self.img.shape, *self.annotation.vertex1.get_value())
+        vertex2 = relative_to_image_coordinates(self.img.shape, *self.annotation.vertex2.get_value())
 
         cv2.rectangle(self.img,
                       vertex1,
                       vertex2,
-                      self.annotation.color,
-                      self.annotation.thikness)
+                      self.annotation.color.get_value(),
+                      self.annotation.thikness.get_value())
 
 
 class LineAnnotationTool(AnnotationTool):
@@ -171,7 +193,8 @@ class LineAnnotationTool(AnnotationTool):
             self.annotation.end.set_value((rel_x, rel_y))
 
     def mouse_release_event(self, camera_view, event):
-        self.annotations_model.add_annotation(self.annotation)
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
         self.drawing = False
 
     def draw(self):
@@ -188,6 +211,16 @@ class LineAnnotationTool(AnnotationTool):
                             end,
                             self.annotation.color.get_value(),
                             self.annotation.thikness.get_value())
+
+    def is_annotation_valid(self):
+        # Has the lind the minimum lenght?
+        length = util.calc_distance(self.annotation.start.get_value(), self.annotation.end.get_value())
+        if length is None:
+            return False
+        if length < LineAnnotation.MINIMUM_LENGTH:
+            return False
+
+        return True
 
 
 class SelectAnnotationTool(AnnotationTool):

@@ -1,4 +1,3 @@
-1. Data conversion in AnnotationProperty sub-classes from string to their value,
 2. Editors implementation for color and file path and physical object
 
 

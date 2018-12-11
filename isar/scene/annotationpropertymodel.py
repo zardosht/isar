@@ -1,6 +1,9 @@
-from PyQt5 import QtCore
+import logging
+from ast import literal_eval
 from PyQt5.QtCore import QAbstractTableModel, Qt
 
+
+logger = logging.getLogger("isar.annotationpropertymodel")
 
 class AnnotationPropertiesModel(QAbstractTableModel):
 
@@ -43,19 +46,22 @@ class AnnotationPropertiesModel(QAbstractTableModel):
         if self.__properties is None:
             return
 
+        result = False
         if role == Qt.EditRole:
             try:
                 prop: AnnotationProperty = self.__properties[index.row()]
-                prop.set_value(value)
+                result = prop.set_value(value)
             except Exception as e:
                 print("error", e)
                 return False
 
         self.dataChanged.emit(index, index)
-        return True
+        return result
 
     def flags(self, index):
-        return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
+        if index.column() == 1:
+            return Qt.ItemIsEditable | super().flags(index)
+        return super().flags(index)
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
@@ -72,7 +78,16 @@ class AnnotationProperty:
         return str(self._value)
 
     def set_value(self, value):
-        self._value = value
+        if isinstance(value, str):
+            try:
+                self._value = literal_eval(value)
+                return True
+            except Exception as e:
+                logger.error("Error converting value:", e)
+                return False
+        else:
+            self._value = value
+            return True
 
     def get_value(self):
         return self._value
@@ -97,15 +112,46 @@ class FloatTupleAnnotationProperty(AnnotationProperty):
     def __init__(self, name, value):
         super().__init__(name, value)
 
+    def set_value(self, value):
+        old_value = self._value
+        result = super().set_value(value)
+        if result and isinstance(self._value, tuple) and len(self._value) == 2 and isinstance(self._value[0], float) and isinstance(self._value[1], float):
+            return True
+        else:
+            self._value = old_value
+            return False
+
 
 class IntTupleAnnotationProperty(AnnotationProperty):
     def __init__(self, name, value):
         super().__init__(name, value)
 
+    def set_value(self, value):
+        old_value = self._value
+        result = super().set_value(value)
+        if result and \
+                isinstance(self._value, tuple) and \
+                len(self._value) == 2 and\
+                isinstance(self._value[0], int) and\
+                isinstance(self._value[1], int):
+            return True
+        else:
+            self._value = old_value
+            return False
+
 
 class FloatAnnotationProperty(AnnotationProperty):
     def __init__(self, name, value):
         super().__init__(name, value)
+
+    def set_value(self, value):
+        old_value = self._value
+        result = super().set_value(value)
+        if result and isinstance(self._value, float):
+            return True
+        else:
+            self._value = old_value
+            return False
 
 
 class IntAnnotationProperty(AnnotationProperty):
@@ -113,7 +159,13 @@ class IntAnnotationProperty(AnnotationProperty):
         super().__init__(name, value)
 
     def set_value(self, value):
-        self._value = int(value)
+        old_value = self._value
+        result = super().set_value(value)
+        if result and isinstance(self._value, int):
+            return True
+        else:
+            self._value = old_value
+            return False
 
 
 class BooleanAnnotationProperty(AnnotationProperty):
