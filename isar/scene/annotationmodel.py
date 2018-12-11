@@ -28,6 +28,7 @@ class AnnotationsModel(QAbstractListModel):
             self.current_annotation = self.__annotations[0]
         else:
             self.current_annotation = None
+        self.endResetModel()
 
     def rowCount(self, parent):
         if self.__annotations is None:

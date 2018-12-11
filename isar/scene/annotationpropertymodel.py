@@ -5,8 +5,8 @@ from PyQt5.QtCore import QAbstractTableModel, Qt
 
 logger = logging.getLogger("isar.annotationpropertymodel")
 
-class AnnotationPropertiesModel(QAbstractTableModel):
 
+class AnnotationPropertiesModel(QAbstractTableModel):
     def __init__(self):
         super().__init__()
         self.__annotation = None
