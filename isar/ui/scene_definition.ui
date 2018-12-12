@@ -261,7 +261,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QTableView" name="objects_view"/>
+             <widget class="QTableView" name="objects_view">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_5">
@@ -299,7 +303,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QTableView" name="properties_view"/>
+             <widget class="QTableView" name="properties_view">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>

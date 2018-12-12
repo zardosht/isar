@@ -71,7 +71,13 @@ class SceneDefinitionWindow(QDialog):
         self.annotations_list.model().set_scene(scenes_model.current_scene)
         self.camera_view.annotations_model = self.annotations_list.model()
         self.camera_view.set_active_annotation_tool(None)
-        self.annotationslist_current_changed()
+
+        if self.annotations_list.model().rowCount() > 0:
+            first_item = self.annotations_list.model().createIndex(0, 0)
+            self.annotations_list.selectionModel().select(first_item, QItemSelectionModel.Select)
+            self.annotations_list.selectionModel().setCurrentIndex(first_item, QItemSelectionModel.Current)
+        else:
+            self.annotationslist_current_changed()
 
         self.select_btn.setChecked(True)
         if self.annotation_buttons.checkedButton():

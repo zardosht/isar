@@ -30,7 +30,7 @@ class AnnotationsModel(QAbstractListModel):
             self.current_annotation = None
         self.endResetModel()
 
-    def rowCount(self, parent):
+    def rowCount(self, parent=None):
         if self.__annotations is None:
             return 0
 
