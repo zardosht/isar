@@ -102,6 +102,15 @@ class AnnotationsModel(QAbstractListModel):
         if self.__annotations is None:
             return
 
+        if len(self.__annotations) == 0:
+            return
+
+        if selected_index is None:
+            return
+
+        if selected_index.row() == -1:
+            return
+
         self.current_annotation = self.__annotations[selected_index.row()]
 
     def get_annotations(self):
