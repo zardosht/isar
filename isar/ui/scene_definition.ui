@@ -233,83 +233,104 @@
           </widget>
          </item>
          <item>
-          <widget class="QFrame" name="objects_view_frame">
+          <widget class="QSplitter" name="splitter">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>15</horstretch>
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>35</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>200</width>
-             <height>16777215</height>
-            </size>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
+           <property name="handleWidth">
+            <number>5</number>
            </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
+           <property name="childrenCollapsible">
+            <bool>false</bool>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>Objects</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QTableView" name="objects_view">
-              <property name="selectionMode">
-               <enum>QAbstractItemView::SingleSelection</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Annotations</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QListView" name="annotations_list"/>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QFrame" name="properties_view_frame">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>20</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
-            <item>
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Properties</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QTableView" name="properties_view">
-              <property name="selectionMode">
-               <enum>QAbstractItemView::SingleSelection</enum>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QFrame" name="objects_view_frame">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>50</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>200</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Objects</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableView" name="objects_view">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Annotations</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListView" name="annotations_list"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QFrame" name="properties_view_frame">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>50</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Properties</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableView" name="properties_view">
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SingleSelection</enum>
+               </property>
+               <attribute name="horizontalHeaderMinimumSectionSize">
+                <number>5</number>
+               </attribute>
+               <attribute name="verticalHeaderMinimumSectionSize">
+                <number>5</number>
+               </attribute>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>
