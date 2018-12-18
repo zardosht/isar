@@ -1,7 +1,3 @@
-Promise to Bernd, Next Friday: Integrated Object Recognition, and attach to combo and drag and drop
-
-2. Editors implementation for color and file path and physical object
-
 
 * Show camera stream in SceneDefinition windows -- Done
 * Setup service manager -- Done
@@ -12,4 +8,53 @@ Promise to Bernd, Next Friday: Integrated Object Recognition, and attach to comb
 * Implement persistence of Scene Definitions
 
 
+=======================================================================
+
+Promise to Bernd, Next Friday: Integrated Object Recognition, and attach to combo and drag and drop
+
+
+
+We consider each object detector as a plug-in.
+For each object detector we start a worker process with the detector as an attribute.
+Each worker process has a task and result queue.
+When the service starts we start all teh object detector worker processes and join them.
+When the service stops we terminate all the worker processes.
+
+
+# Search the object detectors plugin directory, find object detector packages, load the moduele
+# and populate the object_detectors and physical_objects dictionaries
+
+# load the modlue,
+# populate the dictionaries
+#
+# add the detectors worker class that inherits from multiprocessing process
+# in the start mthod instantiate the worker processes and give the object detector molude
+# each worker has a task queue and a result queue
+# start the workes and join them
+#
+# add the request queue
+# add the response queue
+#
+# start a thread that waits on the request queue
+# as soon as a request is avaialbe, create multiples of it and and send it to all object objectdetectors task queues
+# join the worker processes
+# wait on the result queue of all worker processes
+#
+# when all the detection results are available create a ObjectDetectionResponse object (it has a dictionary
+#     with the name of the object detector as value and the predictions from that detector as value)
+# and put in the response queue
+
+
+
+
+
+
+
+
+
+
+=======================================================================
+
+1. Data conversion in AnnotationProperty sub-classes from string to their value,
+2. Editors implementation for color and file path and physical object
 

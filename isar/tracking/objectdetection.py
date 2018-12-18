@@ -51,6 +51,8 @@ def init():
             obj_detector = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(obj_detector)
             object_detectors[obj_detector.name] = obj_detector
+            physical_objects[obj_detector.name] = obj_detector.get_physical_objects()
+
         except Exception as exp:
             logger.error("Could not load object detector module.")
             logger.error(exp)
@@ -105,9 +107,6 @@ class ObjectDetectionService(Service):
         that this object detector can detect as value.
         """
         global physical_objects
-        # TODO: read it from the description of the object detection models. Check if the init is finished and the
-        #  dictionary is populated
-
         return physical_objects
 
 
