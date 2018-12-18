@@ -10,6 +10,7 @@ from isar.camera.camera import CameraService
 from isar.scene.annotationmodel import AnnotationsModel
 from isar.scene.annotationpropertymodel import AnnotationPropertiesModel
 from isar.scene.cameraview import CameraView
+from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
@@ -29,6 +30,9 @@ class SceneDefinitionWindow(QDialog):
 
         self._camera_service: CameraService = None
         self.setup_camera_service()
+
+        self._object_detection_service = None
+        self.setup_object_detection_service()
 
         self._timer = None
         self.setup_timer()
@@ -127,6 +131,9 @@ class SceneDefinitionWindow(QDialog):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
         self._camera_service.start_capture()
 
+    def setup_object_detection_service(self):
+        self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
+
     def setup_timer(self):
         self._timer = QTimer()
         self._timer.timeout.connect(self.update_camera_view)
@@ -136,6 +143,13 @@ class SceneDefinitionWindow(QDialog):
         scenes_model = ScenesModel()
         self.scenes_list.setModel(scenes_model)
         current_scene = self.scenes_list.model().current_scene
+
+        physical_objects_model = PhysicalObjectsModel()
+        all_physical_obj = []
+        for po_s in self._object_detection_service.get_physical_objects().values():
+            all_physical_obj.extend(po_s)
+        physical_objects_model.set_all_physical_objects(all_physical_obj)
+        self.objects_view.setModel(physical_objects_model)
 
         annotations_model = AnnotationsModel()
         annotations_model.set_scene(current_scene)

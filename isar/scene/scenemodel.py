@@ -4,7 +4,6 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
 from isar.scene import util
-from isar.scene.annotationmodel import AnnotationsModel
 
 
 class ScenesModel(QAbstractListModel):
@@ -82,11 +81,18 @@ class ScenesModel(QAbstractListModel):
 class Scene:
     def __init__(self, name):
         self.name = name
-        self.physical_objects = []
+        self.__physical_objects = []
         self.__annotations = []
+
+    def add_physical_object(self, physical_obj):
+        self.__physical_objects.append(physical_obj)
+
+    def get_physical_objects(self):
+        return self.__physical_objects
 
     def add_annotation(self, annotation):
         self.__annotations.append(annotation)
 
     def get_annotations(self):
         return self.__annotations
+

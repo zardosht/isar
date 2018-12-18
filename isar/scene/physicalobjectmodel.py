@@ -1,6 +1,8 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractListModel, Qt
 
+from isar.scene.scenemodel import Scene
+
 """
 Objects can be added in two ways to the scene: 
     a) 
@@ -22,29 +24,36 @@ When a physical object is removed form the scene the annotations attached to it 
 
 
 class PhysicalObjectsModel(QAbstractListModel):
-    editCompleted = QtCore.pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
         self.current_annotation = None
         self.__scene = None
-        self.__physical_objects = None
+        self.__all_physical_objects = None
+        self.__present_physical_objects = None
+
+    def set_scene(self, scene: Scene):
+        self.__scene = scene
+        self.__present_physical_objects = scene.get_physical_objects()
 
     def rowCount(self, parent=None):
-        if self.__physical_objects is None:
+        if self.__all_physical_objects is None:
             return 0
 
-        return len(self.__physical_objects)
+        return len(self.__all_physical_objects)
 
     def data(self, index, role):
-        if self.__physical_objects is None:
+        if self.__all_physical_objects is None:
             return
 
         if role == QtCore.Qt.DisplayRole:
-            return self.__physical_objects[index.row()].name
+            return self.__all_physical_objects[index.row()].name
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+
+    def set_all_physical_objects(self, all_po_s):
+        self.__all_physical_objects = all_po_s
 
 
 class PhysicalObject:
