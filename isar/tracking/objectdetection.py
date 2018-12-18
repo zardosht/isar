@@ -17,7 +17,7 @@ When the service starts we start all teh object detector worker processes and jo
 When the service stops we terminate all the worker processes. 
 """
 
-OBJECT_DETOCTORS_PATH = "./objectdetectors"
+OBJECT_DETECTORS_PATH = "./objectdetectors"
 
 """
 A dictionary with object detector name as key and the list of physical objects
@@ -40,9 +40,9 @@ def init():
     :return:
     """
     global object_detectors
-    entries = os.listdir(OBJECT_DETOCTORS_PATH)
+    entries = os.listdir(OBJECT_DETECTORS_PATH)
     for path_entry in entries:
-        path = os.path.join(OBJECT_DETOCTORS_PATH, path_entry)
+        path = os.path.join(OBJECT_DETECTORS_PATH, path_entry)
         if not os.path.isdir(path) or not OBJECT_DETECTOR_MODULE_FILENAME in os.listdir(path):
             continue
         try:
@@ -77,7 +77,6 @@ def init():
     # when all the detection results are available create a ObjectDetectionResponse object (it has a dictionary
     #     with the name of the object detector as value and the predictions from that detector as value)
     # and put in the response queue
-
 
 
 class ObjectDetectionService(Service):
