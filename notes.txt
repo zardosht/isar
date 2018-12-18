@@ -1,5 +1,30 @@
 
 
+
+Objects can be added in two ways to the scene: 
+	a) 
+	By drag-n-drop from the object list (in that case the template image of the object is shown on the scene). 
+	You can have multiple instances of the same object at the same time on the scene. Those instances are either a template image or the real object.
+
+	b) 
+	By putting them on the table. 
+
+
+The physical objects view shows the list of the object classes that can be added to the scene. If an object class is added to the scene (one or multiples instances of it), then that object class is highlighted in the physical objects view. 
+
+To remove a physical object instance from the scene the user either remove it from the table (if it is on the table) or uses the delete tool to remove it.
+
+The attach to combo box shows a list of instance of the objects available on the scene. 
+
+When a physical object is removed form the scene the annotations attached to it remain in the scene, but are not attached to it. If the user want to also remove those annotations, he uses the delete tool. 
+
+
+
+
+===================================================
+
+
+
 Let each annotation draw itself. 
 
 Let each annotation has its own select method for authoring time and select method for runtime. 
@@ -13,6 +38,8 @@ The SceneView widget forwards the mouse down, mouse mouse, mouse release events 
 
 
 ==================================================
+
+[DISCARDED in favor of annotation tools and fast implementation; It is too complex]
 
 A scene consists of SceneNodes. 
 
