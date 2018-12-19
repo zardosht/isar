@@ -1,10 +1,11 @@
 import functools
 import logging
 
+import PyQt5.Qt
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QItemSelectionModel
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton
+from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView
 
 from isar.camera.camera import CameraService
 from isar.scene.annotationmodel import AnnotationsModel
@@ -52,6 +53,12 @@ class SceneDefinitionWindow(QDialog):
         self.annotation_buttons.setId(self.select_btn, SceneDefinitionWindow.SELECT_BTN_ID)
         self.select_btn.setChecked(True)
 
+        self.objects_view.setDragEnabled(True)
+        self.objects_view.setViewMode(QListView.IconMode)
+        self.objects_view.setMovement(QListView.Snap)
+        self.objects_view.setAcceptDrops(True)
+        self.objects_view.setDropIndicatorShown(True)
+
     def setup_signals(self):
         # scenes list
         self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
@@ -66,6 +73,11 @@ class SceneDefinitionWindow(QDialog):
 
         self.annotations_list.selectionModel().currentChanged.connect(self.annotationslist_current_changed)
         self.annotations_list.selectionModel().selectionChanged.connect(self.annotationslist_current_changed)
+
+        self.objects_view.dragMoveEvent = self.drag_moved
+
+    def drag_moved(*args, **kwargs):
+        print("drag moved")
 
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()

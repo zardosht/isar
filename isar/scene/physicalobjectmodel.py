@@ -1,5 +1,8 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import QAbstractListModel, Qt
+import logging
+import pickle
+
+from PyQt5.QtCore import QAbstractListModel, Qt, QMimeData
+from PyQt5.QtGui import QBrush
 
 from isar.scene.scenemodel import Scene
 
@@ -22,8 +25,12 @@ When a physical object is removed form the scene the annotations attached to it 
 
 """
 
+logger = logging.getLogger("isar.physicalobjectmodel")
+
 
 class PhysicalObjectsModel(QAbstractListModel):
+
+    MIME_TYPE = "application/isar.physical_object"
 
     def __init__(self):
         super().__init__()
@@ -47,11 +54,38 @@ class PhysicalObjectsModel(QAbstractListModel):
         if self.__all_physical_objects is None:
             return
 
-        if role == QtCore.Qt.DisplayRole:
-            return self.__all_physical_objects[index.row()].name
+        if not index.isValid():
+            return
+
+        physical_object = self.__all_physical_objects[index.row()]
+        if role == Qt.DisplayRole:
+            return physical_object.name
+
+        if role == Qt.BackgroundColorRole:
+            if self.is_contained_in_scene(physical_object):
+                return QBrush(Qt.cyan)
 
     def flags(self, index):
-        return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        return super().flags(index) | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled
+
+    def mimeTypes(self):
+        return [PhysicalObjectsModel.MIME_TYPE]
+
+    def mimeData(self, indexs):
+        mime_data = QMimeData()
+        physical_object = self.__all_physical_objects[indexs[0].row()]
+        bstream = pickle.dumps(physical_object)
+        mime_data.setData(PhysicalObjectsModel.MIME_TYPE, bstream)
+        return mime_data
+
+    def supportedDropActions(self):
+        return Qt.CopyAction | Qt.MoveAction
+
+    def is_contained_in_scene(self, physical_obj):
+        if self.__scene_physical_objects is None:
+            return False
+
+        return physical_obj in self.__scene_physical_objects
 
     def set_all_physical_objects(self, all_po_s):
         self.__all_physical_objects = all_po_s
@@ -63,3 +97,4 @@ class PhysicalObject:
         self.image_path = ""
         self.image = None
         self.annotations = []
+
