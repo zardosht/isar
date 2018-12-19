@@ -30,11 +30,12 @@ class PhysicalObjectsModel(QAbstractListModel):
         self.current_annotation = None
         self.__scene = None
         self.__all_physical_objects = None
+        self.__scene_physical_objects = None
         self.__present_physical_objects = None
 
     def set_scene(self, scene: Scene):
         self.__scene = scene
-        self.__present_physical_objects = scene.get_physical_objects()
+        self.__scene_physical_objects = scene.get_physical_objects()
 
     def rowCount(self, parent=None):
         if self.__all_physical_objects is None:
