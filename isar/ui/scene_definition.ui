@@ -278,6 +278,9 @@
              </item>
              <item>
               <widget class="QListView" name="objects_view">
+               <property name="acceptDrops">
+                <bool>false</bool>
+               </property>
                <property name="dragEnabled">
                 <bool>true</bool>
                </property>
