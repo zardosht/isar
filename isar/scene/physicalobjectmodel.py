@@ -66,7 +66,7 @@ class PhysicalObjectsModel(QAbstractListModel):
                 return QBrush(Qt.cyan)
 
     def flags(self, index):
-        return super().flags(index) | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled
+        return super().flags(index) | Qt.ItemIsDragEnabled
 
     def mimeTypes(self):
         return [PhysicalObjectsModel.MIME_TYPE]
@@ -79,7 +79,7 @@ class PhysicalObjectsModel(QAbstractListModel):
         return mime_data
 
     def supportedDropActions(self):
-        return Qt.CopyAction | Qt.MoveAction
+        return Qt.CopyAction
 
     def is_contained_in_scene(self, physical_obj):
         if self.__scene_physical_objects is None:

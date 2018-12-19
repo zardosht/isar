@@ -53,12 +53,6 @@ class SceneDefinitionWindow(QDialog):
         self.annotation_buttons.setId(self.select_btn, SceneDefinitionWindow.SELECT_BTN_ID)
         self.select_btn.setChecked(True)
 
-        self.objects_view.setDragEnabled(True)
-        self.objects_view.setViewMode(QListView.IconMode)
-        self.objects_view.setMovement(QListView.Snap)
-        self.objects_view.setAcceptDrops(True)
-        self.objects_view.setDropIndicatorShown(True)
-
     def setup_signals(self):
         # scenes list
         self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
@@ -74,7 +68,7 @@ class SceneDefinitionWindow(QDialog):
         self.annotations_list.selectionModel().currentChanged.connect(self.annotationslist_current_changed)
         self.annotations_list.selectionModel().selectionChanged.connect(self.annotationslist_current_changed)
 
-        self.objects_view.dragMoveEvent = self.drag_moved
+        # self.objects_view.dragMoveEvent = self.drag_moved
 
     def drag_moved(*args, **kwargs):
         print("drag moved")
