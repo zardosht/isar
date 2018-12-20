@@ -3,8 +3,8 @@ import logging
 
 import PyQt5.Qt
 from PyQt5 import uic
-from PyQt5.QtCore import QTimer, QItemSelectionModel
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject
+from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView
 
 from isar.camera.camera import CameraService
@@ -68,10 +68,12 @@ class SceneDefinitionWindow(QDialog):
         self.annotations_list.selectionModel().currentChanged.connect(self.annotationslist_current_changed)
         self.annotations_list.selectionModel().selectionChanged.connect(self.annotationslist_current_changed)
 
-        # self.objects_view.dragMoveEvent = self.drag_moved
+        self.objects_view.viewport().installEventFilter(self)
 
-    def drag_moved(*args, **kwargs):
-        print("drag moved")
+    def eventFilter(self, widget: QObject, event: QEvent):
+        # if event.type() == QEvent.DragMove:
+        #     print(event)
+        return False
 
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()
