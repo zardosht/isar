@@ -1,9 +1,11 @@
 import logging
+import pickle
 
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QCursor
 from PyQt5.QtWidgets import QLabel
 
 from isar.scene import annotationtool
+from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 
 logger = logging.getLogger("isar.cameraview")
 
@@ -14,6 +16,9 @@ class CameraView(QLabel):
             self.opencv_img = None
             self.active_annotation_tool = None
             self.annotations_model = None
+
+            self.setAcceptDrops(True)
+            self.po_drag_cursor = None
 
         def set_camera_frame(self, camera_frame):
             self.opencv_img = camera_frame.image
@@ -47,6 +52,36 @@ class CameraView(QLabel):
 
             for annotation in self.annotations_model.get_annotations():
                 annotationtool.draw_annotation(self.opencv_img, annotation)
+
+        def dragEnterEvent(self, event: QDragEnterEvent):
+            if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):
+                self.active_annotation_tool = None
+                self.po_drag_cursor = None
+                event.accept()
+            else:
+                event.ignore()
+
+            print(event)
+
+        def dragMoveEvent(self, event: QDragMoveEvent):
+            if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):
+                if self.po_drag_cursor is None:
+                    self.dropping_physical_object = pickle.loads(event.mimeData().data(PhysicalObjectsModel.MIME_TYPE))
+                    po_image = self.dropping_physical_object.image
+                    height, width, channel = po_image.shape
+                    bytes_per_line = 3 * width
+                    qimg = QImage(po_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
+                    pixmap = QPixmap.fromImage(qimg)
+                    cursor = QCursor(pixmap)
+                    self.po_drag_cursor = cursor
+                    self.setCursor(cursor)
+                else:
+                    self.setCursor(self.po_drag_cursor)
+            else:
+                event.ignore()
+
+        def dropEvent(self, event: QDropEvent):
+            print(event)
 
         def mousePressEvent(self, event):
             if self.active_annotation_tool:
