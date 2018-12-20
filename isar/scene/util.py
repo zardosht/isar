@@ -58,3 +58,18 @@ def get_qimage_from_np_image(np_image):
     out_image = out_image.rgbSwapped()
     return out_image
 
+
+def relative_coordinates_to_image_coordinates(opencv_img_shape, rel_x, rel_y):
+    # based on the scale factor between opencv image size and
+    # the camera_view image size
+    img_x = int(rel_x * opencv_img_shape[1])
+    img_y = int(rel_y * opencv_img_shape[0])
+    return img_x, img_y
+
+
+def relative_distance_to_image_coordinates(opencv_img_shape, rel_distance):
+    # based on the scale factor between opencv image size and
+    # the camera_view image size
+    # opencv_img_shape[1] is width
+    img_dist = int(rel_distance * opencv_img_shape[1])
+    return int(img_dist)

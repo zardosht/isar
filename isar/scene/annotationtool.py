@@ -30,22 +30,6 @@ class AnnotationTool:
         pass
 
 
-def relative_to_image_coordinates(opencv_img_shape, rel_x, rel_y):
-    # based on the scale factor between opencv image size and
-    # the camera_view image size
-    img_x = int(rel_x * opencv_img_shape[1])
-    img_y = int(rel_y * opencv_img_shape[0])
-    return img_x, img_y
-
-
-def distance_to_image_coordinates(opencv_img_shape, rel_distance):
-    # based on the scale factor between opencv image size and
-    # the camera_view image size
-    # opencv_img_shape[1] is width
-    img_dist = int(rel_distance * opencv_img_shape[1])
-    return int(img_dist)
-
-
 def draw_annotation(opencv_img, annotation):
     annotation_tool = annotation_tools[annotation.__class__.__name__]
     annotation_tool.img = opencv_img
@@ -111,8 +95,8 @@ class CircleAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.radius.get_value():
             return
 
-        center = relative_to_image_coordinates(self.img.shape, *self.annotation.center.get_value())
-        radius = distance_to_image_coordinates(self.img.shape, self.annotation.radius.get_value())
+        center = util.relative_coordinates_to_image_coordinates(self.img.shape, *self.annotation.center.get_value())
+        radius = util.relative_distance_to_image_coordinates(self.img.shape, self.annotation.radius.get_value())
 
         cv2.circle(self.img,
                    center,
@@ -163,8 +147,8 @@ class RectangleAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.vertex2.get_value():
             return
 
-        vertex1 = relative_to_image_coordinates(self.img.shape, *self.annotation.vertex1.get_value())
-        vertex2 = relative_to_image_coordinates(self.img.shape, *self.annotation.vertex2.get_value())
+        vertex1 = util.relative_coordinates_to_image_coordinates(self.img.shape, *self.annotation.vertex1.get_value())
+        vertex2 = util.relative_coordinates_to_image_coordinates(self.img.shape, *self.annotation.vertex2.get_value())
 
         cv2.rectangle(self.img,
                       vertex1,
@@ -204,8 +188,8 @@ class LineAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.end.get_value():
             return
 
-        start = relative_to_image_coordinates(self.img.shape, *self.annotation.start.get_value())
-        end = relative_to_image_coordinates(self.img.shape, *self.annotation.end.get_value())
+        start = util.relative_coordinates_to_image_coordinates(self.img.shape, *self.annotation.start.get_value())
+        end = util.relative_coordinates_to_image_coordinates(self.img.shape, *self.annotation.end.get_value())
         self.img = cv2.line(self.img,
                             start,
                             end,
