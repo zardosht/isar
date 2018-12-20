@@ -82,6 +82,14 @@ class CameraService(Service):
 
         return camera_frame
 
+    def get_camera_capture_size(self):
+        if self._capture:
+            width = self._capture.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
+            height = self._capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            return width, height
+        else:
+            return None
+
 
 class CameraFrame:
     """

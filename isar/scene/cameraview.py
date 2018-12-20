@@ -4,7 +4,7 @@ import pickle
 from PyQt5.QtGui import QImage, QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QCursor
 from PyQt5.QtWidgets import QLabel
 
-from isar.scene import annotationtool
+from isar.scene import annotationtool, util
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 
 logger = logging.getLogger("isar.cameraview")
@@ -56,7 +56,6 @@ class CameraView(QLabel):
         def dragEnterEvent(self, event: QDragEnterEvent):
             if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):
                 self.active_annotation_tool = None
-                self.po_drag_cursor = None
                 event.accept()
             else:
                 event.ignore()
@@ -65,18 +64,17 @@ class CameraView(QLabel):
 
         def dragMoveEvent(self, event: QDragMoveEvent):
             if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):
-                if self.po_drag_cursor is None:
-                    self.dropping_physical_object = pickle.loads(event.mimeData().data(PhysicalObjectsModel.MIME_TYPE))
-                    po_image = self.dropping_physical_object.image
-                    height, width, channel = po_image.shape
-                    bytes_per_line = 3 * width
-                    qimg = QImage(po_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
-                    pixmap = QPixmap.fromImage(qimg)
-                    cursor = QCursor(pixmap)
-                    self.po_drag_cursor = cursor
-                    self.setCursor(cursor)
-                else:
-                    self.setCursor(self.po_drag_cursor)
+                # if self.po_drag_cursor is None:
+                #     self.dropping_physical_object = pickle.loads(event.mimeData().data(PhysicalObjectsModel.MIME_TYPE))
+                #     po_image = self.dropping_physical_object.image
+                #     pixmap = util.get_pixmap_from_np_image(po_image)
+                #     cursor = QCursor(pixmap)
+                #     self.po_drag_cursor = cursor
+                #     self.setCursor(cursor)
+                # else:
+                #     self.setCursor(self.po_drag_cursor)
+
+                event.accept()
             else:
                 event.ignore()
 

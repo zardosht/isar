@@ -1,7 +1,7 @@
 import logging
 import pickle
 
-from PyQt5.QtCore import QAbstractListModel, Qt, QMimeData
+from PyQt5.QtCore import QAbstractListModel, Qt, QMimeData, QModelIndex
 from PyQt5.QtGui import QBrush
 
 from isar.scene.scenemodel import Scene
@@ -89,6 +89,18 @@ class PhysicalObjectsModel(QAbstractListModel):
 
     def set_all_physical_objects(self, all_po_s):
         self.__all_physical_objects = all_po_s
+
+    def get_physical_object_at(self, index: QModelIndex):
+        if self.__all_physical_objects is None or len(self.__all_physical_objects) == 0:
+            return None
+
+        if index is None:
+            return None
+
+        if not index.isValid():
+            return None
+
+        return self.__all_physical_objects[index.row()]
 
 
 class PhysicalObject:

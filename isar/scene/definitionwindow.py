@@ -2,11 +2,12 @@ import functools
 import logging
 
 from PyQt5 import uic
-from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject, Qt
-from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent
+from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject, Qt, QItemSelection
+from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView
 
 from isar.camera.camera import CameraService
+from isar.scene import util
 from isar.scene.annotationmodel import AnnotationsModel
 from isar.scene.annotationpropertymodel import AnnotationPropertiesModel
 from isar.scene.cameraview import CameraView
@@ -53,7 +54,8 @@ class SceneDefinitionWindow(QDialog):
         self.annotation_buttons.setId(self.select_btn, SceneDefinitionWindow.SELECT_BTN_ID)
         self.select_btn.setChecked(True)
 
-        self.objects_view = PhysicalObjectsView()
+        self.objects_view = PhysicalObjectsView(self)
+        self.objects_view.setSelectionMode(QListView.SingleSelection)
         self.objects_view.setDragEnabled(True)
         self.objects_view.setDragDropMode(QListView.DragOnly)
         self.objects_view.setMovement(QListView.Snap)
@@ -74,13 +76,6 @@ class SceneDefinitionWindow(QDialog):
 
         self.annotations_list.selectionModel().currentChanged.connect(self.annotationslist_current_changed)
         self.annotations_list.selectionModel().selectionChanged.connect(self.annotationslist_current_changed)
-
-        self.objects_view.viewport().installEventFilter(self)
-
-    def eventFilter(self, widget: QObject, event: QEvent):
-        # if event.type() == QEvent.DragMove:
-        #     print(event)
-        return False
 
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()
@@ -182,11 +177,60 @@ class SceneDefinitionWindow(QDialog):
         self._timer.stop()
         self._camera_service.stop_capture()
 
+    def get_scale_factor(self):
+        capture_size = self._camera_service.get_camera_capture_size()
+        if capture_size is not None:
+            width_scale = self.camera_view.geometry().width() / capture_size[0]
+            height_scale = self.camera_view.geometry().height() / capture_size[1]
+            return width_scale, height_scale
+        else:
+            return None
+
 
 class PhysicalObjectsView(QListView):
-    def __init__(self):
+
+    DRAG_START_DISTANCE = 10
+
+    def __init__(self, main_window):
         super().__init__()
+        self.drag_start_position = None
+        self.selected_po = None
+        self.main_window = main_window
 
     def mousePressEvent(self, event: QMouseEvent):
-        print(event)
+        self.drag_start_position = event.pos()
         super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if not (event.buttons() & Qt.LeftButton):
+            return
+
+        if (event.pos() - self.drag_start_position).manhattanLength() < \
+                PhysicalObjectsView.DRAG_START_DISTANCE:
+            return
+
+        selected_indices = self.selectedIndexes()
+        mime_data = self.model().mimeData(selected_indices)
+        drag = QDrag(self)
+        drag.setMimeData(mime_data)
+        if self.selected_po is not None:
+            pixmap: QPixmap = util.get_pixmap_from_np_image(self.selected_po.image)
+            scale_factor = self.main_window.get_scale_factor()
+            width = scale_factor[0] * pixmap.width()
+            height = scale_factor[1] * pixmap.height()
+            drag.setPixmap(pixmap.scaled(width, height))
+
+        drop_action = drag.exec(Qt.CopyAction)
+
+    def selectionChanged(self, selected: QItemSelection, deselected: QItemSelection):
+        if selected is None:
+            return
+
+        if selected.indexes() is None or len(selected.indexes()) == 0:
+            return
+
+        self.selected_po = self.model().get_physical_object_at(selected.indexes()[0])
+
+
+
+

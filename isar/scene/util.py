@@ -1,5 +1,7 @@
 import math
 
+from PyQt5.QtGui import QImage, QPixmap
+
 
 def is_valid_name(name):
     if len(name) == 0:
@@ -36,3 +38,9 @@ def calc_rect_area(vertex1, vertex2):
     return width * height
 
 
+def get_pixmap_from_np_image(np_image):
+    height, width, channel = np_image.shape
+    bytes_per_line = 3 * width
+    qimg = QImage(np_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
+    pixmap = QPixmap.fromImage(qimg)
+    return pixmap
