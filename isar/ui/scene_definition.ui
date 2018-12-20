@@ -128,9 +128,6 @@
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
              <widget class="QFrame" name="camera_view_container">
-              <property name="acceptDrops">
-               <bool>true</bool>
-              </property>
               <property name="styleSheet">
                <string notr="true">background-color: rgb(205, 255, 250);</string>
               </property>
@@ -276,25 +273,6 @@
               <widget class="QLabel" name="label_3">
                <property name="text">
                 <string>Physical Objects</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QListView" name="objects_view">
-               <property name="acceptDrops">
-                <bool>false</bool>
-               </property>
-               <property name="dragEnabled">
-                <bool>true</bool>
-               </property>
-               <property name="dragDropMode">
-                <enum>QAbstractItemView::DragOnly</enum>
-               </property>
-               <property name="movement">
-                <enum>QListView::Snap</enum>
-               </property>
-               <property name="viewMode">
-                <enum>QListView::ListMode</enum>
                </property>
               </widget>
              </item>

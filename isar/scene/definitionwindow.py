@@ -1,10 +1,9 @@
 import functools
 import logging
 
-import PyQt5.Qt
 from PyQt5 import uic
-from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject
-from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent
+from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject, Qt
+from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView
 
 from isar.camera.camera import CameraService
@@ -27,6 +26,7 @@ class SceneDefinitionWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.camera_view = None
+        self.objects_view = None
         self.setup_ui()
 
         self._camera_service: CameraService = None
@@ -52,6 +52,13 @@ class SceneDefinitionWindow(QDialog):
 
         self.annotation_buttons.setId(self.select_btn, SceneDefinitionWindow.SELECT_BTN_ID)
         self.select_btn.setChecked(True)
+
+        self.objects_view = PhysicalObjectsView()
+        self.objects_view.setDragEnabled(True)
+        self.objects_view.setDragDropMode(QListView.DragOnly)
+        self.objects_view.setMovement(QListView.Snap)
+        self.objects_view.setViewMode(QListView.ListMode)
+        self.objects_view_frame.layout().insertWidget(1, self.objects_view)
 
     def setup_signals(self):
         # scenes list
@@ -176,3 +183,10 @@ class SceneDefinitionWindow(QDialog):
         self._camera_service.stop_capture()
 
 
+class PhysicalObjectsView(QListView):
+    def __init__(self):
+        super().__init__()
+
+    def mousePressEvent(self, event: QMouseEvent):
+        print(event)
+        super().mousePressEvent(event)
