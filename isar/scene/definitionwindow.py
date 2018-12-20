@@ -80,11 +80,24 @@ class SceneDefinitionWindow(QDialog):
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.selectionModel().select(current_index, QItemSelectionModel.Select)
+
         scenes_model = self.scenes_list.model()
         scenes_model.set_current_scene(current_index)
+
         self.annotations_list.model().set_scene(scenes_model.current_scene)
         self.camera_view.annotations_model = self.annotations_list.model()
+
+        self.objects_view.model().set_scene(scenes_model.current_scene)
+        self.camera_view.physical_objects_model = self.objects_view.model()
+
         self.camera_view.set_active_annotation_tool(None)
+        self.select_btn.setChecked(True)
+        if self.annotation_buttons.checkedButton():
+            btn = self.annotation_buttons.checkedButton()
+            btn.setChecked(False)
+            select_btn = self.annotation_buttons.button(SceneDefinitionWindow.SELECT_BTN_ID)
+            if select_btn:
+                select_btn.setChecked(True)
 
         if self.annotations_list.model().rowCount() > 0:
             first_item = self.annotations_list.model().createIndex(0, 0)
@@ -93,13 +106,6 @@ class SceneDefinitionWindow(QDialog):
         else:
             self.annotationslist_current_changed()
 
-        self.select_btn.setChecked(True)
-        if self.annotation_buttons.checkedButton():
-            btn = self.annotation_buttons.checkedButton()
-            btn.setChecked(False)
-            select_btn = self.annotation_buttons.button(SceneDefinitionWindow.SELECT_BTN_ID)
-            if select_btn:
-                select_btn.setChecked(True)
 
     def annotationslist_current_changed(self):
         current_index = self.annotations_list.selectionModel().currentIndex()
@@ -155,10 +161,12 @@ class SceneDefinitionWindow(QDialog):
         current_scene = self.scenes_list.model().current_scene
 
         physical_objects_model = PhysicalObjectsModel()
+        physical_objects_model.set_scene(current_scene)
         all_physical_obj = []
         for po_s in self._object_detection_service.get_physical_objects().values():
             all_physical_obj.extend(po_s)
         physical_objects_model.set_all_physical_objects(all_physical_obj)
+        self.camera_view.physical_objects_model = physical_objects_model
         self.objects_view.setModel(physical_objects_model)
 
         annotations_model = AnnotationsModel()
