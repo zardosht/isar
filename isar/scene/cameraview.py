@@ -30,17 +30,7 @@ class CameraView(QLabel):
                 self.active_annotation_tool.annotations_model = self.annotations_model
                 self.active_annotation_tool.draw()
 
-            qfromat = QImage.Format_Indexed8
-            if len(self.opencv_img.shape) == 3:  # sahpe[0] = rows, [1] = cols, [2] = channels
-                if self.opencv_img.shape[2] == 4:
-                    qfromat = QImage.Format_RGBA8888
-                else:
-                    qfromat = QImage.Format_RGB888
-
-            out_image = QImage(self.opencv_img,
-                               self.opencv_img.shape[1], self.opencv_img.shape[0],
-                               self.opencv_img.strides[0], qfromat)
-            out_image = out_image.rgbSwapped()
+            out_image = util.get_qimage_from_np_image(self.opencv_img)
             # out_image = out_image.mirrored(horizontal=True, vertical=False)
             self.setPixmap(QPixmap.fromImage(out_image))
             self.setScaledContents(True)
@@ -64,16 +54,6 @@ class CameraView(QLabel):
 
         def dragMoveEvent(self, event: QDragMoveEvent):
             if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):
-                # if self.po_drag_cursor is None:
-                #     self.dropping_physical_object = pickle.loads(event.mimeData().data(PhysicalObjectsModel.MIME_TYPE))
-                #     po_image = self.dropping_physical_object.image
-                #     pixmap = util.get_pixmap_from_np_image(po_image)
-                #     cursor = QCursor(pixmap)
-                #     self.po_drag_cursor = cursor
-                #     self.setCursor(cursor)
-                # else:
-                #     self.setCursor(self.po_drag_cursor)
-
                 event.accept()
             else:
                 event.ignore()

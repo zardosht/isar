@@ -39,8 +39,22 @@ def calc_rect_area(vertex1, vertex2):
 
 
 def get_pixmap_from_np_image(np_image):
-    height, width, channel = np_image.shape
-    bytes_per_line = 3 * width
-    qimg = QImage(np_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
-    pixmap = QPixmap.fromImage(qimg)
+    qimg = get_qimage_from_np_image(np_image)
+    return QPixmap.fromImage(qimg)
     return pixmap
+
+
+def get_qimage_from_np_image(np_image):
+    qfromat = QImage.Format_Indexed8
+    if len(np_image.shape) == 3:  # sahpe[0] = rows, [1] = cols, [2] = channels
+        if np_image.shape[2] == 4:
+            qfromat = QImage.Format_RGBA8888
+        else:
+            qfromat = QImage.Format_RGB888
+
+    out_image = QImage(np_image,
+                       np_image.shape[1], np_image.shape[0],
+                       np_image.strides[0], qfromat)
+    out_image = out_image.rgbSwapped()
+    return out_image
+
