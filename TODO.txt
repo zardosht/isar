@@ -21,8 +21,8 @@ When the service starts we start all teh object detector worker processes and jo
 When the service stops we terminate all the worker processes.
 
 
-# Search the object detectors plugin directory, find object detector packages, load the moduele
-# and populate the object_detectors and physical_objects dictionaries
+# Search the object detectors plugin directory, find object detector packages, load the moduele -- Done
+# and populate the object_detectors and physical_objects dictionaries  -- Done
 
 # load the modlue,
 # populate the dictionaries

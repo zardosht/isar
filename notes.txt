@@ -1,5 +1,23 @@
 
 
+* To add a physical object to the scene, the user has to drag and drop it to the scene.
+
+* To remove a physical object from scene, the user uses the delete tool
+
+* If a physical object of the scene is present on the table, its image is not shown, but its bounding box is shown.
+
+* If a physical object of the scene is not present on the table, its image is shown.
+
+* we don’t support multiple instances a physical object, because
+ a) the use case become too complicated,
+ b) there is no way to distinguish visually between two instances of the same object,
+ c) the use cases are limited
+
+
+
+=====================================================================
+
+[*** OBSOLETE ***]
 
 Objects can be added in two ways to the scene: 
 	a) 
