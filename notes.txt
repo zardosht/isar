@@ -1,5 +1,8 @@
 
 
+=======================================================
+
+
 * To add a physical object to the scene, the user has to drag and drop it to the scene.
 
 * To remove a physical object from scene, the user uses the delete tool
@@ -17,7 +20,7 @@
 
 =====================================================================
 
-[*** OBSOLETE ***]
+[*** OBSOLETE ***, see above. Read carefully though. Here maybe still important requirements.]
 
 Objects can be added in two ways to the scene: 
 	a) 

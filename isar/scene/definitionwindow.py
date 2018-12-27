@@ -106,7 +106,6 @@ class SceneDefinitionWindow(QDialog):
         else:
             self.annotationslist_current_changed()
 
-
     def annotationslist_current_changed(self):
         current_index = self.annotations_list.selectionModel().currentIndex()
         annotationsmodel = self.annotations_list.model()
@@ -179,6 +178,15 @@ class SceneDefinitionWindow(QDialog):
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame(flipped=True)
+
+        # TODO:
+        #  * give the camera frame to object detection servcie
+        #  * get the list of present physical objects and
+        #  * update the PhysicalObjectsModel's __present_physical_objects list
+
+        # TODO:
+        #  * later in camera view, draw bounding boxes for all the present_phys_objs instead of their images.
+
         self.camera_view.set_camera_frame(camera_frame)
 
     def closeEvent(self, QCloseEvent):

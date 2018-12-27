@@ -25,9 +25,10 @@ class CameraView(QLabel):
         def set_camera_frame(self, camera_frame):
             self.opencv_img = camera_frame.image
 
-            self.draw_scene_annotations()
             self.draw_unpresent_scene_physical_objects()
             self.draw_present_scene_physical_objects()
+
+            self.draw_scene_annotations()
 
             if self.active_annotation_tool:
                 self.active_annotation_tool.img = self.opencv_img
