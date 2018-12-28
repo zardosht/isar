@@ -1,5 +1,6 @@
 import importlib
 import logging
+import multiprocessing as mp
 import os
 import threading
 import time
@@ -83,24 +84,45 @@ class ObjectDetectionService(Service):
     def __init__(self, service_name=None):
         super().__init__(service_name)
         self._stop_event = threading.Event()
+        self.object_detector_workers = []
 
     def start(self):
         """
         Start a process for each of the object detectors.
         :return:
         """
-        pass
+        global object_detectors
+        for obj_detector_name, obj_detector in object_detectors.items():
+            request_queue = mp.JoinableQueue()
+            response_queue = mp.Queue()
+            obj_detector_worker = ObjectDetectorWorker(obj_detector, request_queue, response_queue)
+            self.object_detector_workers.append(obj_detector_worker)
 
-    def _start_detection(self):
-        while not self._stop_event.is_set():
-            time.sleep(5)
-            logger.info("Object detection.")
-            pass
+        for worker in self.object_detector_workers:
+            worker.start()
+
+    def get_present_objects(self, camera_frame):
+        t1 = time.time()
+        present_objects = {}
+        for obj_detector_worker in self.object_detector_workers:
+            obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
+
+        for obj_detector_worker in self.object_detector_workers:
+            obj_detection_response = obj_detector_worker.response_queue.get()
+            present_objects[obj_detection_response.object_detector_name] = obj_detection_response.predictions
+
+        logger.info("Finding present objects on all object detectors took {}".format(time.time() - t1))
+        return present_objects
 
     def stop(self):
+        for obj_detector_worker in self.object_detector_workers:
+            obj_detector_worker.shut_down()
+            obj_detector_worker.terminate()
+
         self._stop_event.set()
 
-    def get_physical_objects(self):
+    @staticmethod
+    def get_physical_objects():
         """
         :return: A dictionary with object detector name as key and the list of physical objects
         that this object detector can detect as value.
@@ -109,7 +131,7 @@ class ObjectDetectionService(Service):
         return physical_objects
 
 
-class ObjectDetectionResult:
+class ObjectDetectionPrediction:
     def __init__(self, lable, confidence, top_left, bottom_right):
         self.lable = lable
         self.confidnece = confidence
@@ -119,11 +141,40 @@ class ObjectDetectionResult:
 
 
 class ObjectDetectionRequest:
-    def __init__(self):
-        self.camera_frame = None
+    def __init__(self, camera_frame):
+        self.camera_frame = camera_frame
 
 
 class ObjectDetectionResponse:
-    def __init__(self):
-        self.object_detectors_name = None
-        self.predictions = None
+    def __init__(self, obj_detector_name, predictions):
+        self.object_detector_name = obj_detector_name
+        self.predictions = predictions
+
+
+class ObjectDetectorWorker(mp.Process):
+    def __init__(self, object_detector, request_queue, response_queue):
+        mp.Process.__init__(self)
+        self.object_detector = object_detector
+        self.request_queue = request_queue
+        self.response_queue = response_queue
+        self.shut_down_event = mp.Event()
+
+    def run(self):
+        while True:
+            if self.shut_down_event.is_set():
+                logger.info("Shutting down: ", self.object_detector.name)
+                self.request_queue.task_done()
+                break
+
+            obj_detection_request = self.request_queue.get()
+
+            t1 = time.time()
+            obj_detection_predictions = self.object_detector.get_predictions(obj_detection_request.camera_frame)
+            self.request_queue.task_done()
+            self.response_queue.put(ObjectDetectionResponse(self.object_detector.name, obj_detection_predictions))
+            logger.info("Detection of objects by {} took {}".format(self.object_detector.name, time.time() - t1))
+
+        return
+
+    def shut_down(self):
+        self.shut_down_event.set()

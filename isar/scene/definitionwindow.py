@@ -180,9 +180,13 @@ class SceneDefinitionWindow(QDialog):
         camera_frame = self._camera_service.get_frame(flipped=True)
 
         # TODO:
-        #  * give the camera frame to object detection servcie
+        #  * give the camera frame to object detection service
         #  * get the list of present physical objects and
         #  * update the PhysicalObjectsModel's __present_physical_objects list
+
+        present_phys_objs = self._object_detection_service.get_present_objects(camera_frame)
+
+        print(present_phys_objs)
 
         # TODO:
         #  * later in camera view, draw bounding boxes for all the present_phys_objs instead of their images.
