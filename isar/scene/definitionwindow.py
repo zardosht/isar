@@ -184,14 +184,16 @@ class SceneDefinitionWindow(QDialog):
         #  * get the list of present physical objects and
         #  * update the PhysicalObjectsModel's __present_physical_objects list
 
-        present_phys_objs = self._object_detection_service.get_present_objects(camera_frame)
-
-        print(present_phys_objs)
+        self._object_detection_service.get_present_objects(camera_frame, callback=self.on_obj_detection_complete)
 
         # TODO:
         #  * later in camera view, draw bounding boxes for all the present_phys_objs instead of their images.
 
         self.camera_view.set_camera_frame(camera_frame)
+
+    @staticmethod
+    def on_obj_detection_complete(present_phys_objs):
+        print(present_phys_objs)
 
     def closeEvent(self, QCloseEvent):
         self._timer.stop()

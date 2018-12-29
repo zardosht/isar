@@ -5,6 +5,7 @@ import os
 import threading
 import time
 import traceback
+from queue import Queue, Full
 
 from isar.services.service import Service
 
@@ -33,6 +34,8 @@ object_detectors = {}
 
 OBJECT_DETECTOR_MODULE_FILENAME = "objectdetector.py"
 OBJECT_DETECTOR_MODULE_NAME = "objectdetector"
+
+POISON_PILL = "poison_pill"
 
 
 def init():
@@ -85,6 +88,7 @@ class ObjectDetectionService(Service):
         super().__init__(service_name)
         self._stop_event = threading.Event()
         self.object_detector_workers = []
+        self.observer_thread: threading.Thread = None
 
     def start(self):
         """
@@ -101,25 +105,44 @@ class ObjectDetectionService(Service):
         for worker in self.object_detector_workers:
             worker.start()
 
-    def get_present_objects(self, camera_frame):
-        t1 = time.time()
-        present_objects = {}
-        for obj_detector_worker in self.object_detector_workers:
-            obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
+        self.observer_thread = threading.Thread(target=self.wait_for_object_detection)
+        self.observer_thread.request_queue: Queue = Queue(maxsize=1)
+        self.observer_thread.start()
 
-        for obj_detector_worker in self.object_detector_workers:
-            obj_detection_response = obj_detector_worker.response_queue.get()
-            present_objects[obj_detection_response.object_detector_name] = obj_detection_response.predictions
+    def wait_for_object_detection(self):
+        while not self._stop_event.is_set():
+            camera_frame = self.observer_thread.request_queue.get()
+            if camera_frame == POISON_PILL:
+                self.observer_thread.request_queue.task_done()
+                break
 
-        logger.info("Finding present objects on all object detectors took {}".format(time.time() - t1))
-        return present_objects
+            t1 = time.time()
+            present_objects = {}
+            for obj_detector_worker in self.object_detector_workers:
+                obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
+
+            for obj_detector_worker in self.object_detector_workers:
+                obj_detection_response = obj_detector_worker.response_queue.get()
+                present_objects[obj_detection_response.object_detector_name] = obj_detection_response.predictions
+
+            logger.info("Finding present objects on all object detectors took {}".format(time.time() - t1))
+            self.observer_thread.request_queue.task_done()
+            if self.observer_thread.callback is not None:
+                self.observer_thread.callback(present_objects)
+
+    def get_present_objects(self, camera_frame, callback=None):
+        if not self.observer_thread.request_queue.full():
+            self.observer_thread.request_queue.put(camera_frame, block=False)
+            self.observer_thread.callback = callback
 
     def stop(self):
+        self.observer_thread.request_queue.put(POISON_PILL)
+        self.observer_thread.join(timeout=2)
+        self._stop_event.set()
+
         for obj_detector_worker in self.object_detector_workers:
             obj_detector_worker.shut_down()
             obj_detector_worker.terminate()
-
-        self._stop_event.set()
 
     @staticmethod
     def get_physical_objects():
