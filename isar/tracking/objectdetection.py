@@ -117,18 +117,24 @@ class ObjectDetectionService(Service):
                 break
 
             t1 = time.time()
-            present_objects = {}
+            phys_obj_predictions = {}
             for obj_detector_worker in self.object_detector_workers:
                 obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
 
             for obj_detector_worker in self.object_detector_workers:
                 obj_detection_response = obj_detector_worker.response_queue.get()
-                present_objects[obj_detection_response.object_detector_name] = obj_detection_response.predictions
+                phys_obj_predictions[obj_detection_response.object_detector_name] = obj_detection_response.predictions
 
             logger.info("Finding present objects on all object detectors took {}".format(time.time() - t1))
             self.observer_thread.request_queue.task_done()
+
             if self.observer_thread.callback is not None:
-                self.observer_thread.callback(present_objects)
+                try:
+                    self.observer_thread.callback(phys_obj_predictions)
+                except Exception as exp:
+                    logger.error("Error in calling object detection callback.")
+                    logger.error(exp)
+                    traceback.print_tb(exp.__traceback__)
 
     def get_present_objects(self, camera_frame, callback=None):
         if not self.observer_thread.request_queue.full():
@@ -155,9 +161,9 @@ class ObjectDetectionService(Service):
 
 
 class ObjectDetectionPrediction:
-    def __init__(self, lable, confidence, top_left, bottom_right):
-        self.lable = lable
-        self.confidnece = confidence
+    def __init__(self, label, confidence, top_left, bottom_right):
+        self.label = label
+        self.confidence = confidence
         self.top_left = top_left
         self.bottom_right = bottom_right
         self.image = None

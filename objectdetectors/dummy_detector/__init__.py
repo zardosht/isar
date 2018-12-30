@@ -16,7 +16,7 @@ with open(physical_objects_json_path) as f:
 for po_dict in po_dicts:
     po = PhysicalObject()
     po.__dict__.update(po_dict)
-    po.image = cv2.imread(str(template_images_path) + po.image_path)
+    po.template_image = cv2.imread(str(template_images_path) + po.image_path)
     physical_objects.append(po)
 
 

@@ -25,8 +25,7 @@ class CameraView(QLabel):
         def set_camera_frame(self, camera_frame):
             self.opencv_img = camera_frame.image
 
-            self.draw_unpresent_scene_physical_objects()
-            self.draw_present_scene_physical_objects()
+            self.draw_scene_physical_objects()
 
             self.draw_scene_annotations()
 
@@ -48,31 +47,17 @@ class CameraView(QLabel):
             for annotation in self.annotations_model.get_annotations():
                 annotationtool.draw_annotation(self.opencv_img, annotation)
 
-        def draw_unpresent_scene_physical_objects(self):
+        def draw_scene_physical_objects(self):
             if not self.physical_objects_model or not self.physical_objects_model.get_scene_physical_objects():
                 return
 
             scene_phys_objs = self.physical_objects_model.get_scene_physical_objects()
-            present_instances = self.physical_objects_model.get_num_present_instances()
-            draw = False
+            present_phys_objs = self.physical_objects_model.get_present_physical_objects()
             for phys_obj in scene_phys_objs:
-                name = phys_obj.name
-                if name in present_instances:
-                    if present_instances[name] == 0:
-                        draw = True
-                    else:
-                        present_instances[name] -= 1
-                        draw = False
-                        continue
+                if phys_obj in present_phys_objs:
+                    physicalobjecttool.draw_physical_object_bounding_box(self.opencv_img, phys_obj)
                 else:
-                    draw = True
-                if draw:
-                    physicalobjecttool.draw_physical_object(self.opencv_img, phys_obj)
-                    draw = False
-
-        def draw_present_scene_physical_objects(self):
-            # TODO: draw bounding boxes
-            pass
+                    physicalobjecttool.draw_physical_object_image(self.opencv_img, phys_obj)
 
         def dragEnterEvent(self, event: QDragEnterEvent):
             if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):

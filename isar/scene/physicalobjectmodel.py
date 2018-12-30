@@ -38,7 +38,7 @@ class PhysicalObjectsModel(QAbstractListModel):
         self.__scene: Scene = None
         self.__all_physical_objects = None
         self.__scene_physical_objects = None
-        self.__present_physical_objects = {}
+        self.__present_physical_objects = None
 
     def set_scene(self, scene: Scene):
         self.__scene = scene
@@ -105,17 +105,11 @@ class PhysicalObjectsModel(QAbstractListModel):
     def get_scene_physical_objects(self):
         return tuple(self.__scene_physical_objects)
 
-    # def set_present_physical_objects(self, present_phy_objs):
-    #     self.__present_physical_objects = present_phy_objs
+    def set_present_physical_objects(self, present_phy_objs):
+        self.__present_physical_objects = present_phy_objs
 
     def get_present_physical_objects(self):
         return self.__present_physical_objects
-
-    def get_num_present_instances(self):
-        num_present_instances = {}
-        for key in self.__present_physical_objects.keys():
-            num_present_instances[key] = len(self.__present_physical_objects[key])
-        return num_present_instances.copy()
 
     def add_physical_object_to_scene(self, po):
         self.__scene.add_physical_object(po)
@@ -124,8 +118,17 @@ class PhysicalObjectsModel(QAbstractListModel):
 class PhysicalObject:
     def __init__(self):
         self.name = ""
-        self.image_path = ""
-        self.image = None
+        self.template_image_path = ""
+        self.template_image = None
+        self.scene_image = None
         self.annotations = []
-        self.scene_position = None
+        self.detection_confidence = None
+        self.top_left = None
+        self.bottom_right = None
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        return self.name == other.name
 
