@@ -1,11 +1,13 @@
 import logging
+from typing import List
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex
 
 from isar.scene import util
 from isar.scene.annotationpropertymodel import FloatTupleAnnotationProperty, IntAnnotationProperty, \
-    ColorAnnotationProperty, FloatAnnotationProperty
+    ColorAnnotationProperty, FloatAnnotationProperty, PhysicalObjectAnnotationProperty, AnnotationProperty, \
+    BooleanAnnotationProperty
 from isar.scene.physicalobjectmodel import PhysicalObject
 
 
@@ -122,10 +124,13 @@ class AnnotationsModel(QAbstractListModel):
 
 class Annotation:
     def __init__(self):
-        self.position = None
-        self.attached_to: PhysicalObject = None
-        self.updateOrientation = False
-        self.properties = None
+        self.properties: List[AnnotationProperty] = []
+
+        self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None)
+        self.properties.append(self.attached_to)
+
+        self.updateOrientation = BooleanAnnotationProperty("Update Orientation", False)
+        self.properties.append(self.updateOrientation)
 
 
 """
@@ -170,7 +175,6 @@ class LineAnnotation(Annotation):
 
     def __init__(self):
         super().__init__()
-        self.properties = []
 
         self.start = FloatTupleAnnotationProperty("Start", [0.0, 0.0])
         self.properties.append(self.start)
@@ -191,7 +195,7 @@ class RectangleAnnotation(Annotation):
 
     def __init__(self):
         super(RectangleAnnotation, self).__init__()
-        self.properties = []
+
         self.color = ColorAnnotationProperty("Color", (255, 0, 255))
         self.properties.append(self.color)
 
@@ -211,7 +215,7 @@ class CircleAnnotation(Annotation):
 
     def __init__(self):
         super(CircleAnnotation, self).__init__()
-        self.properties = []
+
         self.color = ColorAnnotationProperty("Color", (125, 125, 255))
         self.properties.append(self.color)
 
