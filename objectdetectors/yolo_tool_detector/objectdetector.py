@@ -26,7 +26,7 @@ def get_predictions(frame):
 
     time.sleep(1)
     predictions = []
-    predictions.append(ObjectDetectionPrediction("Pump Pliers", 0.8, (50, 70), (100, 120)))
+    predictions.append(ObjectDetectionPrediction("Pump Pliers", 0.8, (500, 300), (600, 500)))
     return predictions
 
 
