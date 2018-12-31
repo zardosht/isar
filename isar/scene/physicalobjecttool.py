@@ -10,10 +10,18 @@ colors = [tuple(255 * np.random.rand(3)) for i in range(10)]
 
 
 def draw_physical_object_image(opencv_img, phys_obj: PhysicalObject):
-    height, width, _ = phys_obj.template_image.shape
+    ti_height, ti_width, _ = phys_obj.template_image.shape
+    scene_height, scene_width, _ = opencv_img.shape
     rel_x, rel_y = phys_obj.scene_position
     x, y = util.relative_coordinates_to_image_coordinates(opencv_img.shape, rel_x, rel_y)
-    opencv_img[y:y + height, x:x + width] = phys_obj.template_image
+
+    end_height_index = min(y + ti_height, scene_height)
+    end_width_index = min(x + ti_width, scene_width)
+
+    cropped_height = min(ti_height, scene_height - y)
+    cropped_width = min(ti_width, scene_width - x)
+
+    opencv_img[y:end_height_index, x:end_width_index] = phys_obj.template_image[0:cropped_height, 0:cropped_width]
 
 
 def draw_physical_object_bounding_box(opencv_img, phys_obj: PhysicalObject):
