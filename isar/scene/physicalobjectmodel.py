@@ -72,8 +72,11 @@ class PhysicalObjectsModel(QAbstractListModel):
         return [PhysicalObjectsModel.MIME_TYPE]
 
     def mimeData(self, indexs):
-        mime_data = QMimeData()
         physical_object = self.__all_physical_objects[indexs[0].row()]
+        if physical_object in self.__scene_physical_objects:
+            return None
+
+        mime_data = QMimeData()
         bstream = pickle.dumps(physical_object)
         mime_data.setData(PhysicalObjectsModel.MIME_TYPE, bstream)
         return mime_data

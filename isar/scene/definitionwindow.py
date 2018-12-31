@@ -236,6 +236,11 @@ class PhysicalObjectsView(QListView):
 
         selected_indices = self.selectedIndexes()
         mime_data = self.model().mimeData(selected_indices)
+        # If the phys object is already on the scene, we cannot drop it again.
+        # The model return a None as mime_data.
+        if not mime_data:
+            return
+
         drag = QDrag(self)
         drag.setMimeData(mime_data)
         if self.selected_po is not None:
