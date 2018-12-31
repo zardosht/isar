@@ -124,10 +124,28 @@ class PhysicalObject:
         self.template_image_path = ""
         self.template_image = None
         self.scene_image = None
+        self.__scene_position = None
         self.annotations = []
         self.detection_confidence = None
-        self.top_left = None
+        self.__top_left = None
         self.bottom_right = None
+
+    @property
+    def top_left(self):
+        return self.__top_left
+
+    @top_left.setter
+    def top_left(self, value):
+        self.__top_left = value
+        self.__scene_position = value
+
+    @property
+    def scene_position(self):
+        return self.__scene_position
+
+    @scene_position.setter
+    def scene_position(self, scene_position):
+        self.__scene_position = scene_position
 
     def __hash__(self):
         return hash(self.name)

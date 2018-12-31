@@ -99,3 +99,7 @@ class CameraFrame:
         self.image = image
         self.frame_number = frame_number
 
+    @property
+    def size(self):
+        return self.image.shape[1], self.image.shape[0]
+

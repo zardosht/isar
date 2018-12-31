@@ -81,9 +81,9 @@ class CameraView(QLabel):
                     self.dropped_physical_object = dropped_po
 
                     self.physical_objects_model.add_physical_object_to_scene(dropped_po)
-                    dropped_po.scene_position = \
-                        (event.pos().x() / self.size().width(), event.pos().y() / self.size().height())
-
+                    camera_view_size = (self.size().width(), self.size().height())
+                    dropped_po.scene_position = util.image_coordinates_to_relative_coordinates(
+                        camera_view_size, event.pos().x(), event.pos().y())
                     event.setDropAction(Qt.CopyAction)
                     event.accept()
                 else:

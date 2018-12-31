@@ -13,7 +13,8 @@ description = "Dummy detector"
 def get_predictions(frame):
     time.sleep(1)
     predictions = []
-    predictions.append(ObjectDetectionPrediction("Horse", 0.8, (201, 203), (301, 303)))
+    prediction = ObjectDetectionPrediction("Horse", 0.8, (201, 203), (301, 303), frame.size)
+    predictions.append(prediction)
     return predictions
 
 

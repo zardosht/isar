@@ -75,3 +75,12 @@ def relative_distance_to_image_coordinates(opencv_img_shape, rel_distance):
     return int(img_dist)
 
 
+def image_coordinates_to_relative_coordinates(image_dim, x, y):
+    return x / image_dim[0], y / image_dim[1]
+
+
+
+
+
+
+

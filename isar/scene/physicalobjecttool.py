@@ -27,7 +27,9 @@ def draw_physical_object_image(opencv_img, phys_obj: PhysicalObject):
 def draw_physical_object_bounding_box(opencv_img, phys_obj: PhysicalObject):
     color = random.choice(colors)
     text = '{}: {:.0f}%'.format(phys_obj.name, phys_obj.detection_confidence * 100)
-    opencv_img = cv2.rectangle(opencv_img, phys_obj.top_left, phys_obj.bottom_right, color, 2)
-    cv2.putText(opencv_img, text, phys_obj.top_left, cv2.FONT_HERSHEY_COMPLEX, .5, (0, 0, 0), 1)
+    tl = util.relative_coordinates_to_image_coordinates(opencv_img.shape, *phys_obj.top_left)
+    br = util.relative_coordinates_to_image_coordinates(opencv_img.shape, *phys_obj.bottom_right)
+    opencv_img = cv2.rectangle(opencv_img, tl, br, color, 2)
+    cv2.putText(opencv_img, text, tl, cv2.FONT_HERSHEY_COMPLEX, .5, (0, 0, 0), 1)
 
 

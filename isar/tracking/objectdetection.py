@@ -161,12 +161,31 @@ class ObjectDetectionService(Service):
 
 
 class ObjectDetectionPrediction:
-    def __init__(self, label, confidence, top_left, bottom_right):
+    def __init__(self, label, confidence, top_left, bottom_right, camera_frame_size):
         self.label = label
         self.confidence = confidence
+        self.camera_frame_size = camera_frame_size
         self.top_left = top_left
         self.bottom_right = bottom_right
         self.image = None
+
+    @property
+    def top_left(self):
+        return self._top_left
+
+    @top_left.setter
+    def top_left(self, value):
+        self._top_left = \
+            (value[0] / self.camera_frame_size[0], value[1] / self.camera_frame_size[1])
+
+    @property
+    def bottom_right(self):
+        return self._bottom_right
+
+    @bottom_right.setter
+    def bottom_right(self, value):
+        self._bottom_right = \
+            (value[0] / self.camera_frame_size[0], value[1] / self.camera_frame_size[1])
 
 
 class ObjectDetectionRequest:

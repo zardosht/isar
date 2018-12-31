@@ -202,7 +202,7 @@ class SceneDefinitionWindow(QDialog):
         self._timer.stop()
         self._camera_service.stop_capture()
 
-    def get_scale_factor(self):
+    def get_camera_view_scale_factor(self):
         capture_size = self._camera_service.get_camera_capture_size()
         if capture_size is not None:
             width_scale = self.camera_view.geometry().width() / capture_size[0]
@@ -245,7 +245,7 @@ class PhysicalObjectsView(QListView):
         drag.setMimeData(mime_data)
         if self.selected_po is not None:
             pixmap: QPixmap = util.get_pixmap_from_np_image(self.selected_po.template_image)
-            scale_factor = self.main_window.get_scale_factor()
+            scale_factor = self.main_window.get_camera_view_scale_factor()
             width = scale_factor[0] * pixmap.width()
             height = scale_factor[1] * pixmap.height()
             drag.setPixmap(pixmap.scaled(width, height))
