@@ -62,14 +62,16 @@ class CircleAnnotationTool(AnnotationTool):
         self.annotation = CircleAnnotation()
 
         # convert mouse coordinates to relative image coordinates
-        rel_x = event.x() / camera_view.size().width()
-        rel_y = event.y() / camera_view.size().height()
+        camera_view_size = (camera_view.size().width(), camera_view.size().height())
+        rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
+            camera_view_size, event.pos().x(), event.pos().y())
         self.annotation.center.set_value((rel_x, rel_y))
 
     def mouse_move_event(self, camera_view, event):
         if self.drawing:
-            rel_x = event.x() / camera_view.size().width()
-            rel_y = event.y() / camera_view.size().height()
+            camera_view_size = (camera_view.size().width(), camera_view.size().height())
+            rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
+                camera_view_size, event.pos().x(), event.pos().y())
             radius = util.calc_distance(self.annotation.center.get_value(), (rel_x, rel_y))
             self.annotation.radius.set_value(radius)
 
@@ -114,14 +116,16 @@ class RectangleAnnotationTool(AnnotationTool):
         self.annotation = RectangleAnnotation()
 
         # convert mouse coordinates to relative image coordinates
-        rel_x = event.x() / camera_view.size().width()
-        rel_y = event.y() / camera_view.size().height()
+        camera_view_size = (camera_view.size().width(), camera_view.size().height())
+        rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
+            camera_view_size, event.pos().x(), event.pos().y())
         self.annotation.vertex1.set_value((rel_x, rel_y))
 
     def mouse_move_event(self, camera_view, event):
         if self.drawing:
-            rel_x = event.x() / camera_view.size().width()
-            rel_y = event.y() / camera_view.size().height()
+            camera_view_size = (camera_view.size().width(), camera_view.size().height())
+            rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
+                camera_view_size, event.pos().x(), event.pos().y())
             self.annotation.vertex2.set_value((rel_x, rel_y))
 
     def mouse_release_event(self, camera_view, event):
@@ -166,14 +170,16 @@ class LineAnnotationTool(AnnotationTool):
         self.annotation = LineAnnotation()
 
         # convert mouse coordinates to relative image coordinates
-        rel_x = event.x() / camera_view.size().width()
-        rel_y = event.y() / camera_view.size().height()
+        camera_view_size = (camera_view.size().width(), camera_view.size().height())
+        rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
+            camera_view_size, event.pos().x(), event.pos().y())
         self.annotation.start.set_value((rel_x, rel_y))
 
     def mouse_move_event(self, camera_view, event):
         if self.drawing:
-            rel_x = event.x() / camera_view.size().width()
-            rel_y = event.y() / camera_view.size().height()
+            camera_view_size = (camera_view.size().width(), camera_view.size().height())
+            rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
+                camera_view_size, event.pos().x(), event.pos().y())
             self.annotation.end.set_value((rel_x, rel_y))
 
     def mouse_release_event(self, camera_view, event):

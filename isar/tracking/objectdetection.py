@@ -226,3 +226,5 @@ class ObjectDetectorWorker(mp.Process):
 
     def shut_down(self):
         self.shut_down_event.set()
+
+

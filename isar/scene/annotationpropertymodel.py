@@ -69,6 +69,17 @@ class AnnotationPropertiesModel(QAbstractTableModel):
                 return ["Name", "Value"][section]
 
 
+def get_literal_from_str(str_val):
+    value = None
+    if isinstance(str_val, str):
+        try:
+            value = literal_eval(str_val)
+        except Exception as e:
+            logger.error("Error converting value:", e)
+        finally:
+            return value
+
+
 class AnnotationProperty:
     def __init__(self, name, value):
         self.name = name
@@ -78,16 +89,7 @@ class AnnotationProperty:
         return str(self._value)
 
     def set_value(self, value):
-        if isinstance(value, str):
-            try:
-                self._value = literal_eval(value)
-                return True
-            except Exception as e:
-                logger.error("Error converting value:", e)
-                return False
-        else:
-            self._value = value
-            return True
+        raise TypeError("Must be implemented by subclasses")
 
     def get_value(self):
         return self._value
@@ -96,6 +98,30 @@ class AnnotationProperty:
 class ColorAnnotationProperty(AnnotationProperty):
     def __init__(self, name, value):
         super().__init__(name, value)
+
+    def set_value(self, value):
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal and \
+                    isinstance(literal, tuple) and \
+                    len(literal) == 3 and \
+                    isinstance(literal[0], int) and \
+                    isinstance(literal[1], int) and \
+                    isinstance(literal[2], int):
+                self._value = literal
+                return True
+            else:
+                return False
+        else:
+            if isinstance(value, tuple) and \
+                    len(value) == 2 and \
+                    isinstance(value[0], int) and \
+                    isinstance(value[1], int) and \
+                    isinstance(value[2], int):
+                self._value = value
+                return True
+            else:
+                return False
 
 
 class FilePathAnnotationProperty(AnnotationProperty):
@@ -108,18 +134,64 @@ class PhysicalObjectAnnotationProperty(AnnotationProperty):
         super().__init__(name, value)
 
 
+class RelativeLengthAnnotationProperty(AnnotationProperty):
+    def get_str_value(self):
+        return "{:.2f}".format(self._value * 100)
+
+    def set_value(self, value):
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal:
+                self._value = literal / 100
+                return True
+            else:
+                return False
+        else:
+            if isinstance(value, (float, int)):
+                self._value = float(value)
+                return True
+            else:
+                return False
+
+
+class RelativePositionAnnotationProperty(AnnotationProperty):
+    def get_str_value(self):
+        return "({})".format(", ".join("{:.2f}".format(x * 100) for x in self._value))
+
+    def set_value(self, value):
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal and isinstance(literal, tuple) and len(literal) == 2:
+                    self._value = tuple(x / 100 for x in literal)
+                    return True
+            else:
+                return False
+        else:
+            if isinstance(value, tuple) and len(value) == 2:
+                self._value = tuple(float(x) for x in value)
+                return True
+            else:
+                return False
+
+
 class FloatTupleAnnotationProperty(AnnotationProperty):
     def __init__(self, name, value):
         super().__init__(name, value)
 
     def set_value(self, value):
-        old_value = self._value
-        result = super().set_value(value)
-        if result and isinstance(self._value, tuple) and len(self._value) == 2 and isinstance(self._value[0], float) and isinstance(self._value[1], float):
-            return True
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal and isinstance(literal, tuple) and len(literal) == 2:
+                    self._value = tuple(float(x) for x in literal)
+                    return True
+            else:
+                return False
         else:
-            self._value = old_value
-            return False
+            if isinstance(value, tuple) and len(value) == 2:
+                self._value = tuple(float(x) for x in value)
+                return True
+            else:
+                return False
 
 
 class IntTupleAnnotationProperty(AnnotationProperty):
@@ -127,17 +199,26 @@ class IntTupleAnnotationProperty(AnnotationProperty):
         super().__init__(name, value)
 
     def set_value(self, value):
-        old_value = self._value
-        result = super().set_value(value)
-        if result and \
-                isinstance(self._value, tuple) and \
-                len(self._value) == 2 and\
-                isinstance(self._value[0], int) and\
-                isinstance(self._value[1], int):
-            return True
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal and \
+                    isinstance(literal, tuple) and \
+                    len(literal) == 2 and \
+                    isinstance(literal[0], int) and \
+                    isinstance(literal[1], int):
+                self._value = literal
+                return True
+            else:
+                return False
         else:
-            self._value = old_value
-            return False
+            if isinstance(value, tuple) and \
+                    len(value) == 2 and \
+                    isinstance(value[0], int) and \
+                    isinstance(value[1], int):
+                self._value = value
+                return True
+            else:
+                return False
 
 
 class FloatAnnotationProperty(AnnotationProperty):
@@ -145,13 +226,19 @@ class FloatAnnotationProperty(AnnotationProperty):
         super().__init__(name, value)
 
     def set_value(self, value):
-        old_value = self._value
-        result = super().set_value(value)
-        if result and isinstance(self._value, float):
-            return True
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal and isinstance(literal, (float, int)):
+                self._value = float(literal)
+                return True
+            else:
+                return False
         else:
-            self._value = old_value
-            return False
+            if isinstance(value, (float, int)):
+                self._value = value
+                return True
+            else:
+                return False
 
 
 class IntAnnotationProperty(AnnotationProperty):
@@ -159,13 +246,19 @@ class IntAnnotationProperty(AnnotationProperty):
         super().__init__(name, value)
 
     def set_value(self, value):
-        old_value = self._value
-        result = super().set_value(value)
-        if result and isinstance(self._value, int):
-            return True
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal and isinstance(literal, int):
+                self._value = literal
+                return True
+            else:
+                return False
         else:
-            self._value = old_value
-            return False
+            if isinstance(value, int):
+                self._value = value
+                return True
+            else:
+                return False
 
 
 class BooleanAnnotationProperty(AnnotationProperty):

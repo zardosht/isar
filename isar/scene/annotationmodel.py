@@ -7,7 +7,7 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex
 from isar.scene import util
 from isar.scene.annotationpropertymodel import FloatTupleAnnotationProperty, IntAnnotationProperty, \
     ColorAnnotationProperty, FloatAnnotationProperty, PhysicalObjectAnnotationProperty, AnnotationProperty, \
-    BooleanAnnotationProperty
+    BooleanAnnotationProperty, RelativePositionAnnotationProperty, RelativeLengthAnnotationProperty
 from isar.scene.physicalobjectmodel import PhysicalObject
 
 
@@ -176,10 +176,10 @@ class LineAnnotation(Annotation):
     def __init__(self):
         super().__init__()
 
-        self.start = FloatTupleAnnotationProperty("Start", [0.0, 0.0])
+        self.start = RelativePositionAnnotationProperty("Start", [0.0, 0.0])
         self.properties.append(self.start)
 
-        self.end = FloatTupleAnnotationProperty("End", None)
+        self.end = RelativePositionAnnotationProperty("End", None)
         self.properties.append(self.end)
 
         self.thikness = IntAnnotationProperty("Thikness", 3)
@@ -202,10 +202,10 @@ class RectangleAnnotation(Annotation):
         self.thikness = IntAnnotationProperty("Thikness", 3)
         self.properties.append(self.thikness)
 
-        self.vertex1 = FloatTupleAnnotationProperty("Vertex1", [0.0, 0.0])
+        self.vertex1 = RelativePositionAnnotationProperty("Vertex1", [0.0, 0.0])
         self.properties.append(self.vertex1)
 
-        self.vertex2 = FloatTupleAnnotationProperty("Vertex2", None)
+        self.vertex2 = RelativePositionAnnotationProperty("Vertex2", None)
         self.properties.append(self.vertex2)
 
 
@@ -219,10 +219,10 @@ class CircleAnnotation(Annotation):
         self.color = ColorAnnotationProperty("Color", (125, 125, 255))
         self.properties.append(self.color)
 
-        self.center = FloatTupleAnnotationProperty("Center", [0.0, 0.0])
+        self.center = RelativePositionAnnotationProperty("Center", [0.0, 0.0])
         self.properties.append(self.center)
 
-        self.radius = FloatAnnotationProperty("Radius", None)
+        self.radius = RelativeLengthAnnotationProperty("Radius", None)
         self.properties.append(self.radius)
 
         self.thikness = IntAnnotationProperty("Thikness", 3)
