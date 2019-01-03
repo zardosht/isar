@@ -126,10 +126,10 @@ class Annotation:
     def __init__(self):
         self.properties: List[AnnotationProperty] = []
 
-        self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None)
+        self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None, self)
         self.properties.append(self.attached_to)
 
-        self.updateOrientation = BooleanAnnotationProperty("Update Orientation", False)
+        self.updateOrientation = BooleanAnnotationProperty("Update Orientation", False, self)
         self.properties.append(self.updateOrientation)
 
 
@@ -176,16 +176,16 @@ class LineAnnotation(Annotation):
     def __init__(self):
         super().__init__()
 
-        self.start = RelativePositionAnnotationProperty("Start", [0.0, 0.0])
+        self.start = RelativePositionAnnotationProperty("Start", [0.0, 0.0], self)
         self.properties.append(self.start)
 
-        self.end = RelativePositionAnnotationProperty("End", None)
+        self.end = RelativePositionAnnotationProperty("End", None, self)
         self.properties.append(self.end)
 
-        self.thikness = IntAnnotationProperty("Thikness", 3)
+        self.thikness = IntAnnotationProperty("Thikness", 3, self)
         self.properties.append(self.thikness)
 
-        self.color = ColorAnnotationProperty("Color", (0, 255, 255))
+        self.color = ColorAnnotationProperty("Color", (0, 255, 255), self)
         self.properties.append(self.color)
 
 
@@ -196,16 +196,16 @@ class RectangleAnnotation(Annotation):
     def __init__(self):
         super(RectangleAnnotation, self).__init__()
 
-        self.color = ColorAnnotationProperty("Color", (255, 0, 255))
+        self.color = ColorAnnotationProperty("Color", (255, 0, 255), self)
         self.properties.append(self.color)
 
-        self.thikness = IntAnnotationProperty("Thikness", 3)
+        self.thikness = IntAnnotationProperty("Thikness", 3, self)
         self.properties.append(self.thikness)
 
-        self.vertex1 = RelativePositionAnnotationProperty("Vertex1", [0.0, 0.0])
+        self.vertex1 = RelativePositionAnnotationProperty("Vertex1", [0.0, 0.0], self)
         self.properties.append(self.vertex1)
 
-        self.vertex2 = RelativePositionAnnotationProperty("Vertex2", None)
+        self.vertex2 = RelativePositionAnnotationProperty("Vertex2", None, self)
         self.properties.append(self.vertex2)
 
 
@@ -216,16 +216,16 @@ class CircleAnnotation(Annotation):
     def __init__(self):
         super(CircleAnnotation, self).__init__()
 
-        self.color = ColorAnnotationProperty("Color", (125, 125, 255))
+        self.color = ColorAnnotationProperty("Color", (125, 125, 255), self)
         self.properties.append(self.color)
 
-        self.center = RelativePositionAnnotationProperty("Center", [0.0, 0.0])
+        self.center = RelativePositionAnnotationProperty("Center", [0.0, 0.0], self)
         self.properties.append(self.center)
 
-        self.radius = RelativeLengthAnnotationProperty("Radius", None)
+        self.radius = RelativeLengthAnnotationProperty("Radius", None, self)
         self.properties.append(self.radius)
 
-        self.thikness = IntAnnotationProperty("Thikness", 3)
+        self.thikness = IntAnnotationProperty("Thikness", 3, self)
         self.properties.append(self.thikness)
 
 

@@ -3,6 +3,8 @@ from ast import literal_eval
 from PyQt5.QtCore import QAbstractTableModel, Qt, QModelIndex
 from PyQt5.QtWidgets import QItemDelegate, QComboBox
 
+from isar.scene.physicalobjectmodel import PhysicalObject
+
 logger = logging.getLogger("isar.annotationpropertymodel")
 
 
@@ -90,7 +92,7 @@ class PhysicalObjectComboDelegate(QItemDelegate):
     def __init__(self):
         super().__init__()
         self.phys_obj_model = None
-        self.combo_items = None
+        self.combo_items = []
 
     def createEditor(self, parent, option, index: QModelIndex):
         if not self.phys_obj_model:
@@ -102,9 +104,25 @@ class PhysicalObjectComboDelegate(QItemDelegate):
         annotation_property = index.model().get_annotation_property(index)
         if isinstance(annotation_property, PhysicalObjectAnnotationProperty):
             combo = QComboBox(parent)
-            self.combo_items = self.phys_obj_model.get_scene_physical_objects()
+            self.combo_items.clear()
+            self.combo_items.append(None)
+            self.combo_items.extend(self.phys_obj_model.get_scene_physical_objects())
             combo.clear()
-            combo.addItems(phys_obj.name for phys_obj in self.combo_items)
+            for phys_obj in self.combo_items:
+                if phys_obj is not None:
+                    combo.addItem(phys_obj.name)
+                else:
+                    combo.addItem("None")
+
+            if annotation_property.get_value() is None:
+                combo.setCurrentIndex(0)
+            else:
+                index = -1
+                for phys_obj in self.combo_items:
+                    index += 1
+                    if phys_obj is not None and phys_obj.name == annotation_property.get_value().name:
+                        combo.setCurrentIndex(index)
+
             combo.currentIndexChanged.connect(self.current_index_changed)
             return combo
         else:
@@ -113,12 +131,13 @@ class PhysicalObjectComboDelegate(QItemDelegate):
     def setModelData(self, editor, model, index):
         if isinstance(editor, QComboBox):
             # TODO: find the property that requires a phys obj value and set its value
-            combo_index = editor.currentIndex()
-            if combo_index == -1:
-                return
-            phys_obj = self.combo_items[combo_index]
-            # model.setData(index, text)
-            print('\t\t\t ...setModelData() 1', phys_obj)
+            annotation_property = index.model().get_annotation_property(index)
+            if isinstance(annotation_property, PhysicalObjectAnnotationProperty):
+                combo_index = editor.currentIndex()
+                if combo_index == -1:
+                    return
+                phys_obj = self.combo_items[combo_index]
+                model.setData(index, phys_obj, Qt.EditRole)
         else:
             super().setModelData(editor, model, index)
 
@@ -127,9 +146,10 @@ class PhysicalObjectComboDelegate(QItemDelegate):
 
 
 class AnnotationProperty:
-    def __init__(self, name, value):
+    def __init__(self, name, value, annotation):
         self.name = name
         self._value = value
+        self.annotation = annotation
 
     def get_str_value(self):
         return str(self._value)
@@ -142,8 +162,8 @@ class AnnotationProperty:
 
 
 class ColorAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
+    def __init__(self, name, value, annotation):
+        super().__init__(name, value, annotation)
 
     def set_value(self, value):
         if isinstance(value, str):
@@ -171,13 +191,29 @@ class ColorAnnotationProperty(AnnotationProperty):
 
 
 class FilePathAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
+    pass
 
 
 class PhysicalObjectAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
+    def get_str_value(self):
+        if self._value is None:
+            return "None"
+        else:
+            return self._value.name
+
+    def set_value(self, value):
+        old_value = self._value
+        if isinstance(value, PhysicalObject):
+            value.annotations.append(self.annotation)
+            self._value = value
+            return True
+        elif value is None:
+            self._value = None
+            if old_value is not None:
+                old_value.annotations.remove(self.annotation)
+            return True
+        else:
+            return False
 
 
 class RelativeLengthAnnotationProperty(AnnotationProperty):
@@ -221,9 +257,6 @@ class RelativePositionAnnotationProperty(AnnotationProperty):
 
 
 class FloatTupleAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
-
     def set_value(self, value):
         if isinstance(value, str):
             literal = get_literal_from_str(value)
@@ -241,9 +274,6 @@ class FloatTupleAnnotationProperty(AnnotationProperty):
 
 
 class IntTupleAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
-
     def set_value(self, value):
         if isinstance(value, str):
             literal = get_literal_from_str(value)
@@ -268,10 +298,7 @@ class IntTupleAnnotationProperty(AnnotationProperty):
 
 
 class FloatAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
-
-    def set_value(self, value):
+     def set_value(self, value):
         if isinstance(value, str):
             literal = get_literal_from_str(value)
             if literal and isinstance(literal, (float, int)):
@@ -288,9 +315,6 @@ class FloatAnnotationProperty(AnnotationProperty):
 
 
 class IntAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
-
     def set_value(self, value):
         if isinstance(value, str):
             literal = get_literal_from_str(value)
@@ -308,11 +332,9 @@ class IntAnnotationProperty(AnnotationProperty):
 
 
 class BooleanAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
+    pass
 
 
 class StringAnnotationProperty(AnnotationProperty):
-    def __init__(self, name, value):
-        super().__init__(name, value)
+    pass
 
