@@ -269,3 +269,4 @@ class BooleanAnnotationProperty(AnnotationProperty):
 class StringAnnotationProperty(AnnotationProperty):
     def __init__(self, name, value):
         super().__init__(name, value)
+

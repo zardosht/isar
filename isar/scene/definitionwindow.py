@@ -111,6 +111,7 @@ class SceneDefinitionWindow(QDialog):
         annotationsmodel = self.annotations_list.model()
         annotationsmodel.set_current_annotation(current_index)
         self.properties_view.model().set_annotation(annotationsmodel.current_annotation)
+        self.properties_view.resizeRowsToContents()
 
     def annotation_btn_clicked(self, btn):
         if btn.isChecked():
@@ -210,6 +211,10 @@ class SceneDefinitionWindow(QDialog):
             return width_scale, height_scale
         else:
             return None
+
+    def reject(self):
+        logger.info("TODO: Reject is overridden in order to avoid scape key closing the dialog!")
+
 
 
 class PhysicalObjectsView(QListView):
