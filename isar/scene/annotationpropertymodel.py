@@ -1,9 +1,20 @@
 import logging
 from ast import literal_eval
-from PyQt5.QtCore import QAbstractTableModel, Qt
-
+from PyQt5.QtCore import QAbstractTableModel, Qt, QModelIndex
+from PyQt5.QtWidgets import QItemDelegate, QComboBox
 
 logger = logging.getLogger("isar.annotationpropertymodel")
+
+
+def get_literal_from_str(str_val):
+    value = None
+    if isinstance(str_val, str):
+        try:
+            value = literal_eval(str_val)
+        except Exception as e:
+            logger.error("Error converting value:", e)
+        finally:
+            return value
 
 
 class AnnotationPropertiesModel(QAbstractTableModel):
@@ -58,6 +69,12 @@ class AnnotationPropertiesModel(QAbstractTableModel):
         self.dataChanged.emit(index, index)
         return result
 
+    def get_annotation_property(self, index):
+        if self.__properties is None:
+            return
+
+        return self.__properties[index.row()]
+
     def flags(self, index):
         if index.column() == 1:
             return Qt.ItemIsEditable | super().flags(index)
@@ -69,15 +86,44 @@ class AnnotationPropertiesModel(QAbstractTableModel):
                 return ["Name", "Value"][section]
 
 
-def get_literal_from_str(str_val):
-    value = None
-    if isinstance(str_val, str):
-        try:
-            value = literal_eval(str_val)
-        except Exception as e:
-            logger.error("Error converting value:", e)
-        finally:
-            return value
+class PhysicalObjectComboDelegate(QItemDelegate):
+    def __init__(self):
+        super().__init__()
+        self.phys_obj_model = None
+        self.combo_items = None
+
+    def createEditor(self, parent, option, index: QModelIndex):
+        if not self.phys_obj_model:
+            return super().createEditor(parent, option, index)
+
+        if index.column() != 1:
+            return
+
+        annotation_property = index.model().get_annotation_property(index)
+        if isinstance(annotation_property, PhysicalObjectAnnotationProperty):
+            combo = QComboBox(parent)
+            self.combo_items = self.phys_obj_model.get_scene_physical_objects()
+            combo.clear()
+            combo.addItems(phys_obj.name for phys_obj in self.combo_items)
+            combo.currentIndexChanged.connect(self.current_index_changed)
+            return combo
+        else:
+            return super().createEditor(parent, option, index)
+
+    def setModelData(self, editor, model, index):
+        if isinstance(editor, QComboBox):
+            # TODO: find the property that requires a phys obj value and set its value
+            combo_index = editor.currentIndex()
+            if combo_index == -1:
+                return
+            phys_obj = self.combo_items[combo_index]
+            # model.setData(index, text)
+            print('\t\t\t ...setModelData() 1', phys_obj)
+        else:
+            super().setModelData(editor, model, index)
+
+    def current_index_changed(self):
+        self.commitData.emit(self.sender())
 
 
 class AnnotationProperty:

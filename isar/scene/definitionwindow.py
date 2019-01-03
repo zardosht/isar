@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolBut
 from isar.camera.camera import CameraService
 from isar.scene import util
 from isar.scene.annotationmodel import AnnotationsModel
-from isar.scene.annotationpropertymodel import AnnotationPropertiesModel
+from isar.scene.annotationpropertymodel import AnnotationPropertiesModel, PhysicalObjectComboDelegate
 from isar.scene.cameraview import CameraView
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenemodel import ScenesModel
@@ -176,6 +176,9 @@ class SceneDefinitionWindow(QDialog):
 
         properties_model = AnnotationPropertiesModel()
         self.properties_view.setModel(properties_model)
+        phys_obj_combo_delegate = PhysicalObjectComboDelegate()
+        phys_obj_combo_delegate.phys_obj_model = physical_objects_model
+        self.properties_view.setItemDelegate(phys_obj_combo_delegate)
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame(flipped=True)
