@@ -94,7 +94,7 @@ class CameraView(QLabel):
                     camera_view_size = ImageFrame(self.size().width(), self.size().height())
                     dropped_po.scene_position = util.image_coordinates_to_relative_coordinates(
                         camera_view_size, event.pos().x(), event.pos().y())
-                    dropped_po.scene_frame = camera_view_size
+                    dropped_po.scene_frame = ImageFrame(self.opencv_img.shape[1], self.opencv_img.shape[0])
                     event.setDropAction(Qt.CopyAction)
                     event.accept()
                 else:

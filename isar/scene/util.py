@@ -54,7 +54,6 @@ def calc_rect_area(vertex1, vertex2):
 def get_pixmap_from_np_image(np_image):
     qimg = get_qimage_from_np_image(np_image)
     return QPixmap.fromImage(qimg)
-    return pixmap
 
 
 def get_qimage_from_np_image(np_image):
