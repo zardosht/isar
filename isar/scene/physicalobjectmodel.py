@@ -127,6 +127,7 @@ class PhysicalObject:
         self.template_image = None
         self.scene_image = None
         self.__scene_position = None
+        self.__scene_frame = None
         self.annotations = []
         self.detection_confidence = None
         self.__top_left = None
@@ -150,11 +151,27 @@ class PhysicalObject:
         self.__scene_position = scene_position
 
     @property
+    def scene_frame(self):
+        return self.__scene_frame
+
+    @scene_frame.setter
+    def scene_frame(self, scene_frame):
+        self.__scene_frame = scene_frame
+
+    @property
     def ref_frame(self):
-        x, y = self.__top_left
-        br_x, br_y = self.bottom_right
-        width = math.fabs(br_x - x)
-        height = math.fabs(br_y - y)
+        if self.__top_left is None:
+            # TODO: check scene object too. Also, make sure that when a scene object is no more present,
+            #  its top_left, bottom_right, and scene_image attributes are set to None
+            x, y = self.__scene_position
+            width = self.template_image.shape[1] / self.__scene_frame.width
+            height = self.template_image.shape[0] / self.__scene_frame.height
+        else:
+            x, y = self.__top_left
+            br_x, br_y = self.bottom_right
+            width = math.fabs(br_x - x)
+            height = math.fabs(br_y - y)
+
         return RefFrame(x, y, width, height)
 
     def __hash__(self):
