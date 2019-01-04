@@ -59,6 +59,15 @@ class CameraView(QLabel):
                 else:
                     physicalobjecttool.draw_physical_object_image(self.opencv_img, phys_obj)
 
+                self.draw_physical_object_annotations(phys_obj)
+
+        def draw_physical_object_annotations(self, phys_obj):
+            if not phys_obj or not phys_obj.annotations or len(phys_obj.annotations) == 0:
+                return
+
+            for annotation in phys_obj.annotations:
+                annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj.ref_frame)
+
         def dragEnterEvent(self, event: QDragEnterEvent):
             if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):
                 self.active_annotation_tool = None

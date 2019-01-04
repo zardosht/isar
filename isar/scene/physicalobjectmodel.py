@@ -1,10 +1,12 @@
 import logging
+import math
 import pickle
 
 from PyQt5.QtCore import QAbstractListModel, Qt, QMimeData, QModelIndex
 from PyQt5.QtGui import QBrush
 
 from isar.scene.scenemodel import Scene
+from isar.scene.util import RefFrame
 
 """
 Objects can be added in two ways to the scene: 
@@ -146,6 +148,14 @@ class PhysicalObject:
     @scene_position.setter
     def scene_position(self, scene_position):
         self.__scene_position = scene_position
+
+    @property
+    def ref_frame(self):
+        x, y = self.__top_left
+        br_x, br_y = self.bottom_right
+        width = math.fabs(br_x - x)
+        height = math.fabs(br_y - y)
+        return RefFrame(x, y, width, height)
 
     def __hash__(self):
         return hash(self.name)
