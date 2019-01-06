@@ -11,6 +11,9 @@ logger = logging.getLogger("isar.annotationpropertymodel")
 def get_literal_from_str(str_val):
     value = None
     if isinstance(str_val, str):
+        if str_val == "":
+            return value
+
         try:
             value = literal_eval(str_val)
         except Exception as e:
