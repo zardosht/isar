@@ -9,7 +9,7 @@ from isar.scene.annotationpropertymodel import FloatTupleAnnotationProperty, Int
     ColorAnnotationProperty, FloatAnnotationProperty, PhysicalObjectAnnotationProperty, AnnotationProperty, \
     BooleanAnnotationProperty, RelativePositionAnnotationProperty, RelativeLengthAnnotationProperty
 from isar.scene.physicalobjectmodel import PhysicalObject
-
+from isar.scene.scenemodel import Scene
 
 logger = logging.getLogger("isar.annotationmodel")
 
@@ -20,12 +20,12 @@ class AnnotationsModel(QAbstractListModel):
     def __init__(self):
         super().__init__()
         self.current_annotation = None
-        self.__scene = None
+        self.__scene: Scene = None
         self.__annotations = None
 
     def set_scene(self, scene):
         self.__scene = scene
-        self.__annotations = scene.get_annotations()
+        self.__annotations = scene.get_all_annotations()
         if len(self.__annotations) > 0:
             self.current_annotation = self.__annotations[0]
         else:
@@ -67,7 +67,7 @@ class AnnotationsModel(QAbstractListModel):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
     def add_annotation(self, new_annotation):
-        if self.__annotations is None:
+        if self.__scene is None:
             return
 
         at_row = self.rowCount(None) + 1
@@ -76,7 +76,9 @@ class AnnotationsModel(QAbstractListModel):
         class_name = new_annotation.__class__.__name__
         new_annotation.name = new_annotation.__class__.__name__ + str(annotation_counters[class_name])
 
-        self.__annotations.append(new_annotation)
+        new_annotation.scene = self.__scene
+        self.__scene.add_annotation(new_annotation)
+        self.__annotations = self.__scene.get_all_annotations()
 
         annotation_counters[class_name] += 1
         self.current_annotation = new_annotation
@@ -84,7 +86,7 @@ class AnnotationsModel(QAbstractListModel):
 
     def delete_annotation(self, selected_index):
         # TODO: remove properly using remove rows (see insert rows)
-        if self.__annotations is None:
+        if self.__scene is None:
             return
 
         if len(self.__annotations) == 0:    # keep at least one scene
@@ -93,7 +95,11 @@ class AnnotationsModel(QAbstractListModel):
         if len(self.__annotations) <= selected_index.row():
             return
 
-        del self.__annotations[selected_index.row()]
+        annotation = self.__annotations[selected_index.row()]
+        annotation.scene = None
+        self.__scene.remove_annotation(annotation)
+        self.__annotations = self.__scene.get_all_annotations()
+
         self.removeRow(selected_index.row())
         self.update_view(selected_index)
 
@@ -115,22 +121,37 @@ class AnnotationsModel(QAbstractListModel):
 
         self.current_annotation = self.__annotations[selected_index.row()]
 
-    def get_annotations(self):
+    def get_all_annotations(self):
         if self.__annotations:
             return tuple(self.__annotations)
+        else:
+            return ()
+
+    def get_scene_annotations(self):
+        if self.__scene:
+            return self.__scene.get_scene_annotations()
+        else:
+            return ()
+
+    def get_physical_object_annotations(self, phys_obj):
+        if self.__scene:
+            return self.__scene.get_physical_object_annotations()
         else:
             return ()
 
 
 class Annotation:
     def __init__(self):
+        self.scene = None
+        # Owner of  an annotation is either the scene or a physical object. An annotation can have only one owner.
+        self.owner = None
         self.properties: List[AnnotationProperty] = []
 
         self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None, self)
         self.properties.append(self.attached_to)
 
-        self.updateOrientation = BooleanAnnotationProperty("Update Orientation", False, self)
-        self.properties.append(self.updateOrientation)
+        self.update_orientation = BooleanAnnotationProperty("Update Orientation", False, self)
+        self.properties.append(self.update_orientation)
 
 
 """

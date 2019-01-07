@@ -91,8 +91,33 @@ class Scene:
         return self.__physical_objects
 
     def add_annotation(self, annotation):
-        self.__annotations.append(annotation)
+        if annotation not in self.__annotations:
+            annotation.scene = self
+            annotation.owner = self
+            self.__annotations.append(annotation)
 
-    def get_annotations(self):
+    def remove_annotation(self, annotation):
+        if annotation in self.__annotations:
+            self.__annotations.remove(annotation)
+
+    def delete_annotation(self, annotation):
+        annotation.owner = None
+        if annotation in self.__annotations:
+            self.__annotations.remove(annotation)
+        else:
+            for phys_obj in self.__physical_objects:
+                phys_obj.remove_annotation(annotation)
+
+    def get_scene_annotations(self):
         return self.__annotations
 
+    def get_physical_object_annotations(self, phys_obj):
+        pass
+
+    def get_all_annotations(self):
+        all_annotations = []
+        all_annotations.extend(self.__annotations)
+        for phys_obj in self.__physical_objects:
+            all_annotations.extend(phys_obj.get_annotations())
+
+        return tuple(all_annotations)

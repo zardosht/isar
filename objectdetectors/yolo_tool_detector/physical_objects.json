@@ -1,27 +1,22 @@
 [
   {
     "name": "Pincers",
-    "image_path": "Pincers.jpg",
-    "annotations": []
+    "image_path": "Pincers.jpg"
   },
   {
     "name": "Adjustable Spanner",
-    "image_path": "Adjustable Spanner.jpg",
-    "annotations": []
+    "image_path": "Adjustable Spanner.jpg"
   },
   {
     "name": "Pump Pliers",
-    "image_path": "Pump Pliers.jpg",
-    "annotations": []
+    "image_path": "Pump Pliers.jpg"
   },
   {
     "name": "Linemans Pliers",
-    "image_path": "Linemans Pliers.jpg",
-    "annotations": []
+    "image_path": "Linemans Pliers.jpg"
   },
   {
     "name": "Needle Nose Pliers",
-    "image_path": "Needle Nose Pliers.jpg",
-    "annotations": []
+    "image_path": "Needle Nose Pliers.jpg"
   }
 ]

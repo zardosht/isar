@@ -42,14 +42,18 @@ class CameraView(QLabel):
             self.update()
 
         def draw_scene_annotations(self):
-            if not self.annotations_model or not self.annotations_model.get_annotations():
+            if self.annotations_model is None or \
+                    self.annotations_model.get_scene_annotations() is None or \
+                    len(self.annotations_model.get_scene_annotations()) == 0:
                 return
 
-            for annotation in self.annotations_model.get_annotations():
+            for annotation in self.annotations_model.get_scene_annotations():
                 annotationtool.draw_annotation(self.opencv_img, annotation)
 
         def draw_scene_physical_objects(self):
-            if not self.physical_objects_model or not self.physical_objects_model.get_scene_physical_objects():
+            if self.physical_objects_model is None or \
+                    self.physical_objects_model.get_scene_physical_objects() is None or \
+                    len(self.physical_objects_model.get_scene_physical_objects()) == 0:
                 return
 
             scene_phys_objs = self.physical_objects_model.get_scene_physical_objects()
@@ -63,10 +67,10 @@ class CameraView(QLabel):
                 self.draw_physical_object_annotations(phys_obj)
 
         def draw_physical_object_annotations(self, phys_obj):
-            if not phys_obj or not phys_obj.annotations or len(phys_obj.annotations) == 0:
+            if phys_obj is None or phys_obj.get_annotations() is None or len(phys_obj.get_annotations()) == 0:
                 return
 
-            for annotation in phys_obj.annotations:
+            for annotation in phys_obj.get_annotations():
                 annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj.ref_frame)
 
         def dragEnterEvent(self, event: QDragEnterEvent):

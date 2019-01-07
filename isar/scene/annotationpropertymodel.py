@@ -1,7 +1,7 @@
 import logging
 from ast import literal_eval
 from PyQt5.QtCore import QAbstractTableModel, Qt, QModelIndex
-from PyQt5.QtWidgets import QItemDelegate, QComboBox
+from PyQt5.QtWidgets import QItemDelegate, QComboBox, QCheckBox
 
 from isar.scene.physicalobjectmodel import PhysicalObject
 
@@ -91,11 +91,11 @@ class AnnotationPropertiesModel(QAbstractTableModel):
                 return ["Name", "Value"][section]
 
 
-class PhysicalObjectComboDelegate(QItemDelegate):
+class AnnotationPropertyItemDelegate(QItemDelegate):
     def __init__(self):
         super().__init__()
         self.phys_obj_model = None
-        self.combo_items = []
+        self.phys_obj_combo_items = []
 
     def createEditor(self, parent, option, index: QModelIndex):
         if not self.phys_obj_model:
@@ -107,11 +107,11 @@ class PhysicalObjectComboDelegate(QItemDelegate):
         annotation_property = index.model().get_annotation_property(index)
         if isinstance(annotation_property, PhysicalObjectAnnotationProperty):
             combo = QComboBox(parent)
-            self.combo_items.clear()
-            self.combo_items.append(None)
-            self.combo_items.extend(self.phys_obj_model.get_scene_physical_objects())
+            self.phys_obj_combo_items.clear()
+            self.phys_obj_combo_items.append(None)
+            self.phys_obj_combo_items.extend(self.phys_obj_model.get_scene_physical_objects())
             combo.clear()
-            for phys_obj in self.combo_items:
+            for phys_obj in self.phys_obj_combo_items:
                 if phys_obj is not None:
                     combo.addItem(phys_obj.name)
                 else:
@@ -121,13 +121,18 @@ class PhysicalObjectComboDelegate(QItemDelegate):
                 combo.setCurrentIndex(0)
             else:
                 index = -1
-                for phys_obj in self.combo_items:
+                for phys_obj in self.phys_obj_combo_items:
                     index += 1
                     if phys_obj is not None and phys_obj.name == annotation_property.get_value().name:
                         combo.setCurrentIndex(index)
 
             combo.currentIndexChanged.connect(self.current_index_changed)
             return combo
+
+        elif isinstance(annotation_property, BooleanAnnotationProperty):
+            # TODO: implement update_orientation
+            pass
+
         else:
             return super().createEditor(parent, option, index)
 
@@ -139,8 +144,13 @@ class PhysicalObjectComboDelegate(QItemDelegate):
                 combo_index = editor.currentIndex()
                 if combo_index == -1:
                     return
-                phys_obj = self.combo_items[combo_index]
+                phys_obj = self.phys_obj_combo_items[combo_index]
                 model.setData(index, phys_obj, Qt.EditRole)
+
+        elif isinstance(editor, QCheckBox):
+            # TODO: implement
+            pass
+
         else:
             super().setModelData(editor, model, index)
 
@@ -204,17 +214,31 @@ class PhysicalObjectAnnotationProperty(AnnotationProperty):
         else:
             return self._value.name
 
-    def set_value(self, value):
-        old_value = self._value
-        if isinstance(value, PhysicalObject):
-            value.annotations.append(self.annotation)
-            self._value = value
+    def set_value(self, phys_obj):
+        old_phys_obj = self._value
+        if old_phys_obj is not None and phys_obj == old_phys_obj:
             return True
-        elif value is None:
+
+        if isinstance(phys_obj, PhysicalObject):
+            phys_obj.add_annotation(self.annotation)
+            self._value = phys_obj
+            self.annotation.scene.remove_annotation(self.annotation)
+
+            if old_phys_obj is not None:
+                old_phys_obj.remove_annotation(self.annotation)
+
+            return True
+
+        elif phys_obj is None:
             self._value = None
-            if old_value is not None:
-                old_value.annotations.remove(self.annotation)
+            self.annotation.owner = self.annotation.scene
+            self.annotation.scene.add_annotation(self.annotation)
+
+            if old_phys_obj is not None:
+                old_phys_obj.remove_annotation(self.annotation)
+
             return True
+
         else:
             return False
 

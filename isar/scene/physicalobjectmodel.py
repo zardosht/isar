@@ -128,7 +128,7 @@ class PhysicalObject:
         self.scene_image = None
         self.__scene_position = None
         self.__scene_frame = None
-        self.annotations = []
+        self.__annotations = []
         self.detection_confidence = None
         self.__top_left = None
         self.bottom_right = None
@@ -174,9 +174,20 @@ class PhysicalObject:
 
         return RefFrame(x, y, width, height)
 
+    def get_annotations(self):
+        return tuple(self.__annotations)
+
+    def remove_annotation(self, annotation):
+        self.__annotations.remove(annotation)
+
+    def add_annotation(self, annotation):
+        if annotation not in self.__annotations:
+            annotation.owner = self
+            self.__annotations.append(annotation)
+
     def __hash__(self):
         return hash(self.name)
 
     def __eq__(self, other):
-        return self.name == other.name
+        return isinstance(other, PhysicalObject) and self.name == other.name
 

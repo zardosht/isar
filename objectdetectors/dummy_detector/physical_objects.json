@@ -1,17 +1,14 @@
 [
   {
     "name": "Rubber Duck",
-    "image_path": "rubber_duck.jpg",
-    "annotations": []
+    "image_path": "rubber_duck.jpg"
   },
   {
     "name": "Iron Man",
-    "image_path": "iron_man.jpg",
-    "annotations": []
+    "image_path": "iron_man.jpg"
   },
   {
     "name": "Horse",
-    "image_path": "horse.jpg",
-    "annotations": []
+    "image_path": "horse.jpg"
   }
 ]
