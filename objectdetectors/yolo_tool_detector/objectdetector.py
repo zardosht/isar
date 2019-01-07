@@ -9,6 +9,9 @@ logger = logging.getLogger("isar.objectdetectors.yolo_simple_tool_detector")
 name = "YOLO_SIMPLE_TOOL_DETECTOR"
 description = "Yolo simple tool detector"
 
+# TODO: Remove. Dummy test code
+x, y = 1000, 700
+width, height = 200, 400
 
 def get_predictions(frame):
     # TODO: get predictions from YOLO
@@ -24,9 +27,19 @@ def get_predictions(frame):
     #     confidnece = pred_result['confidence']
     #     predictions.append(ObjectDetectionPrediction(label, confidnece, tl, br))
 
+    # TODO: Remove. Dummy test code
+    global x, y
+
+    # x -= 10
+    # if x < 0: x = frame.size[0]
+    # y -= 10
+    # if y < 0: y = frame.size[1]
+
+    x, y = 300, 200
+
     time.sleep(1)
     predictions = []
-    predictions.append(ObjectDetectionPrediction("Pump Pliers", 0.8, (500, 200), (700, 600), frame.size))
+    predictions.append(ObjectDetectionPrediction("Pump Pliers", 0.8, (x, y), (x + width, y + height), frame.size))
     return predictions
 
 
