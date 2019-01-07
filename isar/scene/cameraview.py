@@ -58,6 +58,10 @@ class CameraView(QLabel):
 
             scene_phys_objs = self.physical_objects_model.get_scene_physical_objects()
             present_phys_objs = self.physical_objects_model.get_present_physical_objects()
+            if present_phys_objs is None:
+                logger.warning("Present physical objects is None!")
+                return
+
             for phys_obj in scene_phys_objs:
                 if phys_obj in present_phys_objs:
                     physicalobjecttool.draw_physical_object_bounding_box(self.opencv_img, phys_obj)
