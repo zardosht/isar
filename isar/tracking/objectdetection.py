@@ -6,6 +6,7 @@ import threading
 import time
 import traceback
 from queue import Queue, Full
+from typing import List
 
 from isar.services.service import Service
 
@@ -86,9 +87,8 @@ def init():
 class ObjectDetectionService(Service):
     def __init__(self, service_name=None):
         super().__init__(service_name)
-        self._stop_event = threading.Event()
         self.object_detector_workers = []
-        self.observer_thread: threading.Thread = None
+        self.observer_threads: List[ObjectDetectionObserverThread] = []
 
     def start(self):
         """
@@ -102,51 +102,25 @@ class ObjectDetectionService(Service):
             obj_detector_worker = ObjectDetectorWorker(obj_detector, request_queue, response_queue)
             obj_detector_worker.daemon = True
             self.object_detector_workers.append(obj_detector_worker)
+            observer_thread = ObjectDetectionObserverThread(Queue(maxsize=1), obj_detector_worker)
+            self.observer_threads.append(observer_thread)
 
         for worker in self.object_detector_workers:
             worker.start()
 
-        self.observer_thread = threading.Thread(target=self.wait_for_object_detection)
-        self.observer_thread.request_queue: Queue = Queue(maxsize=1)
-        self.observer_thread.start()
-
-    def wait_for_object_detection(self):
-        while not self._stop_event.is_set():
-            camera_frame = self.observer_thread.request_queue.get()
-            if camera_frame == POISON_PILL:
-                self.observer_thread.request_queue.task_done()
-                break
-
-            t1 = time.time()
-            phys_obj_predictions = {}
-            for obj_detector_worker in self.object_detector_workers:
-                obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
-
-            for obj_detector_worker in self.object_detector_workers:
-                obj_detection_response = obj_detector_worker.response_queue.get()
-
-                phys_obj_predictions[obj_detection_response.object_detector_name] = obj_detection_response.predictions
-
-            logger.info("Finding present objects on all object detectors took {}".format(time.time() - t1))
-            self.observer_thread.request_queue.task_done()
-
-            if self.observer_thread.callback is not None:
-                try:
-                    self.observer_thread.callback(phys_obj_predictions)
-                except Exception as exp:
-                    logger.error("Error in calling object detection callback.")
-                    logger.error(exp)
-                    traceback.print_tb(exp.__traceback__)
+        for observer_thread in self.observer_threads:
+            observer_thread.start()
 
     def get_present_objects(self, camera_frame, callback=None):
-        if not self.observer_thread.request_queue.full():
-            self.observer_thread.request_queue.put(camera_frame, block=False)
-            self.observer_thread.callback = callback
+        for observer_thread in self.observer_threads:
+            if not observer_thread.request_queue.full():
+                observer_thread.request_queue.put(camera_frame, block=False)
+                observer_thread.callback = callback
 
     def stop(self):
-        self.observer_thread.request_queue.put(POISON_PILL)
-        self.observer_thread.join(timeout=2)
-        self._stop_event.set()
+        for observer_thread in self.observer_threads:
+            observer_thread.request_queue.put(POISON_PILL)
+            observer_thread.join(timeout=2)
 
         for obj_detector_worker in self.object_detector_workers:
             obj_detector_worker.shut_down()
@@ -160,6 +134,39 @@ class ObjectDetectionService(Service):
         """
         global physical_objects
         return physical_objects
+
+
+class ObjectDetectionObserverThread(threading.Thread):
+    def __init__(self, request_queue, obj_detector_worker, callback=None):
+        super().__init__()
+        self.request_queue = request_queue
+        self.obj_detector_worker = obj_detector_worker
+        self.callback = callback
+
+    def run(self):
+        self.wait_for_object_detection()
+
+    def wait_for_object_detection(self):
+        while True:
+            camera_frame = self.request_queue.get()
+            if camera_frame == POISON_PILL:
+                self.request_queue.task_done()
+                break
+
+            t1 = time.time()
+            phys_obj_predictions = {}
+            self.obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
+            obj_detection_response = self.obj_detector_worker.response_queue.get()
+            phys_obj_predictions[obj_detection_response.object_detector_name] = obj_detection_response.predictions
+            if self.callback is not None:
+                try:
+                    self.callback(phys_obj_predictions)
+                except Exception as exp:
+                    logger.error("Error in calling object detection callback.")
+                    logger.error(exp)
+                    traceback.print_tb(exp.__traceback__)
+
+            self.request_queue.task_done()
 
 
 class ObjectDetectionPrediction:

@@ -16,31 +16,33 @@ tfnet = None
 
 
 def get_predictions(frame: CameraFrame):
-    predictions = []
-    try:
-        if tfnet is None:
-            init_yolo()
-
-        prediction_results = tfnet.return_predict(frame.raw_image)
-        for pred_result in prediction_results:
-            tl = (pred_result['topleft']['x'], pred_result['topleft']['y'])
-            br = (pred_result['bottomright']['x'], pred_result['bottomright']['y'])
-            label = pred_result['label']
-            confidnece = pred_result['confidence']
-            predictions.append(ObjectDetectionPrediction(label, confidnece, tl, br, frame.size))
-    except Exception as e:
-        logging.error(e)
-        traceback.print_tb(e.__traceback__)
-
-    return predictions
-
-
-    # x, y = 300, 200
-    #
-    # time.sleep(1)
     # predictions = []
-    # predictions.append(ObjectDetectionPrediction("Pump Pliers", 0.8, (x, y), (x + width, y + height), frame.size))
+    # try:
+    #     if tfnet is None:
+    #         init_yolo()
+    #
+    #     prediction_results = tfnet.return_predict(frame.raw_image)
+    #     for pred_result in prediction_results:
+    #         tl = (pred_result['topleft']['x'], pred_result['topleft']['y'])
+    #         br = (pred_result['bottomright']['x'], pred_result['bottomright']['y'])
+    #         label = pred_result['label']
+    #         confidnece = pred_result['confidence']
+    #         predictions.append(ObjectDetectionPrediction(label, confidnece, tl, br, frame.size))
+    # except Exception as e:
+    #     logging.error(e)
+    #     traceback.print_tb(e.__traceback__)
+    #
     # return predictions
+
+    if tfnet is None:
+        init_yolo()
+
+    x, y = 300, 200
+    width, height = 160, 380
+
+    time.sleep(1)
+    predictions = [ObjectDetectionPrediction("Pump Pliers", 0.8, (x, y), (x + width, y + height), frame.size)]
+    return predictions
 
 
 def init_yolo():

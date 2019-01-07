@@ -190,19 +190,7 @@ class SceneDefinitionWindow(QDialog):
 
     def on_obj_detection_complete(self, phys_obj_predictions):
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
-        scene_phys_objs = phys_obj_model.get_scene_physical_objects()
-        predictions = [item for phys_obj_list in phys_obj_predictions.values() for item in phys_obj_list]
-
-        present_phys_objs = []
-        for scene_phys_obj in scene_phys_objs:
-            for prediction in predictions:
-                if scene_phys_obj.name == prediction.label:
-                    scene_phys_obj.detection_confidence = prediction.confidence
-                    scene_phys_obj.top_left = prediction.top_left
-                    scene_phys_obj.bottom_right = prediction.bottom_right
-                    present_phys_objs.append(scene_phys_obj)
-
-        phys_obj_model.set_present_physical_objects(present_phys_objs)
+        phys_obj_model.update_present_physical_objects(phys_obj_predictions)
 
     def closeEvent(self, QCloseEvent):
         self._timer.stop()

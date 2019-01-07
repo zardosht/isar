@@ -39,12 +39,10 @@ class PhysicalObjectsModel(QAbstractListModel):
         self.current_annotation = None
         self.__scene: Scene = None
         self.__all_physical_objects = None
-        self.__scene_physical_objects = None
-        self.__present_physical_objects = None
+        self.__present_physical_objects = {}
 
     def set_scene(self, scene: Scene):
         self.__scene = scene
-        self.__scene_physical_objects = scene.get_physical_objects()
 
     def rowCount(self, parent=None):
         if self.__all_physical_objects is None:
@@ -75,7 +73,7 @@ class PhysicalObjectsModel(QAbstractListModel):
 
     def mimeData(self, indexs):
         physical_object = self.__all_physical_objects[indexs[0].row()]
-        if physical_object in self.__scene_physical_objects:
+        if physical_object in self.get_scene_physical_objects():
             return None
 
         mime_data = QMimeData()
@@ -87,10 +85,11 @@ class PhysicalObjectsModel(QAbstractListModel):
         return Qt.CopyAction
 
     def is_contained_in_scene(self, physical_obj):
-        if self.__scene_physical_objects is None:
+        if self.get_scene_physical_objects() is None or \
+                len(self.get_scene_physical_objects()) == 0:
             return False
 
-        return physical_obj in self.__scene_physical_objects
+        return physical_obj in self.get_scene_physical_objects()
 
     def set_all_physical_objects(self, all_po_s):
         self.__all_physical_objects = all_po_s
@@ -113,11 +112,26 @@ class PhysicalObjectsModel(QAbstractListModel):
         else:
             return ()
 
-    def set_present_physical_objects(self, present_phy_objs):
-        self.__present_physical_objects = present_phy_objs
+    def update_present_physical_objects(self, phys_obj_predictions):
+        scene_phys_objs = self.get_scene_physical_objects()
+        for obj_detector in phys_obj_predictions:
+            present_phys_objs = []
+            predictions = phys_obj_predictions[obj_detector]
+            for scene_phys_obj in self.get_scene_physical_objects():
+                for prediction in predictions:
+                    if scene_phys_obj.name == prediction.label:
+                        scene_phys_obj.detection_confidence = prediction.confidence
+                        scene_phys_obj.top_left = prediction.top_left
+                        scene_phys_obj.bottom_right = prediction.bottom_right
+                        present_phys_objs.append(scene_phys_obj)
+            self.__present_physical_objects[obj_detector] = present_phys_objs
 
     def get_present_physical_objects(self):
-        return self.__present_physical_objects
+        result = []
+        for obj_detector in self.__present_physical_objects:
+            result.extend(self.__present_physical_objects[obj_detector])
+
+        return tuple(result)
 
     def add_physical_object_to_scene(self, po):
         self.__scene.add_physical_object(po)
