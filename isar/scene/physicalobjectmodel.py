@@ -108,7 +108,10 @@ class PhysicalObjectsModel(QAbstractListModel):
         return self.__all_physical_objects[index.row()]
 
     def get_scene_physical_objects(self):
-        return tuple(self.__scene_physical_objects)
+        if self.__scene is not None:
+            return self.__scene.get_physical_objects()
+        else:
+            return ()
 
     def set_present_physical_objects(self, present_phy_objs):
         self.__present_physical_objects = present_phy_objs

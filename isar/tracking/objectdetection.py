@@ -124,6 +124,7 @@ class ObjectDetectionService(Service):
 
             for obj_detector_worker in self.object_detector_workers:
                 obj_detection_response = obj_detector_worker.response_queue.get()
+
                 phys_obj_predictions[obj_detection_response.object_detector_name] = obj_detection_response.predictions
 
             logger.info("Finding present objects on all object detectors took {}".format(time.time() - t1))

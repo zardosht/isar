@@ -24,7 +24,7 @@ class CameraView(QLabel):
             self.dropped_physical_object = None
 
         def set_camera_frame(self, camera_frame):
-            self.opencv_img = camera_frame.image
+            self.opencv_img = camera_frame.scene_image
 
             self.draw_scene_physical_objects()
 

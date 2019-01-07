@@ -21,7 +21,7 @@ def get_predictions(frame: CameraFrame):
         if tfnet is None:
             init_yolo()
 
-        prediction_results = tfnet.return_predict(frame.image)
+        prediction_results = tfnet.return_predict(frame.raw_image)
         for pred_result in prediction_results:
             tl = (pred_result['topleft']['x'], pred_result['topleft']['y'])
             br = (pred_result['bottomright']['x'], pred_result['bottomright']['y'])

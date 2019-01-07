@@ -78,7 +78,7 @@ class CameraService(Service):
         """
         camera_frame = self._queue.get()
         if flipped:
-            camera_frame.image = cv2.flip(camera_frame.image, 1)
+            camera_frame.flip()
 
         return camera_frame
 
@@ -96,10 +96,15 @@ class CameraFrame:
     An OpenCV image plus the frame number
     """
     def __init__(self, image, frame_number):
-        self.image = image
+        self.raw_image = image
+        self.scene_image = image.copy()
         self.frame_number = frame_number
+
+    def flip(self):
+        self.raw_image = cv2.flip(self.raw_image, 1)
+        self.scene_image = cv2.flip(self.scene_image, 1)
 
     @property
     def size(self):
-        return self.image.shape[1], self.image.shape[0]
+        return self.raw_image.shape[1], self.raw_image.shape[0]
 
