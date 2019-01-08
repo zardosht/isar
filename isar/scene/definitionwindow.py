@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolBut
 from isar.camera.camera import CameraService
 from isar.scene import util
 from isar.scene.annotationmodel import AnnotationsModel
-from isar.scene.annotationpropertymodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
+from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
 from isar.scene.cameraview import CameraView
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenemodel import ScenesModel

@@ -105,8 +105,10 @@ def image_coordinates_to_relative_coordinates(image_frame, x, y):
     return x / image_frame.width, y / image_frame.height
 
 
-
-
+def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):
+    x_scale = image_size.width / camera_view_size.width
+    y_scale = image_size.height / camera_view_size.height
+    return int(x * x_scale), int(y * y_scale)
 
 
 

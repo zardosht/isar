@@ -179,16 +179,18 @@ class LineAnnotationTool(AnnotationTool):
 
         # convert mouse coordinates to relative image coordinates
         camera_view_size = ImageFrame(camera_view.size().width(), camera_view.size().height())
-        rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
-            camera_view_size, event.pos().x(), event.pos().y())
-        self.annotation.start.set_value((rel_x, rel_y))
+        image_frame = ImageFrame(self.img.shape[1], self.img.shape[0])
+        img_x, img_y = util.mouse_coordinates_to_image_coordinates(event.pos().x(), event.pos().y(),
+            camera_view_size, image_frame)
+        self.annotation.start.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
         if self.drawing:
             camera_view_size = ImageFrame(camera_view.size().width(), camera_view.size().height())
-            rel_x, rel_y = util.image_coordinates_to_relative_coordinates(
-                camera_view_size, event.pos().x(), event.pos().y())
-            self.annotation.end.set_value((rel_x, rel_y))
+            image_frame = ImageFrame(self.img.shape[1], self.img.shape[0])
+            img_x, img_y = util.mouse_coordinates_to_image_coordinates(event.pos().x(), event.pos().y(),
+                                                                       camera_view_size, image_frame)
+            self.annotation.end.set_value((img_x, img_y))
 
     def mouse_release_event(self, camera_view, event):
         if self.is_annotation_valid():
@@ -203,10 +205,13 @@ class LineAnnotationTool(AnnotationTool):
             return
 
         image_frame = ImageFrame(self.img.shape[1], self.img.shape[0])
-        start = util.relative_coordinates_to_image_coordinates(
-            image_frame, *self.annotation.start.get_value(), self.reference_frame)
-        end = util.relative_coordinates_to_image_coordinates(
-            image_frame, *self.annotation.end.get_value(), self.reference_frame)
+        # start = util.relative_coordinates_to_image_coordinates(
+        #     image_frame, *self.annotation.start.get_value(), self.reference_frame)
+        start = self.annotation.start.get_value()
+        # end = util.relative_coordinates_to_image_coordinates(
+        #     image_frame, *self.annotation.end.get_value(), self.reference_frame)
+        end = self.annotation.end.get_value()
+
         self.img = cv2.line(self.img,
                             start,
                             end,
