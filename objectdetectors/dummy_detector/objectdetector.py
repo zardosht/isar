@@ -22,8 +22,8 @@ def get_predictions(frame):
 
     time.sleep(1)
     predictions = []
-    # prediction = ObjectDetectionPrediction("Rubber Duck", 0.8, (x, y), (x + width, y + height), frame.size)
-    # predictions.append(prediction)
+    prediction = ObjectDetectionPrediction("Rubber Duck", 0.8, (x, y), (x + width, y + height), frame.size)
+    predictions.append(prediction)
     return predictions
 
 
