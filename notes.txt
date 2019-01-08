@@ -1,8 +1,22 @@
 
 
+[See below.]
+
+* We don't need object detection when designing the scene.
+* The author designs the scene using the template images of the physical objects.
+* During the learning session, we use object detection and work with real physical objects.
+
+* To add a physical object to the scene, the user has to drag and drop it to the scene.
+* To remove a physical object from scene, the user uses the delete tool
+
+* All annotations have their position in relationship to either scene or the physical object the are attached to.
+* All positions are absolute in image coordinates. 
+
+
 
 =======================================================
 
+[*** OBSOLETE ***, see above. Read carefully though. Here maybe still important requirements.]
 
 * To add a physical object to the scene, the user has to drag and drop it to the scene.
 

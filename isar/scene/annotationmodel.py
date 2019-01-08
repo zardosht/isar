@@ -7,7 +7,8 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex
 from isar.scene import util
 from isar.scene.annotationpropertymodel import FloatTupleAnnotationProperty, IntAnnotationProperty, \
     ColorAnnotationProperty, FloatAnnotationProperty, PhysicalObjectAnnotationProperty, AnnotationProperty, \
-    BooleanAnnotationProperty, RelativePositionAnnotationProperty, RelativeLengthAnnotationProperty
+    BooleanAnnotationProperty, RelativePositionAnnotationProperty, RelativeLengthAnnotationProperty, \
+    IntTupleAnnotationProperty
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
@@ -147,6 +148,8 @@ class Annotation:
         self.owner = None
         self.properties: List[AnnotationProperty] = []
 
+        self.position = IntTupleAnnotationProperty("Position", (0, 0), self)
+
         self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None, self)
         self.properties.append(self.attached_to)
 
@@ -197,10 +200,10 @@ class LineAnnotation(Annotation):
     def __init__(self):
         super().__init__()
 
-        self.start = RelativePositionAnnotationProperty("Start", [0.0, 0.0], self)
+        self.start = IntTupleAnnotationProperty("Start", [0, 0], self)
         self.properties.append(self.start)
 
-        self.end = RelativePositionAnnotationProperty("End", None, self)
+        self.end = IntTupleAnnotationProperty("End", None, self)
         self.properties.append(self.end)
 
         self.thikness = IntAnnotationProperty("Thikness", 3, self)
@@ -223,10 +226,10 @@ class RectangleAnnotation(Annotation):
         self.thikness = IntAnnotationProperty("Thikness", 3, self)
         self.properties.append(self.thikness)
 
-        self.vertex1 = RelativePositionAnnotationProperty("Vertex1", [0.0, 0.0], self)
+        self.vertex1 = IntTupleAnnotationProperty("Vertex1", [0, 0], self)
         self.properties.append(self.vertex1)
 
-        self.vertex2 = RelativePositionAnnotationProperty("Vertex2", None, self)
+        self.vertex2 = IntTupleAnnotationProperty("Vertex2", None, self)
         self.properties.append(self.vertex2)
 
 
@@ -240,10 +243,10 @@ class CircleAnnotation(Annotation):
         self.color = ColorAnnotationProperty("Color", (125, 125, 255), self)
         self.properties.append(self.color)
 
-        self.center = RelativePositionAnnotationProperty("Center", [0.0, 0.0], self)
+        self.center = IntTupleAnnotationProperty("Center", [0, 0], self)
         self.properties.append(self.center)
 
-        self.radius = RelativeLengthAnnotationProperty("Radius", None, self)
+        self.radius = IntAnnotationProperty("Radius", None, self)
         self.properties.append(self.radius)
 
         self.thikness = IntAnnotationProperty("Thikness", 3, self)

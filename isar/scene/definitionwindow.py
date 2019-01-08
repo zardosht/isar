@@ -183,10 +183,10 @@ class SceneDefinitionWindow(QDialog):
         camera_frame = self._camera_service.get_frame(flipped=True)
         self.camera_view.set_camera_frame(camera_frame)
 
-        phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
-        scene_phys_objs = phys_obj_model.get_scene_physical_objects()
-        if scene_phys_objs is not None and len(scene_phys_objs) > 0:
-            self._object_detection_service.get_present_objects(camera_frame, callback=self.on_obj_detection_complete)
+        # phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
+        # scene_phys_objs = phys_obj_model.get_scene_physical_objects()
+        # if scene_phys_objs is not None and len(scene_phys_objs) > 0:
+        #     self._object_detection_service.get_present_objects(camera_frame, callback=self.on_obj_detection_complete)
 
     def on_obj_detection_complete(self, phys_obj_predictions):
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()

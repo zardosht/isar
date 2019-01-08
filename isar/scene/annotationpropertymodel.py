@@ -243,46 +243,6 @@ class PhysicalObjectAnnotationProperty(AnnotationProperty):
             return False
 
 
-class RelativeLengthAnnotationProperty(AnnotationProperty):
-    def get_str_value(self):
-        return "{:.2f}".format(self._value * 100)
-
-    def set_value(self, value):
-        if isinstance(value, str):
-            literal = get_literal_from_str(value)
-            if literal:
-                self._value = literal / 100
-                return True
-            else:
-                return False
-        else:
-            if isinstance(value, (float, int)):
-                self._value = float(value)
-                return True
-            else:
-                return False
-
-
-class RelativePositionAnnotationProperty(AnnotationProperty):
-    def get_str_value(self):
-        return "({})".format(", ".join("{:.2f}".format(x * 100) for x in self._value))
-
-    def set_value(self, value):
-        if isinstance(value, str):
-            literal = get_literal_from_str(value)
-            if literal and isinstance(literal, tuple) and len(literal) == 2:
-                    self._value = tuple(x / 100 for x in literal)
-                    return True
-            else:
-                return False
-        else:
-            if isinstance(value, tuple) and len(value) == 2:
-                self._value = tuple(float(x) for x in value)
-                return True
-            else:
-                return False
-
-
 class FloatTupleAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         if isinstance(value, str):
