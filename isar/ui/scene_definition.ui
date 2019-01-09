@@ -305,7 +305,17 @@
                 </spacer>
                </item>
                <item>
-                <widget class="QLabel" name="mouse_position_label">
+                <widget class="QLabel" name="mouse_object_position_label">
+                 <property name="text">
+                  <string>mouse object position</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="mouse_image_position_label">
                  <property name="minimumSize">
                   <size>
                    <width>100</width>
@@ -313,7 +323,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>mouse position</string>
+                  <string>mouse image position</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

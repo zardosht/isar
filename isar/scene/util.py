@@ -77,12 +77,24 @@ def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):
     return int(x * x_scale), int(y * y_scale)
 
 
-def get_point_in_ref_frame(point, ref_frame:RefFrame):
-    if ref_frame is None:
+def convert_object_to_image(point, object_frame:RefFrame):
+    if object_frame is None:
         return point
 
-    return point[0] + ref_frame.x, point[1] + ref_frame.y
+    return point[0] + object_frame.x, point[1] + object_frame.y
 
+
+def convert_image_to_object(point, object_frame:RefFrame):
+    if object_frame is None:
+        return point
+
+    return point[0] - object_frame.x, point[1] - object_frame.y
+
+
+def intersects_with_phys_obj(point, phys_obj):
+    obj_frame = phys_obj.ref_frame
+    return obj_frame.x <= point[0] <= obj_frame.x + obj_frame.width and \
+           obj_frame.y <= point[1] <= obj_frame.y + obj_frame.height
 
 
 
