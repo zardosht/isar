@@ -16,13 +16,16 @@ class AnnotationTool:
         self._img = None
         self._image_frame = None
         self.reference_frame = None
-        self.drawing = False
+        self._drawing = False
         self.annotation = None
         self.annotations_model = None
 
     def set_image(self, img):
         self._img = img
         self._image_frame = Frame(self._img.shape[1], self._img.shape[0])
+
+    def set_drawing(self, drawing):
+        self._drawing = drawing
 
     def mouse_press_event(self, qwidget, event):
         pass
@@ -41,8 +44,8 @@ def draw_annotation(opencv_img, annotation, reference_frame=None):
     annotation_tool = annotation_tools[annotation.__class__.__name__]
     annotation_tool.set_image(opencv_img)
     annotation_tool.reference_frame = reference_frame
-    annotation_tool.drawing = True
     annotation_tool.annotation = annotation
+    annotation_tool.set_drawing(True)
     annotation_tool.draw()
 
 
@@ -66,7 +69,7 @@ class CircleAnnotationTool(AnnotationTool):
         super(CircleAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
-        self.drawing = True
+        self.set_drawing(True)
         self.annotation = CircleAnnotation()
 
         # convert mouse coordinates to image coordinates
@@ -76,7 +79,7 @@ class CircleAnnotationTool(AnnotationTool):
         self.annotation.center.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
-        if self.drawing:
+        if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
             img_x, img_y = util.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
@@ -86,7 +89,7 @@ class CircleAnnotationTool(AnnotationTool):
     def mouse_release_event(self, camera_view, event):
         if self.is_annotation_valid():
             self.annotations_model.add_annotation(self.annotation)
-        self.drawing = False
+        self.set_drawing(False)
 
     def is_annotation_valid(self):
         # Has the circle the minimum radius?
@@ -99,7 +102,7 @@ class CircleAnnotationTool(AnnotationTool):
         return True
 
     def draw(self):
-        if not self.drawing:
+        if not self._drawing:
             return
 
         if not self.annotation or not self.annotation.radius.get_value():
@@ -118,55 +121,90 @@ class CircleAnnotationTool(AnnotationTool):
 class RectangleAnnotationTool(AnnotationTool):
     def __init__(self):
         super(RectangleAnnotationTool, self).__init__()
+        self.v1 = None
+        self.v2 = None
+        self.color = (255, 0, 255)
+        self.thikness = 3
 
     def mouse_press_event(self, camera_view, event):
-        self.drawing = True
-        self.annotation = RectangleAnnotation()
+        self.v1 = None
+        self.v2 = None
+        self.set_drawing(True)
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
         img_x, img_y = util.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
-        self.annotation.vertex1.set_value((img_x, img_y))
+        self.v1 = (img_x, img_y)
 
     def mouse_move_event(self, camera_view, event):
-        if self.drawing:
+        if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
             img_x, img_y = util.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
-            self.annotation.vertex2.set_value((img_x, img_y))
+            self.v2 = (img_x, img_y)
 
     def mouse_release_event(self, camera_view, event):
-        if self.is_annotation_valid():
-            self.annotations_model.add_annotation(self.annotation)
+        if self.v2 is None or self.v1 is None:
+            self.set_drawing(False)
+            return
 
-        self.drawing = False
+        width = self.v2[0] - self.v1[0]
+        right_to_left = False
+        if width < 0:
+            right_to_left = True
 
-    def is_annotation_valid(self):
-        # Has the rectangle the minimum area?
-        area = util.calc_rect_area(self.annotation.vertex1.get_value(), self.annotation.vertex2.get_value())
-        if area is None:
-            return False
-        if area < RectangleAnnotation.MINIMUM_AREA:
-            return False
+        bottom_up = False
+        height = self.v2[1] - self.v1[1]
+        if height < 0:
+            bottom_up = True
 
-        return True
+        position = [self.v1[0], self.v1[1]]
+        if right_to_left:
+            position[0] = self.v2[0]
+
+        if bottom_up:
+            position[1] = self.v2[1]
+
+        if self.is_annotation_valid(width, height):
+            annotation = RectangleAnnotation()
+            annotation.set_position(position)
+            annotation.width.set_value(abs(width))
+            annotation.height.set_value(abs(height))
+            self.annotations_model.add_annotation(annotation)
+
+        self.set_drawing(False)
+
+    def set_drawing(self, drawing):
+        self._drawing = drawing
+
+    @staticmethod
+    def is_annotation_valid(width, height):
+        return abs(width) >= RectangleAnnotation.MINIMUM_WIDTH \
+               and abs(height) >= RectangleAnnotation.MINIMUM_HEIGHT
 
     def draw(self):
-        if not self.drawing:
+        if not self._drawing:
             return
 
-        if not self.annotation or not self.annotation.vertex2.get_value():
-            return
+        color = self.color
+        thikness = self.thikness
+        if self.annotation:
+            self.v1 = self.annotation.position.get_value()
+            width = self.annotation.width.get_value()
+            height = self.annotation.height.get_value()
+            self.v2 = (self.v1[0] + width, self.v1[1] + height)
+            color = self.annotation.color.get_value()
+            thikness = self.annotation.thikness.get_value()
 
-        vertex1 = self.annotation.vertex1.get_value()
-        vertex2 = self.annotation.vertex2.get_value()
+        if self.v2 is None:
+            return
 
         cv2.rectangle(self._img,
-                      vertex1,
-                      vertex2,
-                      self.annotation.color.get_value(),
-                      self.annotation.thikness.get_value())
+                      tuple(self.v1),
+                      tuple(self.v2),
+                      color,
+                      thikness)
 
 
 class LineAnnotationTool(AnnotationTool):
@@ -174,7 +212,7 @@ class LineAnnotationTool(AnnotationTool):
         super(LineAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
-        self.drawing = True
+        self.set_drawing(True)
         self.annotation = LineAnnotation()
 
         # convert mouse coordinates to image coordinates
@@ -184,7 +222,7 @@ class LineAnnotationTool(AnnotationTool):
         self.annotation.start.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
-        if self.drawing:
+        if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
             img_x, img_y = util.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
@@ -193,10 +231,10 @@ class LineAnnotationTool(AnnotationTool):
     def mouse_release_event(self, camera_view, event):
         if self.is_annotation_valid():
             self.annotations_model.add_annotation(self.annotation)
-        self.drawing = False
+        self.set_drawing(False)
 
     def draw(self):
-        if not self.drawing:
+        if not self._drawing:
             return
 
         if not self.annotation or not self.annotation.end.get_value():
@@ -438,4 +476,3 @@ annotation_tool_btns = {
     "arrow_btn": ArrowAnnotationTool(),
     "image_btn": ImageAnnotationTool()
 }
-

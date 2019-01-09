@@ -1,4 +1,5 @@
 import logging
+import math
 from ast import literal_eval
 from typing import List
 
@@ -228,7 +229,8 @@ class LineAnnotation(Annotation):
 
 class RectangleAnnotation(Annotation):
 
-    MINIMUM_AREA = 50
+    MINIMUM_WIDTH = 10
+    MINIMUM_HEIGHT = 10
 
     def __init__(self):
         super(RectangleAnnotation, self).__init__()
@@ -239,11 +241,11 @@ class RectangleAnnotation(Annotation):
         self.thikness = IntAnnotationProperty("Thikness", 3, self)
         self.properties.append(self.thikness)
 
-        self.vertex1 = IntTupleAnnotationProperty("Vertex1", [0, 0], self)
-        self.properties.append(self.vertex1)
+        self.width = IntAnnotationProperty("Width", 5, self)
+        self.properties.append(self.width)
 
-        self.vertex2 = IntTupleAnnotationProperty("Vertex2", None, self)
-        self.properties.append(self.vertex2)
+        self.height = IntAnnotationProperty("Height", 5, self)
+        self.properties.append(self.height)
 
 
 class CircleAnnotation(Annotation):
@@ -256,7 +258,7 @@ class CircleAnnotation(Annotation):
         self.color = ColorAnnotationProperty("Color", (125, 125, 255), self)
         self.properties.append(self.color)
 
-        self.center = IntTupleAnnotationProperty("Center", [0, 0], self)
+        self.center = IntTupleAnnotationProperty("Center", [0, 0], self, self.set_center)
         self.properties.append(self.center)
 
         self.radius = IntAnnotationProperty("Radius", None, self)
@@ -264,6 +266,16 @@ class CircleAnnotation(Annotation):
 
         self.thikness = IntAnnotationProperty("Thikness", 3, self)
         self.properties.append(self.thikness)
+
+    def set_position(self, position):
+        self.position._value = position
+        self.center._value = position
+        return True
+
+    def set_center(self, center):
+        self.center._value = center
+        self.position._value = center
+        return True
 
 
 class RelationshipAnnotation(Annotation):
