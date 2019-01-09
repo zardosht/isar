@@ -13,8 +13,10 @@ logger = logging.getLogger("isar.cameraview")
 
 
 class CameraView(QLabel):
-        def __init__(self, parent=None):
+        def __init__(self, parent=None, scene_definition_window=None):
             super(CameraView, self).__init__(parent)
+            self.scene_definition_windows = scene_definition_window
+
             self.opencv_img = None
             self.active_annotation_tool = None
             self.annotations_model = None
@@ -22,6 +24,8 @@ class CameraView(QLabel):
 
             self.setAcceptDrops(True)
             self.dropped_physical_object = None
+
+            self.setMouseTracking(True)
 
         def set_camera_frame(self, camera_frame):
             self.opencv_img = camera_frame.scene_image
@@ -117,6 +121,12 @@ class CameraView(QLabel):
             super().mousePressEvent(event)
 
         def mouseMoveEvent(self, event):
+            x, y = event.pos().x(), event.pos().y()
+            camera_view_size = ImageFrame(self.size().width(), self.size().height())
+            image_frame = ImageFrame(self.opencv_img.shape[1], self.opencv_img.shape[0])
+            img_x, img_y = util.mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_frame)
+            self.scene_definition_windows.update_mouse_position_label((img_x, img_y))
+
             if self.active_annotation_tool:
                 self.active_annotation_tool.mouse_move_event(self, event)
 

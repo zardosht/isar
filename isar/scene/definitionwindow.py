@@ -46,7 +46,7 @@ class SceneDefinitionWindow(QDialog):
     def setup_ui(self):
         uic.loadUi("isar/ui/scene_definition.ui", self)
         self.camera_view_container.setLayout(QHBoxLayout())
-        self.camera_view = CameraView(self.camera_view_container)
+        self.camera_view = CameraView(self.camera_view_container, self)
         self.camera_view_container.layout().setContentsMargins(0, 0, 0, 0)
         self.camera_view_container.layout().addWidget(self.camera_view, stretch=1)
 
@@ -208,6 +208,8 @@ class SceneDefinitionWindow(QDialog):
     def reject(self):
         logger.info("TODO: Reject is overridden in order to avoid scape key closing the dialog!")
 
+    def update_mouse_position_label(self, position):
+        self.mouse_position_label.setText(str(position))
 
 
 class PhysicalObjectsView(QListView):

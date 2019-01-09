@@ -188,6 +188,12 @@
             </property>
             <item>
              <widget class="QFrame" name="camera_view_container">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="styleSheet">
                <string notr="true">background-color: rgb(205, 255, 250);</string>
               </property>
@@ -210,7 +216,7 @@
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>60</height>
+                <height>40</height>
                </size>
               </property>
               <property name="frameShape">
@@ -297,6 +303,22 @@
                   </size>
                  </property>
                 </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="mouse_position_label">
+                 <property name="minimumSize">
+                  <size>
+                   <width>100</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>mouse position</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
