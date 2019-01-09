@@ -393,6 +393,13 @@
               </widget>
              </item>
              <item>
+              <widget class="QCheckBox" name="track_objects_checkbox">
+               <property name="text">
+                <string>Track Objects</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QLabel" name="label_5">
                <property name="text">
                 <string>Annotations</string>

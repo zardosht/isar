@@ -184,8 +184,7 @@ class ObjectDetectionPrediction:
 
     @top_left.setter
     def top_left(self, value):
-        self._top_left = \
-            (value[0] / self.camera_frame_size[0], value[1] / self.camera_frame_size[1])
+        self._top_left = (value[0], value[1])
 
     @property
     def bottom_right(self):
@@ -193,8 +192,7 @@ class ObjectDetectionPrediction:
 
     @bottom_right.setter
     def bottom_right(self, value):
-        self._bottom_right = \
-            (value[0] / self.camera_frame_size[0], value[1] / self.camera_frame_size[1])
+        self._bottom_right = (value[0], value[1])
 
 
 class ObjectDetectionRequest:

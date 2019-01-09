@@ -113,11 +113,15 @@ class PhysicalObjectsModel(QAbstractListModel):
             return ()
 
     def update_present_physical_objects(self, phys_obj_predictions):
+        if phys_obj_predictions is None:
+            self.__present_physical_objects.clear()
+            return
+
         scene_phys_objs = self.get_scene_physical_objects()
         for obj_detector in phys_obj_predictions:
             present_phys_objs = []
             predictions = phys_obj_predictions[obj_detector]
-            for scene_phys_obj in self.get_scene_physical_objects():
+            for scene_phys_obj in scene_phys_objs:
                 for prediction in predictions:
                     if scene_phys_obj.name == prediction.label:
                         scene_phys_obj.detection_confidence = prediction.confidence
