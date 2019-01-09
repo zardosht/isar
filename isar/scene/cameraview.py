@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QLabel
 
 from isar.scene import annotationtool, util, physicalobjecttool
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
-from isar.scene.util import ImageFrame
+from isar.scene.util import Frame
 
 logger = logging.getLogger("isar.cameraview")
 
@@ -18,6 +18,7 @@ class CameraView(QLabel):
             self.scene_definition_windows = scene_definition_window
 
             self.opencv_img = None
+            self.image_frame = None
             self.active_annotation_tool = None
             self.annotations_model = None
             self.physical_objects_model: PhysicalObjectsModel = None
@@ -26,16 +27,18 @@ class CameraView(QLabel):
             self.dropped_physical_object = None
 
             self.setMouseTracking(True)
+            self.camera_view_size = Frame(self.size().width(), self.size().height())
 
         def set_camera_frame(self, camera_frame):
             self.opencv_img = camera_frame.scene_image
+            self.image_frame = Frame(self.opencv_img.shape[1], self.opencv_img.shape[0])
 
             self.draw_scene_physical_objects()
 
             self.draw_scene_annotations()
 
             if self.active_annotation_tool:
-                self.active_annotation_tool.img = self.opencv_img
+                self.active_annotation_tool.set_image(self.opencv_img)
                 self.active_annotation_tool.annotations_model = self.annotations_model
                 self.active_annotation_tool.draw()
 
@@ -103,10 +106,8 @@ class CameraView(QLabel):
                     self.dropped_physical_object = dropped_po
 
                     self.physical_objects_model.add_physical_object_to_scene(dropped_po)
-                    camera_view_size = ImageFrame(self.size().width(), self.size().height())
-                    dropped_po.scene_position = util.image_coordinates_to_relative_coordinates(
-                        camera_view_size, event.pos().x(), event.pos().y())
-                    dropped_po.scene_frame = ImageFrame(self.opencv_img.shape[1], self.opencv_img.shape[0])
+                    dropped_po.scene_position = util.mouse_coordinates_to_image_coordinates(
+                        event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
                     event.setDropAction(Qt.CopyAction)
                     event.accept()
                 else:
@@ -121,10 +122,8 @@ class CameraView(QLabel):
             super().mousePressEvent(event)
 
         def mouseMoveEvent(self, event):
-            x, y = event.pos().x(), event.pos().y()
-            camera_view_size = ImageFrame(self.size().width(), self.size().height())
-            image_frame = ImageFrame(self.opencv_img.shape[1], self.opencv_img.shape[0])
-            img_x, img_y = util.mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_frame)
+            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+                event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
             self.scene_definition_windows.update_mouse_position_label((img_x, img_y))
 
             if self.active_annotation_tool:
@@ -145,3 +144,5 @@ class CameraView(QLabel):
                 self.active_annotation_tool = annotationtool.annotation_tool_btns[annotation_btn_name]
                 self.active_annotation_tool.annotations_model = self.annotations_model
 
+        def resizeEvent(self, resize_event):
+            self.camera_view_size = Frame(self.size().width(), self.size().height())

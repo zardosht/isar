@@ -11,7 +11,7 @@ class RefFrame(NamedTuple):
     height: float
 
 
-class ImageFrame(NamedTuple):
+class Frame(NamedTuple):
     width: int
     height: int
 
@@ -69,40 +69,6 @@ def get_qimage_from_np_image(np_image):
                        np_image.strides[0], qfromat)
     out_image = out_image.rgbSwapped()
     return out_image
-
-
-def relative_coordinates_to_image_coordinates(img_frame, rel_x, rel_y, ref_frame=None):
-    # based on the scale factor between opencv image size and
-    # the camera_view image size
-    if ref_frame is not None:
-        ref_frame_img_x, ref_frame_img_y = relative_coordinates_to_image_coordinates(img_frame, ref_frame.x, ref_frame.y)
-
-        ref_frame_img_width, ref_frame_img_height = \
-            relative_coordinates_to_image_coordinates(img_frame, ref_frame.width, ref_frame.height)
-
-        abs_x_in_ref_frame, abs_y_in_ref_frame = relative_coordinates_to_image_coordinates(
-            ImageFrame(ref_frame_img_width, ref_frame_img_height), rel_x, rel_y)
-
-        img_x = ref_frame_img_x + abs_x_in_ref_frame
-        img_y = ref_frame_img_y + abs_y_in_ref_frame
-
-    else:
-        img_x = int(rel_x * img_frame.width)
-        img_y = int(rel_y * img_frame.height)
-
-    return img_x, img_y
-
-
-def relative_distance_to_image_coordinates(image_frame, rel_distance):
-    # based on the scale factor between opencv image size and
-    # the camera_view image size
-    # opencv_img_shape[1] is width
-    img_dist = int(rel_distance * image_frame.width)
-    return int(img_dist)
-
-
-def image_coordinates_to_relative_coordinates(image_frame, x, y):
-    return x / image_frame.width, y / image_frame.height
 
 
 def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):

@@ -198,7 +198,7 @@ class SelectBoxAnnotation(Annotation):
 
 class LineAnnotation(Annotation):
 
-    MINIMUM_LENGTH = 0.001
+    MINIMUM_LENGTH = 10
 
     def __init__(self):
         super().__init__()
@@ -228,7 +228,7 @@ class LineAnnotation(Annotation):
 
 class RectangleAnnotation(Annotation):
 
-    MINIMUM_AREA = 0.00001
+    MINIMUM_AREA = 50
 
     def __init__(self):
         super(RectangleAnnotation, self).__init__()
@@ -248,7 +248,7 @@ class RectangleAnnotation(Annotation):
 
 class CircleAnnotation(Annotation):
 
-    MINIMUM_RADIUS = 0.001
+    MINIMUM_RADIUS = 5
 
     def __init__(self):
         super(CircleAnnotation, self).__init__()

@@ -181,8 +181,8 @@ class PhysicalObject:
             # TODO: check scene object too. Also, make sure that when a scene object is no more present,
             #  its top_left, bottom_right, and scene_image attributes are set to None
             x, y = self.__scene_position
-            width = self.template_image.shape[1] / self.__scene_frame.width
-            height = self.template_image.shape[0] / self.__scene_frame.height
+            width = self.template_image.shape[1]
+            height = self.template_image.shape[0]
         else:
             x, y = self.__top_left
             br_x, br_y = self.bottom_right
