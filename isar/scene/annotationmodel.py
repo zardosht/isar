@@ -150,7 +150,7 @@ class Annotation:
         self.position = IntTupleAnnotationProperty("Position", (0, 0), self, self.set_position)
         self.properties.append(self.position)
 
-        self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None, self)
+        self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None, self, self.set_attached_to)
         self.properties.append(self.attached_to)
 
         self.update_orientation = BooleanAnnotationProperty("Update Orientation", False, self)
@@ -160,6 +160,33 @@ class Annotation:
         # must be implemented by subclasses if needed.
         self.position._value = position
         return True
+
+    def set_attached_to(self, phys_obj):
+        old_phys_obj = self.attached_to.get_value()
+        if old_phys_obj is not None and phys_obj == old_phys_obj:
+            return False
+
+        if isinstance(phys_obj, PhysicalObject):
+            phys_obj.add_annotation(self)
+            self.attached_to._value = phys_obj
+            self.scene.remove_annotation(self)
+
+            if old_phys_obj is not None:
+                old_phys_obj.remove_annotation(self)
+
+            self.set_position((0, 0))
+            return True
+
+        elif phys_obj is None:
+            self.attached_to._value = None
+            self.owner = self.scene
+            self.scene.add_annotation(self)
+
+            if old_phys_obj is not None:
+                old_phys_obj.remove_annotation(self)
+
+            self.set_position((0, 0))
+            return True
 
 """
 Text
@@ -547,31 +574,6 @@ class PhysicalObjectAnnotationProperty(AnnotationProperty):
     def set_value(self, phys_obj):
         if self.setter is not None:
             return self.setter(phys_obj)
-
-        old_phys_obj = self._value
-        if old_phys_obj is not None and phys_obj == old_phys_obj:
-            return True
-
-        if isinstance(phys_obj, PhysicalObject):
-            phys_obj.add_annotation(self.annotation)
-            self._value = phys_obj
-            self.annotation.scene.remove_annotation(self.annotation)
-
-            if old_phys_obj is not None:
-                old_phys_obj.remove_annotation(self.annotation)
-
-            return True
-
-        elif phys_obj is None:
-            self._value = None
-            self.annotation.owner = self.annotation.scene
-            self.annotation.scene.add_annotation(self.annotation)
-
-            if old_phys_obj is not None:
-                old_phys_obj.remove_annotation(self.annotation)
-
-            return True
-
         else:
             return False
 

@@ -77,5 +77,16 @@ def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):
     return int(x * x_scale), int(y * y_scale)
 
 
+def get_point_in_ref_frame(point, ref_frame:RefFrame):
+    if ref_frame is None:
+        return point
+
+    return point[0] + ref_frame.x, point[1] + ref_frame.y
+
+
+
+
+
+
 
 

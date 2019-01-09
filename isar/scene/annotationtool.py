@@ -108,7 +108,7 @@ class CircleAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.radius.get_value():
             return
 
-        center = self.annotation.center.get_value()
+        center = util.get_point_in_ref_frame(self.annotation.center.get_value(), self.reference_frame)
         radius = self.annotation.radius.get_value()
 
         cv2.circle(self._img,
@@ -190,7 +190,7 @@ class RectangleAnnotationTool(AnnotationTool):
         color = self.color
         thikness = self.thikness
         if self.annotation:
-            self.v1 = self.annotation.position.get_value()
+            self.v1 = util.get_point_in_ref_frame(self.annotation.position.get_value(), self.reference_frame)
             width = self.annotation.width.get_value()
             height = self.annotation.height.get_value()
             self.v2 = (self.v1[0] + width, self.v1[1] + height)
@@ -240,8 +240,8 @@ class LineAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.end.get_value():
             return
 
-        start = self.annotation.start.get_value()
-        end = self.annotation.end.get_value()
+        start = util.get_point_in_ref_frame(self.annotation.start.get_value(), self.reference_frame)
+        end = util.get_point_in_ref_frame(self.annotation.end.get_value(), self.reference_frame)
 
         cv2.line(self._img,
                  start,

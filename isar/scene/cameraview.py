@@ -122,9 +122,10 @@ class CameraView(QLabel):
             super().mousePressEvent(event)
 
         def mouseMoveEvent(self, event):
-            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
-                event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
-            self.scene_definition_windows.update_mouse_position_label((img_x, img_y))
+            if self.image_frame is not None:
+                img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+                    event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
+                self.scene_definition_windows.update_mouse_position_label((img_x, img_y))
 
             if self.active_annotation_tool:
                 self.active_annotation_tool.mouse_move_event(self, event)
