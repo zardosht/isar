@@ -114,7 +114,13 @@ class PhysicalObjectsModel(QAbstractListModel):
 
     def update_present_physical_objects(self, phys_obj_predictions):
         if phys_obj_predictions is None:
+            if len(self.__present_physical_objects) == 0:
+                return
+            
             self.__present_physical_objects.clear()
+            scene_phys_objs = self.get_scene_physical_objects()
+            for phys_obj in scene_phys_objs:
+                phys_obj.update_tracking(None)
             return
 
         scene_phys_objs = self.get_scene_physical_objects()
@@ -124,9 +130,7 @@ class PhysicalObjectsModel(QAbstractListModel):
             for scene_phys_obj in scene_phys_objs:
                 for prediction in predictions:
                     if scene_phys_obj.name == prediction.label:
-                        scene_phys_obj.detection_confidence = prediction.confidence
-                        scene_phys_obj.top_left = prediction.top_left
-                        scene_phys_obj.bottom_right = prediction.bottom_right
+                        scene_phys_obj.update_tracking(prediction)
                         present_phys_objs.append(scene_phys_obj)
             self.__present_physical_objects[obj_detector] = present_phys_objs
 
@@ -134,6 +138,11 @@ class PhysicalObjectsModel(QAbstractListModel):
         result = []
         for obj_detector in self.__present_physical_objects:
             result.extend(self.__present_physical_objects[obj_detector])
+
+        scene_phys_objs = self.get_scene_physical_objects()
+        for phys_obj in scene_phys_objs:
+            if phys_obj not in result:
+                phys_obj.update_tracking(None)
 
         return tuple(result)
 
@@ -150,6 +159,8 @@ class PhysicalObject:
         self.__scene_position = None
         self.__scene_frame = None
         self.__annotations = []
+
+        self._tracking = False
         self.detection_confidence = None
         self.__top_left = None
         self.bottom_right = None
@@ -205,6 +216,21 @@ class PhysicalObject:
         if annotation not in self.__annotations:
             annotation.owner = self
             self.__annotations.append(annotation)
+
+    def update_tracking(self, prediction):
+        if prediction is None:
+            self._tracking = False
+            self.detection_confidence = None
+            self.__top_left = None
+            self.bottom_right = None
+        else:
+            self._tracking = True
+            self.detection_confidence = prediction.confidence
+            self.top_left = prediction.top_left
+            self.bottom_right = prediction.bottom_right
+
+    def is_tracking(self):
+        return self._tracking
 
     def __hash__(self):
         return hash(self.name)
