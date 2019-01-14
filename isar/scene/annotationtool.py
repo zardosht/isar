@@ -190,15 +190,18 @@ class RectangleAnnotationTool(AnnotationTool):
         color = self.color
         thikness = self.thikness
         if self.annotation:
-            position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
+            # position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
+            position = self.annotation.position.get_value()
             width = self.annotation.width.get_value()
             height = self.annotation.height.get_value()
-            self.v1 = [0, 0]
-            self.v1[0] = position[0] - int(width / 2)
-            self.v1[1] = position[1] - int(height / 2)
-            self.v2 = [0, 0]
-            self.v2[0] = position[0] + int(width / 2)
-            self.v2[1] = position[1] + int(height / 2)
+            v1 = [0, 0]
+            v1[0] = position[0] - int(width / 2)
+            v1[1] = position[1] - int(height / 2)
+            self.v1 = util.convert_object_to_image(v1, self.phys_obj)
+            v2 = [0, 0]
+            v2[0] = position[0] + int(width / 2)
+            v2[1] = position[1] + int(height / 2)
+            self.v2 = util.convert_object_to_image(v2, self.phys_obj)
             color = self.annotation.color.get_value()
             thikness = self.annotation.thikness.get_value()
 
