@@ -15,7 +15,10 @@ name = "DUMMY_DETECTOR"
 description = "Dummy detector"
 
 
-def get_predictions(frame):
+def get_predictions(obj_detection_request):
+
+    frame = obj_detection_request.camera_frame
+
     ## TODO: Remove. Dummy test code
     # x += 10
     # if x > frame.size[0]: x = 0

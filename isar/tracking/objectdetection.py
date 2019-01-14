@@ -112,10 +112,10 @@ class ObjectDetectionService(Service):
         for observer_thread in self.observer_threads:
             observer_thread.start()
 
-    def get_present_objects(self, camera_frame, callback=None):
+    def get_present_objects(self, camera_frame, scene_phys_objs_names, callback=None):
         for observer_thread in self.observer_threads:
             if not observer_thread.request_queue.full():
-                observer_thread.request_queue.put(camera_frame, block=False)
+                observer_thread.request_queue.put(ObjectDetectionRequest(camera_frame, scene_phys_objs_names), block=False)
                 observer_thread.callback = callback
 
     def stop(self):
@@ -149,13 +149,13 @@ class ObjectDetectionObserverThread(threading.Thread):
 
     def wait_for_object_detection(self):
         while True:
-            camera_frame = self.request_queue.get()
-            if camera_frame == POISON_PILL:
+            obj_detection_req = self.request_queue.get()
+            if obj_detection_req == POISON_PILL:
                 self.request_queue.task_done()
                 break
 
             phys_obj_predictions = {}
-            self.obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
+            self.obj_detector_worker.request_queue.put(obj_detection_req)
             obj_detection_response = self.obj_detector_worker.response_queue.get()
             phys_obj_predictions[obj_detection_response.object_detector_name] = obj_detection_response.predictions
             if self.callback is not None:
@@ -197,8 +197,9 @@ class ObjectDetectionPrediction:
 
 
 class ObjectDetectionRequest:
-    def __init__(self, camera_frame):
+    def __init__(self, camera_frame, scene_phys_objs_names):
         self.camera_frame = camera_frame
+        self.scene_physical_objects_names = scene_phys_objs_names
 
 
 class ObjectDetectionResponse:
@@ -225,7 +226,7 @@ class ObjectDetectorWorker(mp.Process):
             obj_detection_request = self.request_queue.get()
 
             t1 = time.time()
-            obj_detection_predictions = self.object_detector.get_predictions(obj_detection_request.camera_frame)
+            obj_detection_predictions = self.object_detector.get_predictions(obj_detection_request)
             self.request_queue.task_done()
             self.response_queue.put(ObjectDetectionResponse(self.object_detector.name, obj_detection_predictions))
             logger.info("Detection of objects by {} took {}".format(self.object_detector.name, time.time() - t1))

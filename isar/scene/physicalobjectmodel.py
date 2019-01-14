@@ -112,6 +112,13 @@ class PhysicalObjectsModel(QAbstractListModel):
         else:
             return ()
 
+    def get_scene_physical_objects_names(self):
+        phys_objs_names = []
+        for phys_obj in self.get_scene_physical_objects():
+            phys_objs_names.append(phys_obj.name)
+        return tuple(phys_objs_names)
+
+
     def update_present_physical_objects(self, phys_obj_predictions):
         if phys_obj_predictions is None:
             if len(self.__present_physical_objects) == 0:

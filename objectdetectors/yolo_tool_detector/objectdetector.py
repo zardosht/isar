@@ -30,7 +30,7 @@ pose_estimation_task_queue = mp.JoinableQueue()
 pose_estimation_results_queue = mp.Queue()
 
 
-def get_predictions(frame: CameraFrame):
+def get_predictions(obj_detection_request):
     # feed the video/camera_feed into Yolo and get the bounding boxes of detected objects
     # crop the detected objects from Yolo output frame
     # find the corresponding object in the list of saved domain objects
@@ -38,6 +38,9 @@ def get_predictions(frame: CameraFrame):
     # use matcher to match the features
     # compute the homography from the set of matched features
     # apply homograph to the position of the annotations.
+
+    frame: CameraFrame = obj_detection_request.camera_frame
+
     if tfnet is None:
         init_yolo()
         logger.info("YOLO model loaded.")
@@ -52,7 +55,7 @@ def get_predictions(frame: CameraFrame):
 
         t1 = time.time()
         predictions = run_object_detection(frame)
-        estimate_pose(predictions)
+        estimate_pose(predictions, obj_detection_request.scene_physical_objects_names)
 
     except Exception as e:
         logging.error(e)
@@ -62,13 +65,22 @@ def get_predictions(frame: CameraFrame):
     return predictions
 
 
-def estimate_pose(predictions):
-    physical_object_names = [prediction.label for prediction in predictions]
-    remove_from_best_homographies = list(set(best_homographies.keys()) - set(physical_object_names))
+def estimate_pose(predictions, scene_phys_objs_names):
+    # Only estimate the pose for the scene_phys_objs.
+
+    present_objects_names = [prediction.label for prediction in predictions]
+    remove_from_best_homographies = list(set(best_homographies.keys()) - set(present_objects_names))
     for name in remove_from_best_homographies:
         del best_homographies[name]
 
+    for key in best_homographies.keys():
+        if key not in scene_phys_objs_names:
+            del best_homographies[key]
+
     for target in predictions:
+        if target.label not in scene_phys_objs_names:
+            continue
+
         template = physical_objects_dict[target.label]
         best_homography = None
         if template.name in best_homographies and \
@@ -85,7 +97,8 @@ def estimate_pose(predictions):
             best_homographies[pe_output.object_name] = pe_output
 
     for prediction in predictions:
-        prediction.pose_estimation = best_homographies[prediction.label]
+        if prediction.label in scene_phys_objs_names:
+            prediction.pose_estimation = best_homographies[prediction.label]
 
 
 def run_object_detection(frame: CameraFrame):
@@ -104,7 +117,7 @@ def run_object_detection(frame: CameraFrame):
             prediction.image = frame.raw_image[tl[1]:br[1], tl[0]:br[0]].copy()
             if debug:
                 cv2.imwrite(str(os.path.join(temp_folder_path, label + "_prediciton.jpg")), prediction.image)
-            # prediction.homography = will be set in the get_predictions
+            # prediction.pose_estimation will be set in the get_predictions
             predictions.append(prediction)
     except Exception as e:
         logging.error(e)
@@ -132,6 +145,7 @@ def init_pose_estimators():
     num_processes = 10
     pose_estimators = [PoseEstimator(pose_estimation_task_queue, pose_estimation_results_queue) for i in range(num_processes)]
     for p in pose_estimators:
+        p.daemon = True
         p.start()
 
     logger.info("All pose estimator processes started.")

@@ -188,9 +188,11 @@ class SceneDefinitionWindow(QDialog):
 
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
         if self.track_objects_checkbox.isChecked():
-            scene_phys_objs = phys_obj_model.get_scene_physical_objects()
-            if scene_phys_objs is not None and len(scene_phys_objs) > 0:
-                self._object_detection_service.get_present_objects(camera_frame, callback=self.on_obj_detection_complete)
+            scene_phys_objs_names = phys_obj_model.get_scene_physical_objects_names()
+            if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
+                self._object_detection_service.get_present_objects(camera_frame,
+                                                                   scene_phys_objs_names,
+                                                                   callback=self.on_obj_detection_complete)
         else:
             phys_obj_model.update_present_physical_objects(None)
 
