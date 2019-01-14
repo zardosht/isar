@@ -1,13 +1,19 @@
+import os
+
+import cv2
 import logging
 import time
 
 from isar.tracking.objectdetection import ObjectDetectionPrediction
-from objectdetectors.dummy_detector import physical_objects
+from objectdetectors.dummy_detector import physical_objects, temp_folder_path
 
 logger = logging.getLogger("isar.objectdetectors.dummy_detector")
 
+activate = False
+
 name = "DUMMY_DETECTOR"
 description = "Dummy detector"
+
 
 def get_predictions(frame):
     ## TODO: Remove. Dummy test code
@@ -22,7 +28,11 @@ def get_predictions(frame):
 
     time.sleep(1)
     predictions = []
-    prediction = ObjectDetectionPrediction("Rubber Duck", 0.8, (x, y), (x + width, y + height), frame.size)
+    tl = (x, y)
+    br = (x + width, y + height)
+    prediction = ObjectDetectionPrediction("Rubber Duck", 0.8, tl, br, frame.size)
+    prediction.image = frame.raw_image[tl[1]:br[1], tl[0]:br[0]].copy()
+    cv2.imwrite(str(os.path.join(temp_folder_path, "dummy_prediciton_image.jpg")), prediction.image)
     predictions.append(prediction)
     return predictions
 

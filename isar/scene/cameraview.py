@@ -82,7 +82,7 @@ class CameraView(QLabel):
                 return
 
             for annotation in phys_obj.get_annotations():
-                annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj.ref_frame)
+                annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj)
 
         def dragEnterEvent(self, event: QDragEnterEvent):
             if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):

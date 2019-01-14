@@ -1,8 +1,8 @@
 import math
 from typing import NamedTuple
+import numpy as np
 
 from PyQt5.QtGui import QImage, QPixmap
-
 
 class RefFrame(NamedTuple):
     x: float
@@ -77,11 +77,17 @@ def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):
     return int(x * x_scale), int(y * y_scale)
 
 
-def convert_object_to_image(point, object_frame:RefFrame):
-    if object_frame is None:
+def convert_object_to_image(point, phys_obj):
+    if phys_obj is None:
         return point
 
-    return point[0] + object_frame.x, point[1] + object_frame.y
+    object_frame = phys_obj.ref_frame
+    if phys_obj.is_tracking() and phys_obj.pose_estimation is not None:
+        homogenous_position = np.array((point[0], point[1], 1)).reshape((3, 1))
+        new_position = np.dot(phys_obj.pose_estimation.homography, homogenous_position)
+        return new_position[0] + object_frame.x, new_position[1] + object_frame.y
+    else:
+        return point[0] + object_frame.x, point[1] + object_frame.y
 
 
 def convert_image_to_object(point, object_frame:RefFrame):

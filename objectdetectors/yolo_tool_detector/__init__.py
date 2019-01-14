@@ -9,14 +9,15 @@ from isar.scene.physicalobjectmodel import PhysicalObject
 logger = logging.getLogger("isar.objectdetectors.yolo_simple_tool_detector")
 
 object_detector_package_path = os.path.dirname(__file__)
+template_images_path = os.path.join(object_detector_package_path, "template_images/")
+physical_objects_json_path = os.path.join(object_detector_package_path, "physical_objects.json")
+temp_folder_path = os.path.join(object_detector_package_path, "tmp/")
 
 physical_objects = []
+physical_objects_dict = {}
 
 
 def init_physical_objects():
-    template_images_path = os.path.join(object_detector_package_path, "template_images/")
-    physical_objects_json_path = os.path.join(object_detector_package_path, "physical_objects.json")
-
     with open(physical_objects_json_path) as f:
         po_dicts = json.load(f)
 
@@ -25,6 +26,7 @@ def init_physical_objects():
         po.__dict__.update(po_dict)
         po.template_image = cv2.imread(str(template_images_path) + po.image_path)
         physical_objects.append(po)
+        physical_objects_dict[po.name] = po
 
 
 init_physical_objects()

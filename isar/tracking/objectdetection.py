@@ -55,8 +55,9 @@ def init():
             spec = importlib.util.spec_from_file_location(OBJECT_DETECTOR_MODULE_NAME, module_path)
             obj_detector = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(obj_detector)
-            object_detectors[obj_detector.name] = obj_detector
-            physical_objects[obj_detector.name] = obj_detector.get_physical_objects()
+            if obj_detector.activate:
+                object_detectors[obj_detector.name] = obj_detector
+                physical_objects[obj_detector.name] = obj_detector.get_physical_objects()
 
         except Exception as exp:
             logger.error("Could not load object detector module.")
@@ -100,7 +101,7 @@ class ObjectDetectionService(Service):
             request_queue = mp.JoinableQueue()
             response_queue = mp.Queue()
             obj_detector_worker = ObjectDetectorWorker(obj_detector, request_queue, response_queue)
-            obj_detector_worker.daemon = True
+            obj_detector_worker.daemon = False
             self.object_detector_workers.append(obj_detector_worker)
             observer_thread = ObjectDetectionObserverThread(Queue(maxsize=1), obj_detector_worker)
             self.observer_threads.append(observer_thread)
@@ -153,7 +154,6 @@ class ObjectDetectionObserverThread(threading.Thread):
                 self.request_queue.task_done()
                 break
 
-            t1 = time.time()
             phys_obj_predictions = {}
             self.obj_detector_worker.request_queue.put(ObjectDetectionRequest(camera_frame))
             obj_detection_response = self.obj_detector_worker.response_queue.get()
@@ -177,6 +177,7 @@ class ObjectDetectionPrediction:
         self.top_left = top_left
         self.bottom_right = bottom_right
         self.image = None
+        self.pose_estimation = None
 
     @property
     def top_left(self):
@@ -233,5 +234,9 @@ class ObjectDetectorWorker(mp.Process):
 
     def shut_down(self):
         self.shut_down_event.set()
+
+    def terminate(self):
+        self.object_detector.terminate()
+        super().terminate()
 
 

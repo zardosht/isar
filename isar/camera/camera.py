@@ -26,7 +26,7 @@ class CameraService(Service):
     def _open_capture(self):
         self._capture = cv2.VideoCapture(self.cam_id)
         if not self._capture.isOpened():
-            raise Exception("Could not open camera {0}".format(self.cam_id))
+            raise Exception("Could not open camera {}".format(self.cam_id))
 
     def start(self):
         t = threading.Thread(target=self._start_capture)

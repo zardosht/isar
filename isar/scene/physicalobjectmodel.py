@@ -116,7 +116,7 @@ class PhysicalObjectsModel(QAbstractListModel):
         if phys_obj_predictions is None:
             if len(self.__present_physical_objects) == 0:
                 return
-            
+
             self.__present_physical_objects.clear()
             scene_phys_objs = self.get_scene_physical_objects()
             for phys_obj in scene_phys_objs:
@@ -127,6 +127,9 @@ class PhysicalObjectsModel(QAbstractListModel):
         for obj_detector in phys_obj_predictions:
             present_phys_objs = []
             predictions = phys_obj_predictions[obj_detector]
+            if predictions is None or len(predictions) == 0:
+                continue
+
             for scene_phys_obj in scene_phys_objs:
                 for prediction in predictions:
                     if scene_phys_obj.name == prediction.label:
@@ -155,7 +158,6 @@ class PhysicalObject:
         self.name = ""
         self.template_image_path = ""
         self.template_image = None
-        self.scene_image = None
         self.__scene_position = None
         self.__scene_frame = None
         self.__annotations = []
@@ -164,6 +166,8 @@ class PhysicalObject:
         self.detection_confidence = None
         self.__top_left = None
         self.bottom_right = None
+        self.scene_image = None
+        self.pose_estimation = None
 
     @property
     def top_left(self):
@@ -193,8 +197,6 @@ class PhysicalObject:
     @property
     def ref_frame(self):
         if self.__top_left is None:
-            # TODO: check scene object too. Also, make sure that when a scene object is no more present,
-            #  its top_left, bottom_right, and scene_image attributes are set to None
             x, y = self.__scene_position
             width = self.template_image.shape[1]
             height = self.template_image.shape[0]
@@ -223,11 +225,15 @@ class PhysicalObject:
             self.detection_confidence = None
             self.__top_left = None
             self.bottom_right = None
+            self.pose_estimation = None
+            self.scene_image = None
         else:
             self._tracking = True
             self.detection_confidence = prediction.confidence
             self.top_left = prediction.top_left
             self.bottom_right = prediction.bottom_right
+            self.pose_estimation = prediction.pose_estimation
+            self.scene_image = prediction.image
 
     def is_tracking(self):
         return self._tracking

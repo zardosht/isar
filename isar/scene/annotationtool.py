@@ -15,7 +15,7 @@ class AnnotationTool:
     def __init__(self):
         self._img = None
         self._image_frame = None
-        self.reference_frame = None
+        self.phys_obj = None
         self._drawing = False
         self.annotation = None
         self.annotations_model = None
@@ -40,10 +40,10 @@ class AnnotationTool:
         pass
 
 
-def draw_annotation(opencv_img, annotation, reference_frame=None):
+def draw_annotation(opencv_img, annotation, phys_obj=None):
     annotation_tool = annotation_tools[annotation.__class__.__name__]
     annotation_tool.set_image(opencv_img)
-    annotation_tool.reference_frame = reference_frame
+    annotation_tool.phys_obj = phys_obj
     annotation_tool.annotation = annotation
     annotation_tool.set_drawing(True)
     annotation_tool.draw()
@@ -108,7 +108,7 @@ class CircleAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.radius.get_value():
             return
 
-        center = util.convert_object_to_image(self.annotation.center.get_value(), self.reference_frame)
+        center = util.convert_object_to_image(self.annotation.center.get_value(), self.phys_obj)
         radius = self.annotation.radius.get_value()
 
         cv2.circle(self._img,
@@ -190,7 +190,7 @@ class RectangleAnnotationTool(AnnotationTool):
         color = self.color
         thikness = self.thikness
         if self.annotation:
-            self.v1 = util.convert_object_to_image(self.annotation.position.get_value(), self.reference_frame)
+            self.v1 = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
             width = self.annotation.width.get_value()
             height = self.annotation.height.get_value()
             self.v2 = (self.v1[0] + width, self.v1[1] + height)
@@ -240,8 +240,8 @@ class LineAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.end.get_value():
             return
 
-        start = util.convert_object_to_image(self.annotation.start.get_value(), self.reference_frame)
-        end = util.convert_object_to_image(self.annotation.end.get_value(), self.reference_frame)
+        start = util.convert_object_to_image(self.annotation.start.get_value(), self.phys_obj)
+        end = util.convert_object_to_image(self.annotation.end.get_value(), self.phys_obj)
 
         cv2.line(self._img,
                  start,
