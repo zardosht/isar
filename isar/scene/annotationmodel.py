@@ -204,7 +204,7 @@ Timer
 
 
 class TextAnnotation(Annotation):
-    DEFAULT_TEXT = "Set the text in annotation properties view."
+    DEFAULT_TEXT = "[Text...]"
 
     def __init__(self):
         super().__init__()
