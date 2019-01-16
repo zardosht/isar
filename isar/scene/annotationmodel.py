@@ -222,18 +222,47 @@ class TextAnnotation(Annotation):
 
 
 class ArrowAnnotation(Annotation):
+    DEFAULT_TEXT = "[Text...]"
+    MINIMUM_LENGTH = 15
+
     def __init__(self):
         super().__init__()
-        self.text = ""
-        self.start = [0.0, 0.0]
-        self.end = [0.0, 0.0]
-        self.thickness = 3
+        self.text = StringAnnotationProperty("Text", ArrowAnnotation.DEFAULT_TEXT, self)
+        self.properties.append(self.text)
 
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 3, self)
+        self.properties.append(self.text_thickness)
 
-class SelectBoxAnnotation(Annotation):
-    def __init__(self):
-        super().__init__()
-        self.text = ""
+        self.font_scale = FloatAnnotationProperty("Font Scale", 1.5, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 255, 255), self)
+        self.properties.append(self.text_color)
+
+        self.head = IntTupleAnnotationProperty("Head", [0, 0], self, self.set_head)
+        self.properties.append(self.head)
+
+        self.tail = IntTupleAnnotationProperty("Tail", None, self)
+        self.properties.append(self.tail)
+
+        self.thickness = IntAnnotationProperty("Thickness", 3, self)
+        self.properties.append(self.thickness)
+
+        self.color = ColorAnnotationProperty("Color", (0, 255, 255), self)
+        self.properties.append(self.color)
+
+        self.tip_length = FloatAnnotationProperty("Tip Lenght", 0.1, self)
+        self.properties.append(self.tip_length)
+
+    def set_position(self, position):
+        self.position._value = position
+        self.head._value = position
+        return True
+
+    def set_head(self, head):
+        self.head._value = head
+        self.position._value = head
+        return True
 
 
 class LineAnnotation(Annotation):
@@ -317,13 +346,6 @@ class CircleAnnotation(Annotation):
         return True
 
 
-class RelationshipAnnotation(Annotation):
-    def __init__(self):
-        super().__init__()
-        self.text = ""
-        self.to_object: PhysicalObject = None
-
-
 class AudioAnnotation(Annotation):
     def __init__(self):
         super(AudioAnnotation, self).__init__()
@@ -342,6 +364,19 @@ class ImageAnnotation(Annotation):
         self.image_path = ""
         self.width = 0
         self.height = 0
+
+
+class RelationshipAnnotation(Annotation):
+    def __init__(self):
+        super().__init__()
+        self.text = ""
+        self.to_object: PhysicalObject = None
+
+
+class SelectBoxAnnotation(Annotation):
+    def __init__(self):
+        super().__init__()
+        self.text = ""
 
 
 class TimerAnnotation(Annotation):

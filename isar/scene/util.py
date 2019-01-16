@@ -103,7 +103,18 @@ def intersects_with_phys_obj(point, phys_obj):
            obj_frame.y <= point[1] <= obj_frame.y + obj_frame.height
 
 
+def get_left2right_topdown(v1, v2):
+    width = v2[0] - v1[0]
+    left_to_right = False
+    if width >= 0:
+        left_to_right = True
 
+    height = v2[1] - v1[1]
+    topdown = False
+    if height >= 0:
+        bottom_up = True
+
+    return left_to_right, topdown
 
 
 

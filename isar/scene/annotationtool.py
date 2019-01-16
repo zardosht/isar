@@ -150,21 +150,8 @@ class RectangleAnnotationTool(AnnotationTool):
             return
 
         width = self.v2[0] - self.v1[0]
-        right_to_left = False
-        if width < 0:
-            right_to_left = True
-
-        bottom_up = False
         height = self.v2[1] - self.v1[1]
-        if height < 0:
-            bottom_up = True
-
         position = [self.v1[0] + int(width / 2), self.v1[1] + int(height / 2)]
-        # if right_to_left:
-        #     position[0] = self.v2[0]
-        #
-        # if bottom_up:
-        #     position[1] = self.v2[1]
 
         if self.is_annotation_valid(width, height):
             annotation = RectangleAnnotation()
@@ -267,6 +254,145 @@ class LineAnnotationTool(AnnotationTool):
 
         return True
 
+
+class TextAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super().__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        self.set_drawing(True)
+        self.annotation = TextAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.annotation.position.set_value((img_x, img_y))
+
+    def mouse_move_event(self, camera_view, event):
+        # logger.info("Not implemented.")
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if not self.annotation or not self.annotation.text.get_value():
+            return
+
+        position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
+        text = self.annotation.text.get_value()
+        font_scale = self.annotation.font_scale.get_value()
+        color = self.annotation.color.get_value()
+        thickness = self.annotation.thickness.get_value()
+
+        # TODO: add font property to TextAnnotation()
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        line_type = cv2.LINE_AA
+
+        cv2.putText(self._img,
+                    text,
+                    position,
+                    font,
+                    font_scale,
+                    color,
+                    thickness,
+                    line_type)
+
+    def is_annotation_valid(self):
+        text = self.annotation.text.get_value()
+        if text is None or text.isspace():
+            return False
+        else:
+            return True
+
+
+class ArrowAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(ArrowAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        self.set_drawing(True)
+        self.annotation = ArrowAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.annotation.head.set_value((img_x, img_y))
+
+    def mouse_move_event(self, camera_view, event):
+        if self._drawing:
+            camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+                event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+            self.annotation.tail.set_value((img_x, img_y))
+
+    def mouse_release_event(self, camera_view, event):
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if not self.annotation or not self.annotation.tail.get_value():
+            return
+
+        head = util.convert_object_to_image(self.annotation.head.get_value(), self.phys_obj)
+        tail = util.convert_object_to_image(self.annotation.tail.get_value(), self.phys_obj)
+
+        text = self.annotation.text.get_value()
+        text = " " + text + " "
+        font_scale = self.annotation.font_scale.get_value()
+        text_color = self.annotation.text_color.get_value()
+        text_thickness = self.annotation.text_thickness.get_value()
+
+        # TODO: add font property to TextAnnotation()
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        line_type = cv2.LINE_AA
+        tip_length = self.annotation.tip_length.get_value()
+
+        text_size, _ = cv2.getTextSize(text, font, font_scale, text_thickness)
+        left2right, _ = util.get_left2right_topdown(tail, head)
+
+        text_position = list(tail)
+        if left2right:
+            text_position[0] = tail[0] - text_size[0]
+
+        cv2.putText(self._img,
+                    text,
+                    tuple(text_position),
+                    font,
+                    font_scale,
+                    text_color,
+                    text_thickness,
+                    line_type)
+
+        cv2.arrowedLine(self._img,
+                        tuple(tail),
+                        tuple(head),
+                        self.annotation.color.get_value(),
+                        self.annotation.thickness.get_value(),
+                        line_type,
+                        tipLength=tip_length
+                )
+
+    def is_annotation_valid(self):
+        # Has the lind the minimum lenght?
+        length = util.calc_distance(self.annotation.tail.get_value(), self.annotation.head.get_value())
+        if length is None:
+            return False
+        if length < ArrowAnnotation.MINIMUM_LENGTH:
+            return False
+
+        return True
 
 class SelectAnnotationTool(AnnotationTool):
     def __init__(self):
@@ -372,87 +498,9 @@ class ImageAnnotationTool(AnnotationTool):
         pass
 
 
-class TextAnnotationTool(AnnotationTool):
-    def __init__(self):
-        super().__init__()
-
-    def mouse_press_event(self, camera_view, event):
-        self.set_drawing(True)
-        self.annotation = TextAnnotation()
-
-        # convert mouse coordinates to image coordinates
-        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
-            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
-        self.annotation.position.set_value((img_x, img_y))
-
-    def mouse_move_event(self, camera_view, event):
-        # logger.info("Not implemented.")
-        pass
-
-    def mouse_release_event(self, camera_view, event):
-        if self.is_annotation_valid():
-            self.annotations_model.add_annotation(self.annotation)
-        self.set_drawing(False)
-
-    def draw(self):
-        if not self._drawing:
-            return
-
-        if not self.annotation or not self.annotation.text.get_value():
-            return
-
-        position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
-        text = self.annotation.text.get_value()
-        font_scale = self.annotation.font_scale.get_value()
-        color = self.annotation.color.get_value()
-        thickness = self.annotation.thickness.get_value()
-
-        # TODO: add font property to TextAnnotation()
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        line_type = cv2.LINE_AA
-
-        cv2.putText(self._img,
-                    text,
-                    position,
-                    font,
-                    font_scale,
-                    color,
-                    thickness,
-                    line_type)
-
-    def is_annotation_valid(self):
-        text = self.annotation.text.get_value()
-        if text is None or text.isspace():
-            return False
-        else:
-            return True
-
-
 class RelationshipAnnotationTool(AnnotationTool):
     def __init__(self):
         super(RelationshipAnnotationTool, self).__init__()
-
-    def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def draw(self):
-        logger.info("Not implemented.")
-        pass
-
-
-class ArrowAnnotationTool(AnnotationTool):
-    def __init__(self):
-        super(ArrowAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
         logger.info("Not implemented.")
