@@ -204,9 +204,21 @@ Timer
 
 
 class TextAnnotation(Annotation):
+    DEFAULT_TEXT = "Set the text in annotation properties view."
+
     def __init__(self):
         super().__init__()
-        self.text = ""
+        self.text = StringAnnotationProperty("Text", TextAnnotation.DEFAULT_TEXT, self)
+        self.properties.append(self.text)
+
+        self.color = ColorAnnotationProperty("Color", (0, 255, 0), self)
+        self.properties.append(self.color)
+
+        self.thickness = IntAnnotationProperty("Thickness", 3, self)
+        self.properties.append(self.thickness)
+
+        self.font_scale = IntAnnotationProperty("Font Scale", 2, self)
+        self.properties.append(self.font_scale)
 
 
 class ArrowAnnotation(Annotation):
@@ -215,7 +227,7 @@ class ArrowAnnotation(Annotation):
         self.text = ""
         self.start = [0.0, 0.0]
         self.end = [0.0, 0.0]
-        self.thikness = 3
+        self.thickness = 3
 
 
 class SelectBoxAnnotation(Annotation):
@@ -237,8 +249,8 @@ class LineAnnotation(Annotation):
         self.end = IntTupleAnnotationProperty("End", None, self)
         self.properties.append(self.end)
 
-        self.thikness = IntAnnotationProperty("Thikness", 3, self)
-        self.properties.append(self.thikness)
+        self.thickness = IntAnnotationProperty("Thickness", 3, self)
+        self.properties.append(self.thickness)
 
         self.color = ColorAnnotationProperty("Color", (0, 255, 255), self)
         self.properties.append(self.color)
@@ -265,8 +277,8 @@ class RectangleAnnotation(Annotation):
         self.color = ColorAnnotationProperty("Color", (255, 0, 255), self)
         self.properties.append(self.color)
 
-        self.thikness = IntAnnotationProperty("Thikness", 3, self)
-        self.properties.append(self.thikness)
+        self.thickness = IntAnnotationProperty("Thickness", 3, self)
+        self.properties.append(self.thickness)
 
         self.width = IntAnnotationProperty("Width", 5, self)
         self.properties.append(self.width)
@@ -291,8 +303,8 @@ class CircleAnnotation(Annotation):
         self.radius = IntAnnotationProperty("Radius", None, self)
         self.properties.append(self.radius)
 
-        self.thikness = IntAnnotationProperty("Thikness", 3, self)
-        self.properties.append(self.thikness)
+        self.thickness = IntAnnotationProperty("Thickness", 3, self)
+        self.properties.append(self.thickness)
 
     def set_position(self, position):
         self.position._value = position
@@ -519,6 +531,7 @@ class AnnotationProperty:
         return str(self._value)
 
     def set_value(self, value):
+        # It is important that the annotation property sets its value.
         raise TypeError("Must be implemented by subclasses")
 
     def get_value(self):
@@ -654,12 +667,15 @@ class IntAnnotationProperty(AnnotationProperty):
                 return False
 
 
+class StringAnnotationProperty(AnnotationProperty):
+    def set_value(self, value):
+        self._value = value
+        return True
+
+
 class BooleanAnnotationProperty(AnnotationProperty):
     pass
 
-
-class StringAnnotationProperty(AnnotationProperty):
-    pass
 
 
 

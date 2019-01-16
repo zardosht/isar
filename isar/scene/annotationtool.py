@@ -115,7 +115,7 @@ class CircleAnnotationTool(AnnotationTool):
                    center,
                    radius,
                    self.annotation.color.get_value(),
-                   self.annotation.thikness.get_value())
+                   self.annotation.thickness.get_value())
 
 
 class RectangleAnnotationTool(AnnotationTool):
@@ -124,7 +124,7 @@ class RectangleAnnotationTool(AnnotationTool):
         self.v1 = None
         self.v2 = None
         self.color = (255, 0, 255)
-        self.thikness = 3
+        self.thickness = 3
 
     def mouse_press_event(self, camera_view, event):
         self.v1 = None
@@ -188,7 +188,7 @@ class RectangleAnnotationTool(AnnotationTool):
             return
 
         color = self.color
-        thikness = self.thikness
+        thickness = self.thickness
         if self.annotation:
             # position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
             position = self.annotation.position.get_value()
@@ -203,7 +203,7 @@ class RectangleAnnotationTool(AnnotationTool):
             v2[1] = position[1] + int(height / 2)
             self.v2 = util.convert_object_to_image(v2, self.phys_obj)
             color = self.annotation.color.get_value()
-            thikness = self.annotation.thikness.get_value()
+            thickness = self.annotation.thickness.get_value()
 
         if self.v2 is None:
             return
@@ -212,7 +212,7 @@ class RectangleAnnotationTool(AnnotationTool):
                       tuple(self.v1),
                       tuple(self.v2),
                       color,
-                      thikness)
+                      thickness)
 
 
 class LineAnnotationTool(AnnotationTool):
@@ -255,7 +255,7 @@ class LineAnnotationTool(AnnotationTool):
                  start,
                  end,
                  self.annotation.color.get_value(),
-                 self.annotation.thikness.get_value())
+                 self.annotation.thickness.get_value())
 
     def is_annotation_valid(self):
         # Has the lind the minimum lenght?
@@ -374,23 +374,59 @@ class ImageAnnotationTool(AnnotationTool):
 
 class TextAnnotationTool(AnnotationTool):
     def __init__(self):
-        super(TextAnnotationTool, self).__init__()
+        super().__init__()
 
     def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
+        self.set_drawing(True)
+        self.annotation = TextAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.annotation.position.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
+        # logger.info("Not implemented.")
         pass
 
     def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
+        self.set_drawing(False)
 
     def draw(self):
-        logger.info("Not implemented.")
-        pass
+        if not self._drawing:
+            return
+
+        if not self.annotation or not self.annotation.text.get_value():
+            return
+
+        position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
+        text = self.annotation.text.get_value()
+        font_scale = self.annotation.font_scale.get_value()
+        color = self.annotation.color.get_value()
+        thickness = self.annotation.thickness.get_value()
+
+        # TODO: add font property to TextAnnotation()
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        line_type = cv2.LINE_AA
+
+        cv2.putText(self._img,
+                    text,
+                    position,
+                    font,
+                    font_scale,
+                    color,
+                    thickness,
+                    line_type)
+
+    def is_annotation_valid(self):
+        text = self.annotation.text.get_value()
+        if text is None or text.isspace():
+            return False
+        else:
+            return True
 
 
 class RelationshipAnnotationTool(AnnotationTool):
