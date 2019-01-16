@@ -394,6 +394,7 @@ class ArrowAnnotationTool(AnnotationTool):
 
         return True
 
+
 class SelectAnnotationTool(AnnotationTool):
     def __init__(self):
         super(SelectAnnotationTool, self).__init__()

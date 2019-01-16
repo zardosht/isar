@@ -101,7 +101,7 @@ class ObjectDetectionService(Service):
             request_queue = mp.JoinableQueue()
             response_queue = mp.Queue()
             obj_detector_worker = ObjectDetectorWorker(obj_detector, request_queue, response_queue)
-            obj_detector_worker.daemon = False
+            # obj_detector_worker.daemon = False
             self.object_detector_workers.append(obj_detector_worker)
             observer_thread = ObjectDetectionObserverThread(Queue(maxsize=1), obj_detector_worker)
             self.observer_threads.append(observer_thread)
