@@ -217,7 +217,7 @@ class TextAnnotation(Annotation):
         self.thickness = IntAnnotationProperty("Thickness", 3, self)
         self.properties.append(self.thickness)
 
-        self.font_scale = IntAnnotationProperty("Font Scale", 2, self)
+        self.font_scale = FloatAnnotationProperty("Font Scale", 1.5, self)
         self.properties.append(self.font_scale)
 
 
