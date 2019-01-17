@@ -295,14 +295,18 @@ class TextAnnotationTool(AnnotationTool):
         font = cv2.FONT_HERSHEY_SIMPLEX
         line_type = cv2.LINE_AA
 
-        cv2.putText(self._img,
-                    text,
-                    position,
-                    font,
-                    font_scale,
-                    color,
-                    thickness,
-                    line_type)
+        text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
+        x, y0 = position
+        for i, line in enumerate(text.split("\n")):
+            y = y0 + i * (text_size[1] + 10)
+            cv2.putText(self._img,
+                        line,
+                        (x, y),
+                        font,
+                        font_scale,
+                        color,
+                        thickness,
+                        line_type)
 
     def is_annotation_valid(self):
         text = self.annotation.text.get_value()
