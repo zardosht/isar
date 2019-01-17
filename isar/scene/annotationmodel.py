@@ -84,7 +84,7 @@ class AnnotationsModel(QAbstractListModel):
         self.current_annotation = new_annotation
         self.endInsertRows()
 
-    def delete_annotation(self, selected_index):
+    def delete_annotation_at(self, selected_index):
         if self.__scene is None:
             return
 
@@ -97,19 +97,36 @@ class AnnotationsModel(QAbstractListModel):
         self.beginRemoveRows(selected_index, selected_index.row(), selected_index.row())
 
         annotation = self.__annotations[selected_index.row()]
-        annotation.set_attached_to(None)
         # annotation.owner = None
-        annotation.scene = None
-        self.__scene.delete_annotation(annotation)
-        self.__annotations = self.__scene.get_all_annotations()
         annotation.delete()
+        self.__annotations = self.__scene.get_all_annotations()
 
         self.current_annotation = None
         self.removeRow(selected_index.row())
         self.endRemoveRows()
 
-    def update_view(self, index):
-        self.dataChanged.emit(index, index, [Qt.DisplayRole])
+    def delete_annotation(self, annotation):
+        if self.__scene is None:
+            return
+
+        if len(self.__annotations) == 0:  # keep at least one scene
+            return
+
+        # annotation.owner = None
+        annotation.delete()
+        self.__annotations = self.__scene.get_all_annotations()
+
+        self.current_annotation = None
+        self.update_view()
+
+    def update_view(self, index=None):
+        if index is None:
+            if self.__scene is not None:
+                self.__annotations = self.__scene.get_all_annotations()
+                self.current_annotation = None
+            self.endResetModel()
+        else:
+            self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
     def set_current_annotation(self, selected_index):
         if self.__annotations is None:
@@ -207,10 +224,12 @@ class Annotation:
             return True
 
     def delete(self):
-        for property in self.properties:
-            property.annotation = None
-            property._value = None
+        self.set_attached_to(None)
+        for prop in self.properties:
+            prop.annotation = None
+            prop._value = None
         self.properties.clear()
+        self.scene.delete_annotation(self)
         self.scene = None
         self.name = None
 

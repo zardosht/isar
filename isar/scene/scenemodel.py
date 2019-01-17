@@ -85,7 +85,13 @@ class Scene:
         self.__annotations = []
 
     def add_physical_object(self, physical_obj):
-        self.__physical_objects.append(physical_obj)
+        if not physical_obj in self.__physical_objects:
+            self.__physical_objects.append(physical_obj)
+
+    def delete_physical_object(self, phy_obj):
+        if phy_obj in self.__physical_objects:
+            self.__physical_objects.remove(phy_obj)
+            phy_obj.delete_from_scene()
 
     def get_physical_objects(self):
         return tuple(self.__physical_objects)

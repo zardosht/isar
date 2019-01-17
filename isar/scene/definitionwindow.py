@@ -126,12 +126,14 @@ class SceneDefinitionWindow(QDialog):
             phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
             current_index = self.objects_view.selectionModel().currentIndex()
             phys_obj: PhysicalObject = phys_obj_model.get_physical_object_at(current_index)
-            print(phys_obj.name)
+            phys_obj_model.delete_physical_object_from_scene(phys_obj)
+            annotations_model: AnnotationsModel = self.annotations_list.model()
+            annotations_model.update_view()
 
         elif focus_widget == "annotations_list":
             annotations_model: AnnotationsModel = self.annotations_list.model()
             current_index = self.annotations_list.selectionModel().currentIndex()
-            annotations_model.delete_annotation(current_index)
+            annotations_model.delete_annotation_at(current_index)
             self.properties_view.model().set_annotation(None)
 
     def annotation_btn_clicked(self, btn):

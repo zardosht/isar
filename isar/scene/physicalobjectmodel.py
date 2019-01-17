@@ -118,7 +118,6 @@ class PhysicalObjectsModel(QAbstractListModel):
             phys_objs_names.append(phys_obj.name)
         return tuple(phys_objs_names)
 
-
     def update_present_physical_objects(self, phys_obj_predictions):
         if phys_obj_predictions is None:
             if len(self.__present_physical_objects) == 0:
@@ -159,12 +158,19 @@ class PhysicalObjectsModel(QAbstractListModel):
     def add_physical_object_to_scene(self, po):
         self.__scene.add_physical_object(po)
 
+    def delete_physical_object_from_scene(self, po):
+        if self.__scene is None:
+            return
+
+        self.__scene.delete_physical_object(po)
+
 
 class PhysicalObject:
     def __init__(self):
         self.name = ""
         self.template_image_path = ""
         self.template_image = None
+
         self.__scene_position = None
         self.__scene_frame = None
         self.__annotations = []
@@ -244,6 +250,21 @@ class PhysicalObject:
 
     def is_tracking(self):
         return self._tracking
+
+    def delete_from_scene(self):
+        for annotation in self.__annotations:
+            annotation.delete()
+        self.__annotations.clear()
+
+        self.__scene_position = None
+        self.__scene_frame = None
+
+        self._tracking = False
+        self.detection_confidence = None
+        self.__top_left = None
+        self.bottom_right = None
+        self.scene_image = None
+        self.pose_estimation = None
 
     def __hash__(self):
         return hash(self.name)
