@@ -8,10 +8,10 @@ from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolBut
 
 from isar.camera.camera import CameraService
 from isar.scene import util
-from isar.scene.annotationmodel import AnnotationsModel
+from isar.scene.annotationmodel import AnnotationsModel, Annotation
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
 from isar.scene.cameraview import CameraView
-from isar.scene.physicalobjectmodel import PhysicalObjectsModel
+from isar.scene.physicalobjectmodel import PhysicalObjectsModel, PhysicalObject
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
@@ -57,6 +57,7 @@ class SceneDefinitionWindow(QDialog):
         self.select_btn.setChecked(True)
 
         self.objects_view = PhysicalObjectsView(self)
+        self.objects_view.setObjectName("objects_view")
         self.objects_view.setSelectionMode(QListView.SingleSelection)
         self.objects_view.setDragEnabled(True)
         self.objects_view.setDragDropMode(QListView.DragOnly)
@@ -71,6 +72,8 @@ class SceneDefinitionWindow(QDialog):
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
         self.scenes_list.selectionModel().selectionChanged.connect(self.sceneslist_current_changed)
+
+        self.delete_btn.clicked.connect(self.delete_btn_clicked)
 
         # annotation buttons
         for btn in self.annotation_buttons.buttons():
@@ -114,6 +117,22 @@ class SceneDefinitionWindow(QDialog):
         annotationsmodel.set_current_annotation(current_index)
         self.properties_view.model().set_annotation(annotationsmodel.current_annotation)
         self.properties_view.resizeRowsToContents()
+
+    def delete_btn_clicked(self):
+        focus_widget = self.focusWidget().objectName()
+        if focus_widget == "objects_view":
+            # delete the selected physical object from the scene (if it is included in the scene)
+            # if the object has annotations, they are also deleted
+            phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
+            current_index = self.objects_view.selectionModel().currentIndex()
+            phys_obj: PhysicalObject = phys_obj_model.get_physical_object_at(current_index)
+            print(phys_obj.name)
+
+        elif focus_widget == "annotations_list":
+            annotations_model: AnnotationsModel = self.annotations_list.model()
+            current_index = self.annotations_list.selectionModel().currentIndex()
+            annotations_model.delete_annotation(current_index)
+            self.properties_view.model().set_annotation(None)
 
     def annotation_btn_clicked(self, btn):
         if btn.isChecked():

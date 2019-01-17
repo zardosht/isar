@@ -85,7 +85,6 @@ class AnnotationsModel(QAbstractListModel):
         self.endInsertRows()
 
     def delete_annotation(self, selected_index):
-        # TODO: remove properly using remove rows (see insert rows)
         if self.__scene is None:
             return
 
@@ -95,13 +94,19 @@ class AnnotationsModel(QAbstractListModel):
         if len(self.__annotations) <= selected_index.row():
             return
 
-        annotation = self.__annotations[selected_index.row()]
-        annotation.scene = None
-        self.__scene.remove_annotation(annotation)
-        self.__annotations = self.__scene.get_all_annotations()
+        self.beginRemoveRows(selected_index, selected_index.row(), selected_index.row())
 
+        annotation = self.__annotations[selected_index.row()]
+        annotation.set_attached_to(None)
+        # annotation.owner = None
+        annotation.scene = None
+        self.__scene.delete_annotation(annotation)
+        self.__annotations = self.__scene.get_all_annotations()
+        annotation.delete()
+
+        self.current_annotation = None
         self.removeRow(selected_index.row())
-        self.update_view(selected_index)
+        self.endRemoveRows()
 
     def update_view(self, index):
         self.dataChanged.emit(index, index, [Qt.DisplayRole])
@@ -120,6 +125,18 @@ class AnnotationsModel(QAbstractListModel):
             return
 
         self.current_annotation = self.__annotations[selected_index.row()]
+
+    def get_annotation_at(self, index: QModelIndex):
+        if self.__annotations is None or len(self.__annotations) == 0:
+            return None
+
+        if index is None:
+            return None
+
+        if not index.isValid():
+            return None
+
+        return self.__annotations[index.row()]
 
     def get_all_annotations(self):
         if self.__annotations:
@@ -142,9 +159,11 @@ class AnnotationsModel(QAbstractListModel):
 
 class Annotation:
     def __init__(self):
+        self.name = "Annotation"
         self.scene = None
         # Owner of  an annotation is either the scene or a physical object. An annotation can have only one owner.
-        self.owner = None
+        # self.owner = None
+
         self.properties: List[AnnotationProperty] = []
 
         self.position = IntTupleAnnotationProperty("Position", (0, 0), self, self.set_position)
@@ -179,7 +198,6 @@ class Annotation:
 
         elif phys_obj is None:
             self.attached_to._value = None
-            self.owner = self.scene
             self.scene.add_annotation(self)
 
             if old_phys_obj is not None:
@@ -187,6 +205,15 @@ class Annotation:
 
             self.set_position((0, 0))
             return True
+
+    def delete(self):
+        for property in self.properties:
+            property.annotation = None
+            property._value = None
+        self.properties.clear()
+        self.scene = None
+        self.name = None
+
 
 """
 Text

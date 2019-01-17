@@ -223,7 +223,7 @@ class PhysicalObject:
 
     def add_annotation(self, annotation):
         if annotation not in self.__annotations:
-            annotation.owner = self
+            # annotation.owner = self
             self.__annotations.append(annotation)
 
     def update_tracking(self, prediction):

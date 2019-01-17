@@ -93,7 +93,7 @@ class Scene:
     def add_annotation(self, annotation):
         if annotation not in self.__annotations:
             annotation.scene = self
-            annotation.owner = self
+            # annotation.owner = self
             self.__annotations.append(annotation)
 
     def remove_annotation(self, annotation):
@@ -101,7 +101,7 @@ class Scene:
             self.__annotations.remove(annotation)
 
     def delete_annotation(self, annotation):
-        annotation.owner = None
+        # annotation.owner = None
         if annotation in self.__annotations:
             self.__annotations.remove(annotation)
         else:
