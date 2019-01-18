@@ -149,7 +149,12 @@ class SceneDefinitionWindow(QDialog):
             project_name = self.project_name_le.text()
 
         scenes_model = self.scenes_list.model()
-        scenes_model.save_project(parent_dir, project_name)
+        new_project_created = scenes_model.save_project(parent_dir, project_name)
+        if new_project_created:
+            self.setWindowTitle(scenemodel.current_project.name)
+            # self.project_name_le.setReadOnly(True)
+            self.project_name_le.setEnabled(False)
+            self.create_proj_btn.setEnabled(False)
 
     def create_project_btn_clicked(self):
         print("create project")
@@ -160,6 +165,9 @@ class SceneDefinitionWindow(QDialog):
             QMessageBox.warning(None, "Error", "Creating project failed!")
         else:
             self.setWindowTitle(scenemodel.current_project.name)
+            # self.project_name_le.setReadOnly(True)
+            self.project_name_le.setEnabled(False)
+            self.create_proj_btn.setEnabled(False)
 
     def load_project_btn_clicked(self):
         print("load project")

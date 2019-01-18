@@ -95,14 +95,17 @@ class ScenesModel(QAbstractListModel):
         self.current_scene = self.scenes[selected_index.row()]
 
     def save_project(self, parent_dir=None, project_name=None):
+        new_project_created = False
         if current_project is None:
             create_project(parent_dir, project_name)
+            new_project_created = True
 
         save_path = os.path.join(current_project.base_path, current_project.name + ".json")
         current_project.scenes = self.scenes
         frozen = jsonpickle.encode(current_project)
         with open(str(save_path), "w") as f:
              f.write(frozen)
+        return new_project_created
 
     def load_project(self, project_dir, project_name):
         global current_project
@@ -175,6 +178,7 @@ def create_project(parent_dir, project_name):
         current_project = Project()
         current_project.name = project_name
         current_project.base_path = project_dir
+        return True
     else:
         return False
 
