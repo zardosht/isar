@@ -183,10 +183,10 @@ class Annotation:
 
         self.properties: List[AnnotationProperty] = []
 
-        self.position = IntTupleAnnotationProperty("Position", (0, 0), self, self.set_position)
+        self.position = IntTupleAnnotationProperty("Position", (0, 0), self, self.set_position.__name__)
         self.properties.append(self.position)
 
-        self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None, self, self.set_attached_to)
+        self.attached_to = PhysicalObjectAnnotationProperty("Attach To", None, self, self.set_attached_to.__name__)
         self.properties.append(self.attached_to)
 
         self.update_orientation = BooleanAnnotationProperty("Update Orientation", False, self)
@@ -285,7 +285,7 @@ class ArrowAnnotation(Annotation):
         self.text_color = ColorAnnotationProperty("Text Color", (0, 255, 255), self)
         self.properties.append(self.text_color)
 
-        self.head = IntTupleAnnotationProperty("Head", [0, 0], self, self.set_head)
+        self.head = IntTupleAnnotationProperty("Head", [0, 0], self, self.set_head.__name__)
         self.properties.append(self.head)
 
         self.tail = IntTupleAnnotationProperty("Tail", None, self)
@@ -318,7 +318,7 @@ class LineAnnotation(Annotation):
     def __init__(self):
         super().__init__()
 
-        self.start = IntTupleAnnotationProperty("Start", [0, 0], self, self.set_start)
+        self.start = IntTupleAnnotationProperty("Start", [0, 0], self, self.set_start.__name__)
         self.properties.append(self.start)
 
         self.end = IntTupleAnnotationProperty("End", None, self)
@@ -372,7 +372,7 @@ class CircleAnnotation(Annotation):
         self.color = ColorAnnotationProperty("Color", (125, 125, 255), self)
         self.properties.append(self.color)
 
-        self.center = IntTupleAnnotationProperty("Center", [0, 0], self, self.set_center)
+        self.center = IntTupleAnnotationProperty("Center", [0, 0], self, self.set_center.__name__)
         self.properties.append(self.center)
 
         self.radius = IntAnnotationProperty("Radius", None, self)
@@ -602,11 +602,13 @@ class AnnotationPropertyItemDelegate(QItemDelegate):
 
 
 class AnnotationProperty:
-    def __init__(self, name, value, annotation, setter=None):
+    def __init__(self, name, value, annotation, setter_name=None):
         self.name = name
         self._value = value
         self.annotation = annotation
-        self.setter = setter
+        # we use the callback name for setter instead of directly the callable object,
+        # becuause of jsonpickle serialization.
+        self.setter_name = setter_name
 
     def get_str_value(self):
         return str(self._value)
@@ -632,8 +634,8 @@ class ColorAnnotationProperty(AnnotationProperty):
                     isinstance(literal[0], int) and \
                     isinstance(literal[1], int) and \
                     isinstance(literal[2], int):
-                if self.setter is not None:
-                    return self.setter(literal)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(literal)
                 else:
                     self._value = literal
                     return True
@@ -645,8 +647,8 @@ class ColorAnnotationProperty(AnnotationProperty):
                     isinstance(value[0], int) and \
                     isinstance(value[1], int) and \
                     isinstance(value[2], int):
-                if self.setter is not None:
-                    return self.setter(value)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(value)
                 else:
                     self._value = value
                     return True
@@ -666,8 +668,8 @@ class PhysicalObjectAnnotationProperty(AnnotationProperty):
             return self._value.name
 
     def set_value(self, phys_obj):
-        if self.setter is not None:
-            return self.setter(phys_obj)
+        if self.setter_name is not None:
+            return getattr(self.annotation, self.setter_name)(phys_obj)
         else:
             return False
 
@@ -681,8 +683,8 @@ class IntTupleAnnotationProperty(AnnotationProperty):
                     len(literal) == 2 and \
                     isinstance(literal[0], int) and \
                     isinstance(literal[1], int):
-                if self.setter is not None:
-                    return self.setter(literal)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(literal)
                 else:
                     self._value = literal
                     return True
@@ -693,8 +695,8 @@ class IntTupleAnnotationProperty(AnnotationProperty):
                     len(value) == 2 and \
                     isinstance(value[0], int) and \
                     isinstance(value[1], int):
-                if self.setter is not None:
-                    return self.setter(value)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(value)
                 else:
                     self._value = value
                     return True
@@ -707,8 +709,8 @@ class FloatAnnotationProperty(AnnotationProperty):
         if isinstance(value, str):
             literal = get_literal_from_str(value)
             if literal and isinstance(literal, (float, int)):
-                if self.setter is not None:
-                    return self.setter(literal)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(literal)
                 else:
                     self._value = literal
                     return True
@@ -716,8 +718,8 @@ class FloatAnnotationProperty(AnnotationProperty):
                 return False
         else:
             if isinstance(value, (float, int)):
-                if self.setter is not None:
-                    return self.setter(value)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(value)
                 else:
                     self._value = value
                     return True
@@ -730,8 +732,8 @@ class IntAnnotationProperty(AnnotationProperty):
         if isinstance(value, str):
             literal = get_literal_from_str(value)
             if literal and isinstance(literal, int):
-                if self.setter is not None:
-                    return self.setter(literal)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(literal)
                 else:
                     self._value = literal
                     return True
@@ -739,8 +741,8 @@ class IntAnnotationProperty(AnnotationProperty):
                 return False
         else:
             if isinstance(value, int):
-                if self.setter is not None:
-                    return self.setter(value)
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(value)
                 else:
                     self._value = value
                     return True
