@@ -1,10 +1,13 @@
 import copy
+import os
 
+import jsonpickle
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
 from isar.scene import util
 
+current_project = None
 
 class ScenesModel(QAbstractListModel):
     editCompleted = QtCore.pyqtSignal(str)
@@ -72,10 +75,36 @@ class ScenesModel(QAbstractListModel):
         self.update_view(selected_index)
 
     def update_view(self, index):
-        self.dataChanged.emit(index, index, [Qt.DisplayRole])
+        if index is None:
+            if self.scenes is not None:
+                self.current_scene = self.scenes[0]
+            self.endResetModel()
+        else:
+            self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
     def set_current_scene(self, selected_index):
         self.current_scene = self.scenes[selected_index.row()]
+
+    def save_project(self, parent_dir, project_name):
+        project_dir = os.path.join(parent_dir, project_name)
+        if not os.path.exists(project_dir):
+            os.mkdir(project_dir)
+            save_path = os.path.join(project_dir, project_name + ".json")
+            frozen = jsonpickle.encode(self.scenes)
+            with open(str(save_path), "w") as f:
+                f.write(frozen)
+                return True
+        else:
+            return False
+
+    def load_project(self, project_dir, project_name):
+        load_path = os.path.join(project_dir, project_name + ".json")
+        with open(load_path, "r") as f:
+            frozen = f.read()
+            self.beginResetModel()
+            self.scenes = jsonpickle.decode(frozen)
+            self.endResetModel()
+            self.update_view(None)
 
 
 class Scene:
@@ -127,3 +156,10 @@ class Scene:
             all_annotations.extend(phys_obj.get_annotations())
 
         return tuple(all_annotations)
+
+
+class Project:
+    def __init__(self):
+        self.name = None
+        self.base_path = None
+        self.scenes = None

@@ -4,7 +4,7 @@ import logging
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject, Qt, QItemSelection
 from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag
-from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView
+from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
 
 from isar.camera.camera import CameraService
 from isar.scene import util
@@ -75,6 +75,9 @@ class SceneDefinitionWindow(QDialog):
 
         self.delete_btn.clicked.connect(self.delete_btn_clicked)
 
+        self.save_btn.clicked.connect(self.save_project_btn_clicked)
+        self.load_btn.clicked.connect(self.load_project_btn_clicked)
+
         # annotation buttons
         for btn in self.annotation_buttons.buttons():
             btn.clicked.connect(functools.partial(self.annotation_btn_clicked, btn))
@@ -135,6 +138,22 @@ class SceneDefinitionWindow(QDialog):
             current_index = self.annotations_list.selectionModel().currentIndex()
             annotations_model.delete_annotation_at(current_index)
             self.properties_view.model().set_annotation(None)
+
+    def save_project_btn_clicked(self):
+        print("save project")
+        parent_dir = QFileDialog.getExistingDirectory()
+        project_name = self.project_name_le.text()
+        scenes_model = self.scenes_list.model()
+        result = scenes_model.save_project(parent_dir, project_name)
+        if not result:
+            QMessageBox.warning(None, "Save Error", "Saving project failed!")
+
+    def load_project_btn_clicked(self):
+        print("load project")
+        project_dir = QFileDialog.getExistingDirectory()
+        project_name = self.project_name_le.text()
+        scenes_model = self.scenes_list.model()
+        scenes_model.load_project(project_dir, project_name)
 
     def annotation_btn_clicked(self, btn):
         if btn.isChecked():
