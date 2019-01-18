@@ -7,7 +7,7 @@ from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
 
 from isar.camera.camera import CameraService
-from isar.scene import util
+from isar.scene import util, scenemodel
 from isar.scene.annotationmodel import AnnotationsModel, Annotation
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
 from isar.scene.cameraview import CameraView
@@ -75,8 +75,9 @@ class SceneDefinitionWindow(QDialog):
 
         self.delete_btn.clicked.connect(self.delete_btn_clicked)
 
-        self.save_btn.clicked.connect(self.save_project_btn_clicked)
-        self.load_btn.clicked.connect(self.load_project_btn_clicked)
+        self.save_proj_btn.clicked.connect(self.save_project_btn_clicked)
+        self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
+        self.create_proj_btn.clicked.connect(self.create_project_btn_clicked)
 
         # annotation buttons
         for btn in self.annotation_buttons.buttons():
@@ -141,12 +142,24 @@ class SceneDefinitionWindow(QDialog):
 
     def save_project_btn_clicked(self):
         print("save project")
+        parent_dir = None
+        project_name = None
+        if not scenemodel.current_project:
+            parent_dir = QFileDialog.getExistingDirectory()
+            project_name = self.project_name_le.text()
+
+        scenes_model = self.scenes_list.model()
+        scenes_model.save_project(parent_dir, project_name)
+
+    def create_project_btn_clicked(self):
+        print("create project")
         parent_dir = QFileDialog.getExistingDirectory()
         project_name = self.project_name_le.text()
-        scenes_model = self.scenes_list.model()
-        result = scenes_model.save_project(parent_dir, project_name)
+        result = scenemodel.create_project(parent_dir, project_name)
         if not result:
-            QMessageBox.warning(None, "Save Error", "Saving project failed!")
+            QMessageBox.warning(None, "Error", "Creating project failed!")
+        else:
+            self.setWindowTitle(scenemodel.current_project.name)
 
     def load_project_btn_clicked(self):
         print("load project")
