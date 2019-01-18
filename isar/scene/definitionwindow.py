@@ -146,6 +146,8 @@ class SceneDefinitionWindow(QDialog):
         project_name = None
         if not scenemodel.current_project:
             parent_dir = QFileDialog.getExistingDirectory()
+            if parent_dir is None or parent_dir == "":
+                return
             project_name = self.project_name_le.text()
 
         scenes_model = self.scenes_list.model()
@@ -159,6 +161,8 @@ class SceneDefinitionWindow(QDialog):
     def create_project_btn_clicked(self):
         print("create project")
         parent_dir = QFileDialog.getExistingDirectory()
+        if parent_dir is None or parent_dir == "":
+            return
         project_name = self.project_name_le.text()
         result = scenemodel.create_project(parent_dir, project_name)
         if not result:
@@ -172,9 +176,13 @@ class SceneDefinitionWindow(QDialog):
     def load_project_btn_clicked(self):
         print("load project")
         project_dir = QFileDialog.getExistingDirectory()
+        if project_dir is None or project_dir == "":
+            return
         project_name = self.project_name_le.text()
         scenes_model = self.scenes_list.model()
         scenes_model.load_project(project_dir, project_name)
+        index = self.scenes_list.model().index(0, 0)
+        self.scenes_list.selectionModel().select(index, QItemSelectionModel.Select)
 
     def annotation_btn_clicked(self, btn):
         if btn.isChecked():
