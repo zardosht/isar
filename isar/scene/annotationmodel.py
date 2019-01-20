@@ -1,13 +1,16 @@
 import logging
 import math
+import os
+import shutil
 from ast import literal_eval
 from typing import List
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel
-from PyQt5.QtWidgets import QCheckBox, QComboBox, QItemDelegate
+from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, pyqtSignal
+from PyQt5.QtWidgets import QCheckBox, QComboBox, QItemDelegate, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
+    QPushButton, QLabel
 
-from isar.scene import util
+from isar.scene import util, scenemodel
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
@@ -392,6 +395,26 @@ class CircleAnnotation(Annotation):
         return True
 
 
+class ImageAnnotation(Annotation):
+    MINIMUM_WIDTH = 30
+    MINIMUM_HEIGHT = 30
+
+    def __init__(self):
+        super(ImageAnnotation, self).__init__()
+
+        self.image_path = FilePathAnnotationProperty("ImageFilename", None, self)
+        self.properties.append(self.image_path)
+
+        self.width = IntAnnotationProperty("Width", 5, self)
+        self.properties.append(self.width)
+
+        self.height = IntAnnotationProperty("Height", 5, self)
+        self.properties.append(self.height)
+
+        self.keep_aspect_ratio = BooleanAnnotationProperty("Keep Aspect Ratio", True, self)
+        self.properties.append(self.keep_aspect_ratio)
+
+
 class AudioAnnotation(Annotation):
     def __init__(self):
         super(AudioAnnotation, self).__init__()
@@ -402,14 +425,6 @@ class VideoAnnotation(Annotation):
     def __init__(self):
         super(VideoAnnotation, self).__init__()
         self.video_path = ""
-
-
-class ImageAnnotation(Annotation):
-    def __init__(self):
-        super(ImageAnnotation, self).__init__()
-        self.image_path = ""
-        self.width = 0
-        self.height = 0
 
 
 class RelationshipAnnotation(Annotation):
@@ -534,11 +549,13 @@ class AnnotationPropertiesModel(QAbstractTableModel):
                 return ["Name", "Value"][section]
 
 
-class AnnotationPropertyItemDelegate(QItemDelegate):
+class AnnotationPropertyItemDelegate(QStyledItemDelegate):
     def __init__(self):
         super().__init__()
         self.phys_obj_model = None
         self.phys_obj_combo_items = []
+
+        self.filename = None
 
     def createEditor(self, parent, option, index: QModelIndex):
         if not self.phys_obj_model:
@@ -569,8 +586,13 @@ class AnnotationPropertyItemDelegate(QItemDelegate):
                     if phys_obj is not None and phys_obj.name == annotation_property.get_value().name:
                         combo.setCurrentIndex(index)
 
-            combo.currentIndexChanged.connect(self.current_index_changed)
+            combo.currentIndexChanged.connect(self.physical_object_combo_index_changed)
             return combo
+
+        elif isinstance(annotation_property, FilePathAnnotationProperty):
+            editor = FilePathEditorWidget(parent)
+            editor.filename_selected.connect(self.file_dialog_file_selected)
+            return editor
 
         elif isinstance(annotation_property, BooleanAnnotationProperty):
             # TODO: implement update_orientation
@@ -590,6 +612,11 @@ class AnnotationPropertyItemDelegate(QItemDelegate):
                 phys_obj = self.phys_obj_combo_items[combo_index]
                 model.setData(index, phys_obj, Qt.EditRole)
 
+        elif isinstance(editor, FilePathEditorWidget):
+            annotation_property = index.model().get_annotation_property(index)
+            if isinstance(annotation_property, FilePathAnnotationProperty):
+                model.setData(index, self.filename, Qt.EditRole)
+
         elif isinstance(editor, QCheckBox):
             # TODO: implement
             pass
@@ -597,8 +624,36 @@ class AnnotationPropertyItemDelegate(QItemDelegate):
         else:
             super().setModelData(editor, model, index)
 
-    def current_index_changed(self):
+    def physical_object_combo_index_changed(self):
         self.commitData.emit(self.sender())
+
+    def file_dialog_file_selected(self, filename):
+        self.filename = filename
+        self.commitData.emit(self.sender())
+
+
+class FilePathEditorWidget(QWidget):
+
+    filename_selected = pyqtSignal(str)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.filename = None
+
+        layout = QHBoxLayout(self)
+        self.label = QLabel()
+        self.label.sizePolicy().setHorizontalStretch(80)
+        layout.addWidget(self.label)
+
+        self.button = QPushButton("...")
+        self.button.clicked.connect(self.btn_clicked)
+        layout.addWidget(self.button)
+
+    def btn_clicked(self):
+        self.filename, _ = QFileDialog.getOpenFileName()
+        if self.filename is not None:
+            self.filename_selected.emit(self.filename)
 
 
 class AnnotationProperty:
@@ -657,7 +712,15 @@ class ColorAnnotationProperty(AnnotationProperty):
 
 
 class FilePathAnnotationProperty(AnnotationProperty):
-    pass
+    def set_value(self, value):
+        # copy the file to the project's basedir
+        # set the _value to only the file name
+        if os.path.exists(value):
+            shutil.copy(value, scenemodel.current_project.base_path)
+            self._value = os.path.basename(value)
+            return True
+        else:
+            return False
 
 
 class PhysicalObjectAnnotationProperty(AnnotationProperty):

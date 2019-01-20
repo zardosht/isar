@@ -1,8 +1,14 @@
+import logging
 import math
+import traceback
 from typing import NamedTuple
 import numpy as np
 
 from PyQt5.QtGui import QImage, QPixmap
+
+
+logger = logging.getLogger("isar.scene.util")
+
 
 class RefFrame(NamedTuple):
     x: float
@@ -115,6 +121,34 @@ def get_left2right_topdown(v1, v2):
         bottom_up = True
 
     return left_to_right, topdown
+
+
+def draw_image_on(opencv_img, image, position, position_is_topleft=True):
+    try:
+        img_height, img_width, _ = image.shape
+        scene_height, scene_width, _ = opencv_img.shape
+
+        # TODO: check that the position is not out of opencv_img bounds
+        if position_is_topleft:
+            x, y = position
+        else:
+            # position is center
+            x = position[0] - math.floor(img_width / 2)
+            y = position[1] - math.floor(img_height / 2)
+
+        end_height_index = min(y + img_height, scene_height)
+        end_width_index = min(x + img_width, scene_width)
+
+        cropped_height = min(img_height, scene_height - y)
+        cropped_width = min(img_width, scene_width - x)
+
+        opencv_img[y:end_height_index, x:end_width_index] = image[0:cropped_height, 0:cropped_width]
+    except Exception as exp:
+        logger.error("Could not load object detector module.")
+        logger.error(exp)
+        traceback.print_tb(exp.__traceback__)
+
+
 
 
 

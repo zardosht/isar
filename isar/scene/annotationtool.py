@@ -1,8 +1,11 @@
 import logging
 import math
-import cv2
+import os
 
-from isar.scene import util
+import cv2
+from PyQt5.QtWidgets import QMessageBox, QFileDialog
+
+from isar.scene import util, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
     SelectBoxAnnotation
@@ -399,6 +402,104 @@ class ArrowAnnotationTool(AnnotationTool):
         return True
 
 
+class ImageAnnotationTool(AnnotationTool):
+    image_cache = {}
+
+    def __init__(self):
+        super(ImageAnnotationTool, self).__init__()
+        self.v1 = None
+        self.v2 = None
+        self.color = (255, 0, 255)
+        self.thickness = 3
+
+    def mouse_press_event(self, camera_view, event):
+        self.v1 = None
+        self.v2 = None
+        if scenemodel.current_project is None:
+            QMessageBox.warning(None,
+                                "Error",
+                                "You first need to create a proejct to add Image, Audio, and Video annotations.")
+            return
+
+        self.set_drawing(True)
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.v1 = (img_x, img_y)
+
+    def mouse_move_event(self, camera_view, event):
+        if self._drawing:
+            camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+                event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+            self.v2 = (img_x, img_y)
+
+    def mouse_release_event(self, camera_view, event):
+        if self.v2 is None or self.v1 is None:
+            self.set_drawing(False)
+            return
+
+        width = self.v2[0] - self.v1[0]
+        height = self.v2[1] - self.v1[1]
+        position = [self.v1[0] + int(width / 2), self.v1[1] + int(height / 2)]
+
+        image_path, _ = QFileDialog.getOpenFileName()
+        if image_path is None or image_path == "":
+            return
+
+        if self.is_annotation_valid(width, height):
+            annotation = ImageAnnotation()
+            annotation.set_position(position)
+            annotation.width.set_value(abs(width))
+            annotation.height.set_value(abs(height))
+            annotation.image_path.set_value(image_path)
+            self.annotations_model.add_annotation(annotation)
+
+        self.set_drawing(False)
+
+    def set_drawing(self, drawing):
+        self._drawing = drawing
+
+    @staticmethod
+    def is_annotation_valid(width, height):
+        return abs(width) >= ImageAnnotation.MINIMUM_WIDTH \
+               and abs(height) >= ImageAnnotation.MINIMUM_HEIGHT
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if self.annotation:
+            position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
+            width = self.annotation.width.get_value()
+            height = self.annotation.height.get_value()
+            img_path = os.path.join(
+                scenemodel.current_project.base_path, self.annotation.image_path.get_value())
+            image = None
+            if img_path in ImageAnnotationTool.image_cache:
+                image = ImageAnnotationTool.image_cache[img_path]
+            else:
+                image = cv2.imread(str(img_path))
+                ImageAnnotationTool.image_cache[img_path] = image
+
+            if image.shape[0] != height or image.shape[1] != width:
+                image = cv2.resize(image, (width, height))
+
+            util.draw_image_on(self._img, image, position)
+        else:
+            if self.v2 is None:
+                return
+            color = self.color
+            thickness = self.thickness
+            cv2.rectangle(self._img,
+                          tuple(self.v1),
+                          tuple(self.v2),
+                          color,
+                          thickness)
+
+
 class SelectAnnotationTool(AnnotationTool):
     def __init__(self):
         super(SelectAnnotationTool, self).__init__()
@@ -464,27 +565,6 @@ class VideoAnnotationTool(AnnotationTool):
 class AudioAnnotationTool(AnnotationTool):
     def __init__(self):
         super(AudioAnnotationTool, self).__init__()
-
-    def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def draw(self):
-        logger.info("Not implemented.")
-        pass
-
-
-class ImageAnnotationTool(AnnotationTool):
-    def __init__(self):
-        super(ImageAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
         logger.info("Not implemented.")

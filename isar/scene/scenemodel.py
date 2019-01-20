@@ -1,4 +1,5 @@
 import copy
+import logging
 import os
 
 import jsonpickle
@@ -6,6 +7,9 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
 from isar.scene import util
+
+
+logger = logging.getLogger("isar.scenemodel")
 
 
 class Project:
