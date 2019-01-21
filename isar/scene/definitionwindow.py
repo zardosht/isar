@@ -141,7 +141,7 @@ class SceneDefinitionWindow(QDialog):
             self.properties_view.model().set_annotation(None)
 
     def save_project_btn_clicked(self):
-        print("save project")
+        logger.info("Save project")
         parent_dir = None
         project_name = None
         if not scenemodel.current_project:
@@ -159,7 +159,7 @@ class SceneDefinitionWindow(QDialog):
             self.create_proj_btn.setEnabled(False)
 
     def create_project_btn_clicked(self):
-        print("create project")
+        logger.info("Create project")
         parent_dir = QFileDialog.getExistingDirectory()
         if parent_dir is None or parent_dir == "":
             return
@@ -174,7 +174,7 @@ class SceneDefinitionWindow(QDialog):
             self.create_proj_btn.setEnabled(False)
 
     def load_project_btn_clicked(self):
-        print("load project")
+        logger.info("Load project")
         project_dir = QFileDialog.getExistingDirectory()
         if project_dir is None or project_dir == "":
             return

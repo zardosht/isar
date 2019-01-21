@@ -2,6 +2,7 @@ import logging
 import math
 import os
 import shutil
+import traceback
 from ast import literal_eval
 from typing import List
 
@@ -525,8 +526,10 @@ class AnnotationPropertiesModel(QAbstractTableModel):
             try:
                 prop: AnnotationProperty = self.__properties[index.row()]
                 result = prop.set_value(value)
-            except Exception as e:
-                print("error", e)
+            except Exception as exp:
+                logger.error("Could not set property value {}".format(prop))
+                logger.error(exp)
+                traceback.print_tb(exp.__traceback__)
                 return False
 
         self.dataChanged.emit(index, index)
