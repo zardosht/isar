@@ -590,9 +590,6 @@
              </item>
              <item>
               <widget class="QToolButton" name="audio_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
                <property name="icon">
                 <iconset>
                  <normaloff>images/audio.png</normaloff>images/audio.png</iconset>

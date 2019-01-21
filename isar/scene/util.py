@@ -136,6 +136,12 @@ def draw_image_on(opencv_img, image, position, position_is_topleft=True):
             x = position[0] - math.floor(img_width / 2)
             y = position[1] - math.floor(img_height / 2)
 
+        # check that the position is not out of opencv_img bounds
+        if x > scene_width or x < 0:
+            return
+        if y > scene_height or y < 0:
+            return
+
         end_height_index = min(y + img_height, scene_height)
         end_width_index = min(x + img_width, scene_width)
 
