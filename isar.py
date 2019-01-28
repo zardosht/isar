@@ -29,11 +29,13 @@ def configure_logging():
 
 def main():
     configure_logging()
-    servicemanager.start_services()
 
     app = QtWidgets.QApplication(sys.argv)
+    servicemanager.start_services()
+
     scene_def_window : QDialog = SceneDefinitionWindow()
     scene_def_window.exec()
+    # app.exec()
 
     time.sleep(0.5)
 
@@ -42,3 +44,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
