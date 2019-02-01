@@ -21,6 +21,7 @@ class CameraService(Service):
         self._capture = None
         self._open_capture()
         self._stop_event = threading.Event()
+        self._capture_thread: threading.Thread = None
         self._do_capture = False
 
     def _open_capture(self):
@@ -29,8 +30,8 @@ class CameraService(Service):
             raise Exception("Could not open camera {}".format(self.cam_id))
 
     def start(self):
-        t = threading.Thread(target=self._start_capture)
-        t.start()
+        self._capture_thread = threading.Thread(target=self._start_capture)
+        self._capture_thread.start()
 
     def _start_capture(self):
         """
@@ -63,6 +64,7 @@ class CameraService(Service):
         """
         self._stop_event.set()
         self._capture.release()
+        self._capture_thread.join()
 
     def start_capture(self):
         self._do_capture = True
