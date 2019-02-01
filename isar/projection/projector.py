@@ -1,13 +1,12 @@
 import logging
+import multiprocessing
 import threading
 import time
 
 import cv2
-from PyQt5 import QtWidgets, QtGui, QtCore
 import numpy as np
-from PyQt5.QtGui import QPixmap
 from pylab import array, uint8
-
+from screeninfo import get_monitors
 from isar.scene import util
 from isar.scene.scenemodel import ScenesModel
 from isar.scene.util import Frame
@@ -15,88 +14,45 @@ from isar.services.service import Service
 
 logger = logging.getLogger("isar.projection.projector")
 
-projector = None
 
-
-def init_projector(screen_id):
-    global projector
-    projector = QtWidgets.QApplication.desktop().screenGeometry(screen_id)
-
-
-def is_ready():
-    if not projector:
-        init_projector()
-    return projector is not None and projector.width() != 0
-
-
-def get_projector_geometry():
-    if projector is not None:
-       return projector.left(), projector.top(), projector.width(), projector.height()
-    else:
-        raise RuntimeError("Projector is not ready!")
-
-
-class ProjectorView(QtWidgets.QLabel):
+class ProjectorView:
     def __init__(self):
         super().__init__()
-
-        left, top, width, height = get_projector_geometry()
-        self.move(left, top)
-        self.resize(width, height)
-        self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
-        self.showFullScreen()
-
-        self.scene_size = Frame(width, height)
+        self.offset_x = 0
+        self.offset_y = 0
+        self.width = 0
+        self.height = 0
+        self.scene_size = None
         self.scene_image = None
         self.calibration_matrix = np.identity(3, dtype=np.float64)
 
-    # def paintEvent(self, event):
-    #     qpainter = QtGui.QPainter()
-    #     qpainter.begin(self)
-    #     if self.image:
-    #         qpainter.drawImage(QtCore.QPoint(0, 0), self.image)
-    #     qpainter.end()
-
     def set_scene_image(self, scene_image):
-        if not is_ready():
-            logger.warning("Projector is not ready!")
-            return
-        else:
-            self.scene_image = scene_image
-            out_image = util.get_qimage_from_np_image(scene_image)
-            # out_image = out_image.mirrored(horizontal=True, vertical=False)
-            self.setPixmap(QPixmap.fromImage(out_image))
-            self.setScaledContents(True)
-            self.update()
+        self.scene_image = scene_image
+        cv2.imshow("projector", scene_image)
+        cv2.waitKey(1)
 
-            # self.setMinimumSize(self.image.size())
-            # self.update()
+    def init_projector(self, screen_id):
+        monitors = get_monitors("osx")
+        for m in monitors:
+            print(str(m))
 
+        self.screen = monitors[screen_id]
+        self.offset_x = int(self.screen.x)
+        self.offset_y = 0
+        self.width = int(self.screen.width)
+        self.height = int(self.screen.height)
+        self.scene_size = Frame(self.width, self.height)
 
-class ProjectorService(Service):
-    def __init__(self, service_name, screen_id=0):
-        super().__init__(service_name)
-        init_projector(screen_id)
-        self.projector_view = ProjectorView()
-        self.scenes_model = ScenesModel()
-        self._stop_event = threading.Event()
+        cv2.namedWindow("projector", cv2.WND_PROP_FULLSCREEN)
+        cv2.moveWindow("projector", self.offset_x, self.offset_y)
 
-        self.projector_needs_calibration = True
+        # TODO: There is a bug in OpenCV fullscreen on macOS
+        # cv2.setWindowProperty("projector", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    def start(self):
-        t = threading.Thread(target=self._start_service)
-        t.start()
-
-    def _start_service(self):
-        while not self._stop_event.is_set():
-            if self.projector_needs_calibration:
-                time.sleep(1)
-                self.calibrate_projector()
-                self.projector_needs_calibration = False
-                time.sleep(20)
-
-            self.update_projector_view()
-            time.sleep(0.005)
+        blank_image = np.ones((self.height, self.width, 3), np.uint8)
+        blank_image[:] = (255, 0, 255)
+        cv2.imshow("projector", blank_image)
+        cv2.waitKey(5000)
 
     def calibrate_projector(self):
         pattern_size, chessboard_img = create_chessboard_image(self.projector_view.scene_size)
@@ -109,26 +65,66 @@ class ProjectorService(Service):
         dummy_scene_image = create_dummy_scene_image(self.projector_view.scene_size)
         self.projector_view.set_scene_image(dummy_scene_image)
 
+
+class ProjectorService(Service):
+    def __init__(self, service_name, screen_id=0):
+        super().__init__(service_name)
+        self.screen_id = screen_id
+        self.projector_view = ProjectorView()
+        self.projector_needs_calibration = True
+
+        self.scenes_model = ScenesModel()
+        self._stop_event = multiprocessing.Event()
+        self.projector_process: multiprocessing.Process = None
+
+
+    def start(self):
+        self.projector_process = multiprocessing.Process(target=self._start_service)
+        self.projector_process.start()
+
+    def _start_service(self):
+        self.projector_view.init_projector(self.screen_id)
+        while not self._stop_event.is_set():
+            if self.projector_needs_calibration:
+                time.sleep(1)
+                self.projector_view.calibrate_projector()
+                self.projector_needs_calibration = False
+                time.sleep(20)
+
+            self.projector_view.update_projector_view()
+            time.sleep(0.005)
+
     def stop(self):
         self._stop_event.set()
+        self.projector_process.terminate()
+        self.projector_process.join()
 
 
 def create_chessboard_image(scene_size):
     logger.info("Create chessboard image.")
-    width, height = scene_size
-    image = np.ones((height, width, 3), np.uint8)
+    scene_width, scene_height = scene_size
+    center = int(scene_width/2), int(scene_height/2)
+    square_size = 50
+    chessboard_width, chessboard_height = 10 * square_size, 7 * square_size
+
+    chessboard = np.ones((chessboard_height, chessboard_width, 3), np.uint8)
+    chessboard.fill(255)
+    image = np.ones((scene_height, scene_width, 3), np.uint8)
     image.fill(255)
 
-    square_size = 100
-    xs = np.arange(0, width, square_size)
-    ys = np.arange(0, height, square_size)
+    xs = np.arange(0, chessboard_width, square_size)
+    ys = np.arange(0, chessboard_height, square_size)
 
     for j, y in enumerate(ys):
         for i, x in enumerate(xs):
             if (i + j) % 2 == 0:
-                image[y:y + square_size, x:x + square_size] = (0, 0, 0)
+                chessboard[y:y + square_size, x:x + square_size] = (0, 0, 0)
+    cv2.imwrite("tmp/tmp_files/chessboard.jpg", chessboard)
 
-    cv2.imwrite("tmp/tmp_files/projector_chessboard.jpg", image)
+    x, y = center[0] - int(chessboard_width / 2), center[1] - int(chessboard_height/2)
+    image[y:y+chessboard_height, x:x+chessboard_width] = chessboard
+    cv2.imwrite("tmp/tmp_files/projector_calibration_image.jpg", image)
+
     return (len(ys) - 1, len(xs) - 1), image
 
 
@@ -136,6 +132,7 @@ def create_dummy_scene_image(scene_size):
     width, height = scene_size
     # scene_image = np.zeros((height, width, 3), np.uint8)
     scene_image = np.ones((height, width, 3), np.uint8)
+    scene_image[:] = (0, 255, 255)
 
     # scene_image = cv2.cvtColor(scene_image, cv2.COLOR_BGR2BGRA)
     scene_image = cv2.rectangle(scene_image, (100, 100), (width - 100, height - 100), (0, 255, 0), 10)

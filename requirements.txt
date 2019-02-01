@@ -1,2 +1,3 @@
+screeninfo
 cv2
 PyQt5

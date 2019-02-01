@@ -1,10 +1,15 @@
 import logging
+import os
 import sys
 import time
+import traceback
+
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog
 from isar.services import servicemanager
 from isar.scene.definitionwindow import SceneDefinitionWindow
+
+
 
 
 def configure_logging():
@@ -28,10 +33,18 @@ def configure_logging():
 
 
 def main():
+    # See: https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr
+    # os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
+
     configure_logging()
+    logger = logging.getLogger("isar")
 
     app = QtWidgets.QApplication(sys.argv)
-    servicemanager.start_services()
+    try:
+        servicemanager.start_services()
+    except Exception as exp:
+        logger.error(exp)
+        traceback.print_tb(exp.__traceback__)
 
     scene_def_window : QDialog = SceneDefinitionWindow()
     scene_def_window.exec()
