@@ -5,133 +5,98 @@ import time
 
 import cv2
 import numpy as np
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QPixmap
-
-from isar import services
+from pylab import array, uint8
+from screeninfo import get_monitors
 from isar.scene import util
 from isar.scene.scenemodel import ScenesModel
 from isar.scene.util import Frame
-from isar.services import servicemanager
 from isar.services.service import Service
-
 
 logger = logging.getLogger("isar.projection.projector")
 
 
-def init_projector(screen_id):
-    global projector
-    projector = QtWidgets.QApplication.desktop().screenGeometry(screen_id)
-
-
-def is_ready():
-    if not projector:
-        init_projector()
-    return projector is not None and projector.width() != 0
-
-
-def get_projector_geometry():
-    if projector is not None:
-       return projector.left(), projector.top(), projector.width(), projector.height()
-    else:
-        raise RuntimeError("Projector is not ready!")
-
-
-class ProjectorView(QtWidgets.QLabel):
-    def __init__(self, top, left, scene_size):
+class ProjectorView:
+    def __init__(self):
         super().__init__()
-
-        self.scene_size = scene_size
+        self.offset_x = 0
+        self.offset_y = 0
+        self.width = 0
+        self.height = 0
+        self.scene_size = None
         self.scene_image = None
         self.calibration_matrix = np.identity(3, dtype=np.float64)
 
-    # def paintEvent(self, event):
-    #     qpainter = QtGui.QPainter()
-    #     qpainter.begin(self)
-    #     if self.image:
-    #         qpainter.drawImage(QtCore.QPoint(0, 0), self.image)
-    #     qpainter.end()
-
     def set_scene_image(self, scene_image):
-        if not is_ready():
-            logger.warning("Projector is not ready!")
-            return
-        else:
-            self.scene_image = scene_image
-            out_image = util.get_qimage_from_np_image(scene_image)
-            # out_image = out_image.mirrored(horizontal=True, vertical=False)
-            self.setPixmap(QPixmap.fromImage(out_image))
-            # self.setScaledContents(True)
-            # self.update()
+        self.scene_image = scene_image
+        cv2.imshow("projector", scene_image)
+        return cv2.waitKey(1)
 
-            # self.setMinimumSize(self.image.size())
-            self.update()
+    def init_projector(self, screen_id):
+        monitors = get_monitors("osx")
+        for m in monitors:
+            print(str(m))
 
+        self.screen = monitors[screen_id]
+        self.offset_x = int(self.screen.x)
+        self.offset_y = 0
+        self.width = int(self.screen.width)
+        self.height = int(self.screen.height)
+        self.scene_size = Frame(self.width, self.height)
 
-class ProjectorService(Service):
-    def __init__(self, service_name, screen_id=0):
-        super().__init__(service_name)
-        init_projector(screen_id)
-        left, top, width, height = get_projector_geometry()
-        self.projector_view = ProjectorView(top, left, Frame(width, height))
-        self.projector_view.move(left, top)
-        self.projector_view.resize(width, height)
-        self.projector_view.setWindowFlag(QtCore.Qt.FramelessWindowHint)
-        self.projector_view.showFullScreen()
+        cv2.namedWindow("projector", cv2.WINDOW_GUI_NORMAL)
+        cv2.moveWindow("projector", self.offset_x, self.offset_y)
 
-        from isar.services.servicemanager import ServiceNames
-        self.camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
-        self.camera_service.start_capture()
+        # TODO: There is a bug in OpenCV fullscreen on macOS
+        # cv2.setWindowProperty("projector", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-        self.scenes_model = ScenesModel()
-        self._stop_event = multiprocessing.Event()
-        self.projector_process: multiprocessing.Process = None
-
-        self.projector_needs_calibration = True
-
-    def start(self):
-        # while True:
-        #     camera_frame = self.camera_service.get_frame()
-        #     cv2.imshow("isar", camera_frame.raw_image)
-        #     if cv2.waitKey(50) > 0:
-        #         cv2.destroyAllWindows()
-        #         break
-
-        self.projector_process = multiprocessing.Process(target=self._start_service)
-        self.projector_process.daemon = True
-        self.projector_process.start()
-
-    def _start_service(self):
-        while not self._stop_event.is_set():
-            if self.projector_needs_calibration:
-                time.sleep(1)
-                self.calibrate_projector()
-                self.projector_needs_calibration = False
-                time.sleep(10)
-
-            time.sleep(0.05)
-            self.update_projector_view()
-            time.sleep(0.05)
+        blank_image = np.ones((self.height, self.width, 3), np.uint8)
+        blank_image[:] = (255, 0, 255)
+        cv2.imshow("projector", blank_image)
+        cv2.waitKey(1000)
 
     def calibrate_projector(self):
-        pattern_size, chessboard_img = create_chessboard_image(self.projector_view.scene_size)
-        self.projector_view.set_scene_image(chessboard_img)
-        # if self.camera_service:
-        #     camera_frame = self.camera_service.get_frame()
-        #     cv2.imshow("isar", camera_frame.raw_image)
-        #     cv2.waitKey(50)
+        pattern_size, chessboard_img = create_chessboard_image(self.scene_size)
+        return self.set_scene_image(chessboard_img)
 
     def update_projector_view(self):
         # TODO: prepare projector image from the scene annotation and
         #  result from object detection
 
-        dummy_scene_image = create_dummy_scene_image(self.projector_view.scene_size)
-        self.projector_view.set_scene_image(dummy_scene_image)
+        dummy_scene_image = create_dummy_scene_image(self.scene_size)
+        return self.set_scene_image(dummy_scene_image)
+
+
+class ProjectorService(Service):
+    def __init__(self, service_name, screen_id=0):
+        super().__init__(service_name)
+        self.screen_id = screen_id
+        self.projector_view = ProjectorView()
+        self.projector_needs_calibration = True
+
+        self.scenes_model = ScenesModel()
+        self._stop_event = multiprocessing.Event()
+
+    def start(self):
+        self.projector_view.init_projector(self.screen_id)
+        while not self._stop_event.is_set():
+            if self.projector_needs_calibration:
+                time.sleep(1)
+                ret = self.projector_view.calibrate_projector()
+                if ret > 0:
+                    break
+
+                self.projector_needs_calibration = False
+                time.sleep(10)
+
+            ret = self.projector_view.update_projector_view()
+            if ret > 0:
+                break
+
+            time.sleep(0.005)
 
     def stop(self):
         self._stop_event.set()
-        self.projector_process.terminate()
-        self.projector_process.join()
+        cv2.destroyAllWindows()
 
 
 def create_chessboard_image(scene_size):

@@ -34,10 +34,10 @@ def main():
     configure_logging()
     logger = logging.getLogger("isar")
 
-    app = QtWidgets.QApplication(sys.argv)
+    # app = QtWidgets.QApplication(sys.argv)
     servicemanager.start_services()
 
-    app_window = QMainWindow(None)
+    # app_window = QMainWindow(None)
 
     # scene_def_window : QtWidgets = SceneDefinitionWindow()
     # app_window.setCentralWidget(scene_def_window)
@@ -47,7 +47,7 @@ def main():
     # app_window.setCentralWidget()
     # app_window.show()
 
-    app.exec()
+    # app.exec()
     time.sleep(0.5)
     servicemanager.stop_services()
 
