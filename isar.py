@@ -5,11 +5,9 @@ import time
 import traceback
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QMainWindow
 from isar.services import servicemanager
 from isar.scene.definitionwindow import SceneDefinitionWindow
-
-
 
 
 def configure_logging():
@@ -46,9 +44,12 @@ def main():
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
 
-    scene_def_window : QDialog = SceneDefinitionWindow()
-    scene_def_window.exec()
-    # app.exec()
+    app_window = QMainWindow(None)
+    scene_def_window : QtWidgets = SceneDefinitionWindow()
+    app_window.setCentralWidget(scene_def_window)
+    app_window.show()
+
+    app.exec()
 
     time.sleep(0.5)
 

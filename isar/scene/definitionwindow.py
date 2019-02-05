@@ -1,9 +1,9 @@
 import functools
 import logging
 
-from PyQt5 import uic
+from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject, Qt, QItemSelection
-from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag
+from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag, QCloseEvent
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
 
 from isar.camera.camera import CameraService
@@ -20,7 +20,7 @@ from isar.services.servicemanager import ServiceNames
 logger = logging.getLogger("isar.definitionwindow")
 
 
-class SceneDefinitionWindow(QDialog):
+class SceneDefinitionWindow(QWidget):
 
     SELECT_BTN_ID = 10
 
@@ -36,7 +36,7 @@ class SceneDefinitionWindow(QDialog):
         self._object_detection_service = None
         self.setup_object_detection_service()
 
-        # self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
         self.setup_models()
         self.setup_signals()
 
@@ -253,6 +253,10 @@ class SceneDefinitionWindow(QDialog):
 
     def update_camera_view(self):
         camera_frame = self._camera_service.get_frame(flipped=True)
+        if camera_frame is None:
+            # logger.error("camera_frame is None")
+            return
+
         self.camera_view.set_camera_frame(camera_frame)
 
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
@@ -269,10 +273,6 @@ class SceneDefinitionWindow(QDialog):
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
         phys_obj_model.update_present_physical_objects(phys_obj_predictions)
 
-    def closeEvent(self, QCloseEvent):
-        self._timer.stop()
-        self._camera_service.stop_capture()
-
     def get_camera_view_scale_factor(self):
         capture_size = self._camera_service.get_camera_capture_size()
         if capture_size is not None:
@@ -281,9 +281,6 @@ class SceneDefinitionWindow(QDialog):
             return width_scale, height_scale
         else:
             return None
-
-    def reject(self):
-        logger.info("TODO: Reject is overridden in order to avoid scape key closing the dialog!")
 
     def update_mouse_position_label(self, position, obj_name=None):
         if obj_name is None and position is not None:

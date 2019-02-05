@@ -15,7 +15,7 @@ class ServiceNames(Enum):
 
 
 def start_services():
-    camera1_service = CameraService(ServiceNames.CAMERA1, 2)
+    camera1_service = CameraService(ServiceNames.CAMERA1, 0)
     camera1_service.start()
     __services[ServiceNames.CAMERA1] = camera1_service
 
@@ -24,9 +24,9 @@ def start_services():
     objectdetection_service.start()
     __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
 
-    projector_service = ProjectorService(ServiceNames.PROJECTOR, screen_id=2)
-    projector_service.start()
-    __services[ServiceNames.PROJECTOR] = projector_service
+    # projector_service = ProjectorService(ServiceNames.PROJECTOR, screen_id=2)
+    # projector_service.start()
+    # __services[ServiceNames.PROJECTOR] = projector_service
 
 
 def stop_services():

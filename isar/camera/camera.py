@@ -1,5 +1,7 @@
 import logging
+import multiprocessing
 import threading
+from ctypes import c_bool
 from queue import Queue
 import cv2
 
@@ -20,9 +22,9 @@ class CameraService(Service):
         self.cam_id = cam_id
         self._capture = None
         self._open_capture()
-        self._stop_event = threading.Event()
-        self._capture_thread: threading.Thread = None
-        self._do_capture = False
+        self._do_capture = multiprocessing.Value(c_bool, False)
+        self._stop_event = multiprocessing.Event()
+        self._capture_process: multiprocessing.Process = None
 
     def _open_capture(self):
         self._capture = cv2.VideoCapture(self.cam_id)
@@ -30,8 +32,9 @@ class CameraService(Service):
             raise Exception("Could not open camera {}".format(self.cam_id))
 
     def start(self):
-        self._capture_thread = threading.Thread(target=self._start_capture)
-        self._capture_thread.start()
+        self._capture_process = multiprocessing.Process(target=self._start_capture)
+        self._capture_process.daemon = True
+        self._capture_process.start()
 
     def _start_capture(self):
         """
@@ -43,7 +46,7 @@ class CameraService(Service):
 
         frame_number = -1
         while not self._stop_event.is_set():
-            if not self._do_capture:
+            if not self._do_capture.value:
                 continue
 
             if self._queue.full():
@@ -62,15 +65,17 @@ class CameraService(Service):
         Stop capturing
         :return:
         """
+        self.stop_capture()
         self._stop_event.set()
         self._capture.release()
-        self._capture_thread.join()
+        self._capture_process.terminate()
+        self._capture_process.join()
 
     def start_capture(self):
-        self._do_capture = True
+        self._do_capture.value = True
 
     def stop_capture(self):
-        self._do_capture = False
+        self._do_capture.value = False
 
     def get_frame(self, flipped=False):
         """
@@ -78,11 +83,14 @@ class CameraService(Service):
         It blocks if the queue is empty.
         :return:
         """
-        camera_frame = self._queue.get()
-        if flipped:
-            camera_frame.flip()
+        camera_frame = None
+        if not self._queue.empty():
+            camera_frame = self._queue.get()
+            if flipped:
+                camera_frame.flip()
 
         return camera_frame
+
 
     def get_camera_capture_size(self):
         if self._capture:
