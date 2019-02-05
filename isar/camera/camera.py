@@ -70,22 +70,28 @@ class CameraService(Service):
     def stop_capture(self):
         self._do_capture = False
 
-    def get_frame(self, flipped=False):
+    def get_frame(self, flipped_x=False, flipped_y=False):
         """
         Return the frame from FIFO queue
         It blocks if the queue is empty.
         :return:
         """
+        if not self._do_capture:
+            raise RuntimeError("_do_capture is False. Have you forgotten to call start_capture() first?")
+
         camera_frame = self._queue.get()
-        if flipped:
-            camera_frame.flip()
+        if flipped_x:
+            camera_frame.flip(0)
+
+        if flipped_y:
+            camera_frame.flip(1)
 
         return camera_frame
 
     def get_camera_capture_size(self):
         if self._capture:
-            width = self._capture.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
-            height = self._capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            width = int(self._capture.get(cv2.CAP_PROP_FRAME_WIDTH))  # float
+            height = int(self._capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
             return width, height
         else:
             return None
@@ -100,9 +106,13 @@ class CameraFrame:
         self.scene_image = image.copy()
         self.frame_number = frame_number
 
-    def flip(self):
-        self.raw_image = cv2.flip(self.raw_image, 1)
-        self.scene_image = cv2.flip(self.scene_image, 1)
+    def flip(self, flip_code):
+        # flipCode	a flag to specify how to flip the array;
+        # 0 means flipping around the x-axis and
+        # positive value (for example, 1) means flipping around y-axis.
+        # Negative value (for example, -1) means flipping around both axes.
+        self.raw_image = cv2.flip(self.raw_image, flip_code)
+        self.scene_image = cv2.flip(self.scene_image, flip_code)
 
     @property
     def size(self):

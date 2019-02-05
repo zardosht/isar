@@ -252,7 +252,7 @@ class SceneDefinitionWindow(QWidget):
         self.properties_view.setItemDelegate(phys_obj_combo_delegate)
 
     def update_camera_view(self):
-        camera_frame = self._camera_service.get_frame(flipped=True)
+        camera_frame = self._camera_service.get_frame(flipped_y=True)
         if camera_frame is None:
             # logger.error("camera_frame is None")
             return
