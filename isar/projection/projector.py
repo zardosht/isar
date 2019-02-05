@@ -65,7 +65,7 @@ class ProjectorView(QtWidgets.QLabel):
             # self.update()
 
             # self.setMinimumSize(self.image.size())
-            # self.update()
+            self.update()
 
 
 class ProjectorService(Service):
@@ -90,14 +90,16 @@ class ProjectorService(Service):
         self.projector_needs_calibration = True
 
     def start(self):
-        while True:
-            camera_frame = self.camera_service.get_frame()
-            cv2.imshow("isar", camera_frame.raw_image)
-            cv2.waitKey(50)
+        # while True:
+        #     camera_frame = self.camera_service.get_frame()
+        #     cv2.imshow("isar", camera_frame.raw_image)
+        #     if cv2.waitKey(50) > 0:
+        #         cv2.destroyAllWindows()
+        #         break
 
-        # self.projector_process = multiprocessing.Process(target=self._start_service)
-        # self.projector_process.daemon = True
-        # self.projector_process.start()
+        self.projector_process = multiprocessing.Process(target=self._start_service)
+        self.projector_process.daemon = True
+        self.projector_process.start()
 
     def _start_service(self):
         while not self._stop_event.is_set():
@@ -114,10 +116,10 @@ class ProjectorService(Service):
     def calibrate_projector(self):
         pattern_size, chessboard_img = create_chessboard_image(self.projector_view.scene_size)
         self.projector_view.set_scene_image(chessboard_img)
-        if self.camera_service:
-            camera_frame = self.camera_service.get_frame()
-            cv2.imshow("isar", camera_frame.raw_image)
-            cv2.waitKey(50)
+        # if self.camera_service:
+        #     camera_frame = self.camera_service.get_frame()
+        #     cv2.imshow("isar", camera_frame.raw_image)
+        #     cv2.waitKey(50)
 
     def update_projector_view(self):
         # TODO: prepare projector image from the scene annotation and

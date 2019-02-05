@@ -1,13 +1,10 @@
 import logging
-import os
 import sys
 import time
-import traceback
-
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog, QMainWindow
+from PyQt5.QtWidgets import QMainWindow
+
 from isar.services import servicemanager
-from isar.scene.definitionwindow import SceneDefinitionWindow
 
 
 def configure_logging():
@@ -38,18 +35,20 @@ def main():
     logger = logging.getLogger("isar")
 
     app = QtWidgets.QApplication(sys.argv)
-
     servicemanager.start_services()
 
     app_window = QMainWindow(None)
-    scene_def_window : QtWidgets = SceneDefinitionWindow()
-    app_window.setCentralWidget(scene_def_window)
-    app_window.show()
+
+    # scene_def_window : QtWidgets = SceneDefinitionWindow()
+    # app_window.setCentralWidget(scene_def_window)
+    # app_window.show()
+
+    # projector_view = ProjectorView()
+    # app_window.setCentralWidget()
+    # app_window.show()
 
     app.exec()
-
     time.sleep(0.5)
-
     servicemanager.stop_services()
 
 

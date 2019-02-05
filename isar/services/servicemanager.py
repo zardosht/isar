@@ -21,7 +21,7 @@ class ServiceNames(Enum):
 
 def start_services():
     try:
-        camera1_service = CameraService(ServiceNames.CAMERA1, 0)
+        camera1_service = CameraService(ServiceNames.CAMERA1, 1)
         camera1_service.start()
         __services[ServiceNames.CAMERA1] = camera1_service
     except Exception as exp:
@@ -37,13 +37,13 @@ def start_services():
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
 
-    # try:
-    #     projector_service = ProjectorService(ServiceNames.PROJECTOR, screen_id=2)
-    #     projector_service.start()
-    #     __services[ServiceNames.PROJECTOR] = projector_service
-    # except Exception as exp:
-    #     logger.error(exp)
-    #     traceback.print_tb(exp.__traceback__)
+    try:
+        projector_service = ProjectorService(ServiceNames.PROJECTOR, screen_id=2)
+        projector_service.start()
+        __services[ServiceNames.PROJECTOR] = projector_service
+    except Exception as exp:
+        logger.error(exp)
+        traceback.print_tb(exp.__traceback__)
 
 
 def stop_services():
