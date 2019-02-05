@@ -38,11 +38,8 @@ def main():
     logger = logging.getLogger("isar")
 
     app = QtWidgets.QApplication(sys.argv)
-    try:
-        servicemanager.start_services()
-    except Exception as exp:
-        logger.error(exp)
-        traceback.print_tb(exp.__traceback__)
+
+    servicemanager.start_services()
 
     app_window = QMainWindow(None)
     scene_def_window : QtWidgets = SceneDefinitionWindow()
