@@ -4,6 +4,7 @@ import time
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
+from isar.domainlearning.domainlearning import DomainLearningWindow
 from isar.scene.definitionwindow import SceneDefinitionWindow
 from isar.services import servicemanager
 
@@ -35,20 +36,20 @@ def main():
     configure_logging()
     logger = logging.getLogger("isar")
 
+    app = QtWidgets.QApplication(sys.argv)
+
     servicemanager.start_services()
 
-    # app = QtWidgets.QApplication(sys.argv)
-    # app_window = QMainWindow(None)
-    #
-    # scene_def_window : QtWidgets = SceneDefinitionWindow()
-    # app_window.setCentralWidget(scene_def_window)
-    # app_window.show()
+    scene_def_window = QMainWindow(None)
+    scene_def_window.setCentralWidget(SceneDefinitionWindow())
+    scene_def_window.show()
 
-    # projector_view = ProjectorView()
-    # app_window.setCentralWidget()
-    # app_window.show()
+    domain_learning_window = QMainWindow(None)
+    domain_learning_window.setCentralWidget(DomainLearningWindow())
+    domain_learning_window.move(100, 100)
+    domain_learning_window.show()
 
-    # app.exec()
+    app.exec()
 
     time.sleep(0.5)
     servicemanager.stop_services()

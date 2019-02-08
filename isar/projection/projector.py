@@ -6,6 +6,7 @@ import traceback
 
 import cv2
 import numpy as np
+from PyQt5 import QtWidgets
 from screeninfo import get_monitors
 
 from isar.camera.camera import CameraService, CameraFrame
@@ -19,7 +20,7 @@ logger = logging.getLogger("isar.projection.projector")
 debug = True
 
 
-class ProjectorView:
+class ProjectorView(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.offset_x = 0

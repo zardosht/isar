@@ -122,6 +122,10 @@ class CameraView(QLabel):
             super().mousePressEvent(event)
 
         def mouseMoveEvent(self, event):
+            if self.scene_definition_windows is None:
+                super().mouseMoveEvent(event)
+                return
+
             if self.image_frame is not None:
                 img_x, img_y = util.mouse_coordinates_to_image_coordinates(
                     event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
