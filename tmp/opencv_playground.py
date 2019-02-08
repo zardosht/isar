@@ -249,7 +249,7 @@ def f7():
     source = cv2.line(source, p1, p2, (0, 0, 255), 8)
     cv2.imshow("source", source)
 
-    dest = cv2.imread("tmp_files/tmp_image.jpg")
+    dest = cv2.imread("tmp_files/calibration_image_on_table.jpg")
     source_warpped = cv2.warpPerspective(source, homography_matrix, (dest.shape[1], dest.shape[0]))
     cv2.imshow("source_warpped", source_warpped)
 

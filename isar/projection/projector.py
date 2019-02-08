@@ -16,6 +16,8 @@ from isar.services.service import Service
 
 logger = logging.getLogger("isar.projection.projector")
 
+debug = True
+
 
 class ProjectorView:
     def __init__(self):
@@ -78,7 +80,11 @@ class ProjectorView:
 
                 camera_frame: CameraFrame = self.camera_service.get_frame()
                 camera_img = camera_frame.raw_image
-                camera_img = cv2.flip(camera_img, -1)
+                camera_img = cv2.resize(camera_img, self.scene_size)
+                # camera_img = cv2.flip(camera_img, -1)
+
+                if debug: cv2.imwrite("tmp/tmp_files/calibration_image_on_table.jpg", camera_img)
+
                 camera_points = get_chessboard_points("camera_points", camera_img)
 
                 if projector_points.shape != camera_points.shape:
@@ -87,7 +93,7 @@ class ProjectorView:
 
                 self.homography_matrix, mask = cv2.findHomography(camera_points, projector_points, cv2.RANSAC, 3)
                 # self.homography_matrix, mask = cv2.findHomography(projector_points, camera_points, cv2.RANSAC, 3)
-                print(self.homography_matrix)
+                logger.info("Homography matrix: " + str(self.homography_matrix))
 
                 if np.all(mask):
                     logger.info("Found good homography. All mask elements are 1. Break.")
@@ -101,6 +107,8 @@ class ProjectorView:
         # TODO: prepare projector image from the scene annotation and
         #  result from object detection
 
+        camera_img = self.camera_service.get_frame().raw_image
+        if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
 
         # dummy_scene_image = create_dummy_scene_image(self.scene_size)
         # dummy_scene_image_warpped = dummy_scene_image
@@ -110,6 +118,8 @@ class ProjectorView:
 
         dummy_scene_image = create_dummy_scene_image(self.scene_size)
         dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, self.scene_size)
+
+        if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image_warpped.jpg", dummy_scene_image_warpped)
 
         return self.set_scene_image(dummy_scene_image_warpped)
 

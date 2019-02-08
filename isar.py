@@ -4,6 +4,7 @@ import time
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
+from isar.scene.definitionwindow import SceneDefinitionWindow
 from isar.services import servicemanager
 
 
@@ -34,11 +35,11 @@ def main():
     configure_logging()
     logger = logging.getLogger("isar")
 
-    # app = QtWidgets.QApplication(sys.argv)
     servicemanager.start_services()
 
+    # app = QtWidgets.QApplication(sys.argv)
     # app_window = QMainWindow(None)
-
+    #
     # scene_def_window : QtWidgets = SceneDefinitionWindow()
     # app_window.setCentralWidget(scene_def_window)
     # app_window.show()
@@ -48,6 +49,7 @@ def main():
     # app_window.show()
 
     # app.exec()
+
     time.sleep(0.5)
     servicemanager.stop_services()
 
