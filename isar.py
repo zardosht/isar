@@ -4,7 +4,7 @@ import time
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
-from isar.domainlearning.domainlearning import DomainLearningWindow
+from isar.domainlearning.domainlearning import DomainLearningWindow, DomainLearningMainWindow
 from isar.scene.definitionwindow import SceneDefinitionWindow
 from isar.services import servicemanager
 
@@ -40,11 +40,11 @@ def main():
 
     servicemanager.start_services()
 
-    scene_def_window = QMainWindow(None)
-    scene_def_window.setCentralWidget(SceneDefinitionWindow())
-    scene_def_window.show()
+    # scene_def_window = QMainWindow(None)
+    # scene_def_window.setCentralWidget(SceneDefinitionWindow())
+    # scene_def_window.show()
 
-    domain_learning_window = QMainWindow(None)
+    domain_learning_window = DomainLearningMainWindow()
     domain_learning_window.setCentralWidget(DomainLearningWindow())
     domain_learning_window.move(100, 100)
     domain_learning_window.show()

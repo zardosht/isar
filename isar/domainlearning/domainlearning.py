@@ -1,10 +1,11 @@
 import logging
 
 from PyQt5 import QtWidgets, QtCore, uic
-from PyQt5.QtCore import QItemSelectionModel, QTimer
-from PyQt5.QtWidgets import QHBoxLayout, QFileDialog, QWidget
+from PyQt5.QtCore import QItemSelectionModel, QTimer, Qt
+from PyQt5.QtWidgets import QHBoxLayout, QFileDialog, QWidget, QMainWindow, QApplication
 
 from isar.camera.camera import CameraService
+from isar.projection.projector import ProjectorView
 from isar.scene.annotationmodel import AnnotationsModel
 from isar.scene.cameraview import CameraView
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
@@ -21,9 +22,12 @@ class DomainLearningWindow(QWidget):
         self.camera_view = None
         self.objects_view = None
         self.setup_ui()
+        self.projector_view = None
 
         self._camera_service: CameraService = None
         self.setup_camera_service()
+
+        self.setup_projector_view()
 
         self._object_detection_service = None
         self.setup_object_detection_service()
@@ -37,8 +41,9 @@ class DomainLearningWindow(QWidget):
 
         self.setup_signals()
 
-        self._timer = None
-        self.setup_timer()
+        self._camera_view_timer = None
+        self._projector_view_timer = None
+        self.setup_timers()
 
     def setup_ui(self):
         uic.loadUi("isar/ui/domain_learning.ui", self)
@@ -47,13 +52,20 @@ class DomainLearningWindow(QWidget):
         self.camera_view_container.layout().setContentsMargins(0, 0, 0, 0)
         self.camera_view_container.layout().addWidget(self.camera_view, stretch=1)
 
+    def setup_projector_view(self):
+        screen_id = 2
+        self.projector_view = ProjectorView(self.projector_view, screen_id, self._camera_service)
+        self.projector_view.setWindowFlag(Qt.Window)
+        self.calibrate_projector()
+
     def setup_signals(self):
         # scenes list
         self.calibrate_btn.clicked.connect(self.calibrate_projector)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
 
     def calibrate_projector(self):
-        pass
+        self.projector_view.calibrating = True
+        self.projector_view.calibrate_projector()
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
@@ -73,10 +85,14 @@ class DomainLearningWindow(QWidget):
     def setup_object_detection_service(self):
         self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
 
-    def setup_timer(self):
-        self._timer = QTimer()
-        self._timer.timeout.connect(self.update_camera_view)
-        self._timer.start(5)
+    def setup_timers(self):
+        self._camera_view_timer = QTimer()
+        self._camera_view_timer.timeout.connect(self.update_camera_view)
+        self._camera_view_timer.start(5)
+
+        self._projector_view_timer = QTimer()
+        self._projector_view_timer.timeout.connect(self.update_projector_view)
+        self._projector_view_timer.start(5)
 
     def setup_models(self):
         self.scenes_model = ScenesModel()
@@ -107,7 +123,7 @@ class DomainLearningWindow(QWidget):
 
         # phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
         if self.track_objects_checkbox.isChecked():
-            scene_phys_objs_names =  self.physical_objects_model.get_scene_physical_objects_names()
+            scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
             if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
                 self._object_detection_service.get_present_objects(camera_frame,
                                                                    scene_phys_objs_names,
@@ -115,10 +131,24 @@ class DomainLearningWindow(QWidget):
         else:
             self.physical_objects_model.update_present_physical_objects(None)
 
+    def update_projector_view(self):
+        if self.projector_view.calibrating:
+            return
+        else:
+            self.projector_view.update_projector_view()
+
     def on_obj_detection_complete(self, phys_obj_predictions):
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
         phys_obj_model.update_present_physical_objects(phys_obj_predictions)
 
+    def close(self):
+        self.projector_view.close()
+        super().close()
 
 
+# Just to get the other window to close :/
+class DomainLearningMainWindow(QMainWindow):
 
+    def closeEvent(self, event):
+        self.centralWidget().close()
+        super(DomainLearningMainWindow, self).closeEvent(event)

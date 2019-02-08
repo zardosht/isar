@@ -3,7 +3,6 @@ import traceback
 from enum import Enum
 
 from isar.camera.camera import CameraService
-from isar.projection.projector import ProjectorService
 from isar.tracking import objectdetection
 from isar.tracking.objectdetection import ObjectDetectionService
 
