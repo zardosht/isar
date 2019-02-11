@@ -14,7 +14,7 @@ from isar.scene.util import Frame
 
 logger = logging.getLogger("isar.projection.projector")
 
-debug = True
+debug = False
 
 
 aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -44,21 +44,10 @@ class ProjectorView(QtWidgets.QWidget):
     def set_scene_image(self, scene_image):
         if self.calibrating:
             if debug: cv2.imwrite("tmp/tmp_files/calibration_image.jpg", scene_image)
-            # scene_image_warpped = cv2.resize(scene_image, (self.width, self.height))
             scene_image_warpped = scene_image
         else:
             if debug: cv2.imwrite("tmp/tmp_files/scene_image.jpg", scene_image)
-            scene_image_size = (scene_image.shape[1], scene_image.shape[0])
-            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, (self.projector_width, self.projector_height))
-            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, self.scene_size)
-            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, self.scene_size, cv2.WARP_INVERSE_MAP)
-            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, (500, 300), cv2.WARP_INVERSE_MAP)
-            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, (500, 30))
             scene_image_warpped = scene_image
-            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, scene_image_size)
-            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, scene_image_size, cv2.WARP_INVERSE_MAP)
-
-            if debug: cv2.imwrite("tmp/tmp_files/scene_image_warpped.jpg", scene_image_warpped)
 
         height, width, bpc = scene_image_warpped.shape
         bpl = bpc * width
@@ -72,8 +61,6 @@ class ProjectorView(QtWidgets.QWidget):
         self.projector_width = int(self.projector.width())
         self.projector_height = int(self.projector.height())
 
-        # self.scene_size = Frame(self.projector_width, self.projector_height)
-
         blank_image = np.ones((self.projector_height, self.projector_width, 3), np.uint8)
         blank_image[:] = (255, 0, 255)
 
@@ -83,6 +70,7 @@ class ProjectorView(QtWidgets.QWidget):
         qpainter = QtGui.QPainter()
         qpainter.begin(self)
         if self.image:
+            # put the image at the center of widget
             w, h = event.rect().width(), event.rect().height()
             x = (w - self.image.size().width()) / 2
             y = (h - self.image.size().height()) / 2
@@ -173,7 +161,7 @@ class ProjectorView(QtWidgets.QWidget):
         reprojected_points = reprojected_points.squeeze()
         test_chessboard_image = projector_img.copy()
         for reprojected_point in reprojected_points:
-            cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (0, 0 , 255), 2)
+            cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (0, 0, 255), 2)
 
         self.set_scene_image(test_chessboard_image)
         time.sleep(10)
@@ -188,7 +176,7 @@ class ProjectorView(QtWidgets.QWidget):
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
 
 
-        # detect the scene border markers and get the scene boudaries from them.
+        # Detect the scene border markers and get the scene boudaries from them.
         # All scene images must be resized to scene boundaries and shown in the center of projector widget
         marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
         if len(marker_corners) != 2 :
@@ -199,26 +187,9 @@ class ProjectorView(QtWidgets.QWidget):
         scene_rect = compute_scene_rect(marker_corners, marker_ids, self.homography_matrix)
         self.scene_size = (scene_rect[1], scene_rect[2])
 
-        # dummy_scene_image = create_dummy_scene_image(self.scene_size)
-        # dummy_scene_image_warpped = dummy_scene_image
-
-        # dummy_scene_image = create_dummy_scene_image(self.camera_service.get_camera_capture_size())
-        # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, self.scene_size)
-
-        # dummy_scene_image = create_dummy_scene_image(self.scene_size)
-        # dummy_scene_image = create_dummy_scene_image((600, 400))
-        # dummy_scene_image = create_dummy_scene_image((900, 600))
-        # self.scene_size = Frame(800, 500)
         dummy_scene_image = create_dummy_scene_image(self.projector_width, self.projector_height, scene_rect)
 
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", dummy_scene_image)
-        # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, self.scene_size)
-        # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, (self.projector_width, self.projector_height))
-        # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, (800, 600))
-
-        # if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image_warpped.jpg", dummy_scene_image_warpped)
-
-        # return self.set_scene_image(dummy_scene_image_warpped)
         self.set_scene_image(dummy_scene_image)
 
 
@@ -226,13 +197,13 @@ def compute_scene_rect(marker_corners, marker_ids, cam_proj_homography):
     # marker corners are in clock-wise order
     # there are only two markers. So, one has index 0, the other has index 1,
     # however we don't know which one is marker 0 (the top-left marker)
-    top_left_index = 0
+    top_left_marker_index = 0
     for idx, marker_id in enumerate(marker_ids):
         if marker_id == 0:
-            top_left_index = idx
+            top_left_marker_index = idx
 
-    vertex1_marker = marker_corners[top_left_index].reshape(4, 2)
-    vertex2_marker = marker_corners[1 - top_left_index].reshape(4, 2)
+    vertex1_marker = marker_corners[top_left_marker_index].reshape(4, 2)
+    vertex2_marker = marker_corners[1 - top_left_marker_index].reshape(4, 2)
 
     c_v1 = (vertex1_marker[0][0], vertex1_marker[0][1])
     c_v2 = (vertex2_marker[2][0], vertex2_marker[2][1])
