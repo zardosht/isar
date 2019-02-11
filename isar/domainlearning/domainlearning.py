@@ -1,4 +1,5 @@
 import logging
+import time
 
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtCore import QItemSelectionModel, QTimer, Qt
@@ -41,7 +42,8 @@ class DomainLearningWindow(QWidget):
 
         self.setup_signals()
 
-        self._camera_view_timer = None
+        # self._camera_view_timer = None
+        self._cam_view_update_thread = None
         self._projector_view_timer = None
         self.setup_timers()
 
@@ -85,15 +87,6 @@ class DomainLearningWindow(QWidget):
     def setup_object_detection_service(self):
         self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
 
-    def setup_timers(self):
-        self._camera_view_timer = QTimer()
-        self._camera_view_timer.timeout.connect(self.update_camera_view)
-        self._camera_view_timer.start(5)
-
-        self._projector_view_timer = QTimer()
-        self._projector_view_timer.timeout.connect(self.update_projector_view)
-        self._projector_view_timer.start(5)
-
     def setup_models(self):
         self.scenes_model = ScenesModel()
         self.scenes_list.setModel(self.scenes_model)
@@ -113,8 +106,16 @@ class DomainLearningWindow(QWidget):
         self.camera_view.annotations_model = self.annotations_model
         # self.annotations_list.setModel(annotations_model)
 
-    def update_camera_view(self):
-        camera_frame = self._camera_service.get_frame(flipped_y=True)
+    def setup_timers(self):
+        self._cam_view_update_thread = CameraViewUpdateThread(self._camera_service)
+        self._cam_view_update_thread.camera_frame_fetched.connect(self.update_camera_view)
+        self._cam_view_update_thread.start()
+
+        self._projector_view_timer = QTimer()
+        self._projector_view_timer.timeout.connect(self.update_projector_view)
+        self._projector_view_timer.start(5)
+
+    def update_camera_view(self, camera_frame):
         if camera_frame is None:
             # logger.error("camera_frame is None")
             return
@@ -142,11 +143,35 @@ class DomainLearningWindow(QWidget):
         phys_obj_model.update_present_physical_objects(phys_obj_predictions)
 
     def close(self):
+        self._projector_view_timer.stop()
+        self._cam_view_update_thread.stop()
         self.projector_view.close()
         super().close()
 
 
-# Just to get the other window to close :/
+class CameraViewUpdateThread(QtCore.QThread):
+    camera_frame_fetched = QtCore.pyqtSignal(object)
+
+    def __init__(self, camera_service):
+        super().__init__()
+        self.camera_service = camera_service
+        self._stop = False
+
+    def run(self):
+        while not self._stop:
+            camera_frame = self.camera_service.get_frame(flipped_y=True)
+            if camera_frame is None:
+                # logger.error("camera_frame is None")
+                continue
+
+            self.camera_frame_fetched.emit(camera_frame)
+            time.sleep(0.005)
+
+    def stop(self):
+        self._stop = True
+
+
+# Just to get the other window (the projector widget) to close :/
 class DomainLearningMainWindow(QMainWindow):
 
     def closeEvent(self, event):
