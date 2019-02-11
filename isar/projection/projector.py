@@ -26,8 +26,8 @@ class ProjectorView(QtWidgets.QWidget):
         self.projector = None
         self.projector_width = 0
         self.projector_height = 0
-        # self.scene_size = None
-        self.scene_size = Frame(1000, 700)
+        self.scene_size = None
+        self.scene_rect = None
         self.calibrating = False
 
         self.image = None
@@ -42,6 +42,10 @@ class ProjectorView(QtWidgets.QWidget):
         self.showFullScreen()
 
     def set_scene_image(self, scene_image):
+        if scene_image is None:
+            logger.warning("scene_image is None!")
+            return
+
         if self.calibrating:
             if debug: cv2.imwrite("tmp/tmp_files/calibration_image.jpg", scene_image)
             scene_image_warpped = scene_image
@@ -154,6 +158,7 @@ class ProjectorView(QtWidgets.QWidget):
         # testing the found homography
         camera_frame: CameraFrame = self.camera_service.get_frame()
         camera_img = camera_frame.raw_image
+        if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
         # camera_img = cv2.resize(camera_img, self.scene_size)
 
         camera_points = get_chessboard_points("camera_points", camera_img)
@@ -166,16 +171,6 @@ class ProjectorView(QtWidgets.QWidget):
         self.set_scene_image(test_chessboard_image)
         time.sleep(10)
 
-        self.calibrating = False
-
-    def update_projector_view(self):
-        # TODO: prepare projector image from the scene annotation and
-        #  result from object detection
-
-        camera_img = self.camera_service.get_frame().raw_image
-        if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
-
-
         # Detect the scene border markers and get the scene boudaries from them.
         # All scene images must be resized to scene boundaries and shown in the center of projector widget
         marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
@@ -184,13 +179,19 @@ class ProjectorView(QtWidgets.QWidget):
             return
 
         # compute scene rect in projector-space
-        scene_rect = compute_scene_rect(marker_corners, marker_ids, self.homography_matrix)
-        self.scene_size = (scene_rect[1], scene_rect[2])
+        self.scene_rect = compute_scene_rect(marker_corners, marker_ids, self.homography_matrix)
+        self.scene_size = (self.scene_rect[1], self.scene_rect[2])
 
-        dummy_scene_image = create_dummy_scene_image(self.projector_width, self.projector_height, scene_rect)
+        # calibration finished
+        self.calibrating = False
 
-        if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", dummy_scene_image)
-        self.set_scene_image(dummy_scene_image)
+    def update_projector_view(self):
+        # TODO: draw all the annotations on the scene_image
+        scene_image = create_dummy_scene_image(self.projector_width,
+                                               self.projector_height,
+                                               self.scene_rect)
+        if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
+        self.set_scene_image(scene_image)
 
 
 def compute_scene_rect(marker_corners, marker_ids, cam_proj_homography):
@@ -245,16 +246,17 @@ def create_chessboard_image(width, height):
 
 
 def create_dummy_scene_image(projector_width, projector_height, scene_rect):
-    # scene_image = np.zero((height, width, 3), np.uint8)
+    # dummy_scene_image = np.zero((height, width, 3), np.uint8)
     width, height = scene_rect[2], scene_rect[3]
-    scene_image = np.ones((projector_height, projector_width, 3), np.uint8)
-    scene_image[:] = (0, 255, 255)
+    dummy_scene_image = np.ones((projector_height, projector_width, 3), np.uint8)
+    dummy_scene_image[:] = (0, 255, 255)
 
     vertex1 = (scene_rect[0], scene_rect[1])
     vertex2 = (scene_rect[0] + width, scene_rect[1] + height)
-    # scene_image = cv2.cvtColor(scene_image, cv2.COLOR_BGR2BGRA)
-    scene_image = cv2.rectangle(scene_image, vertex1, vertex2, (0, 255, 0), 10)
-    return scene_image
+    # dummy_scene_image = cv2.cvtColor(dummy_scene_image, cv2.COLOR_BGR2BGRA)
+    dummy_scene_image = cv2.rectangle(dummy_scene_image, vertex1, vertex2, (0, 255, 0), 10)
+    if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", dummy_scene_image)
+    return dummy_scene_image
 
 
 def get_chessboard_points(window_name, img):

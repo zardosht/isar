@@ -1,10 +1,9 @@
 import logging
 import time
 
-from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5 import QtCore, uic
 from PyQt5.QtCore import QItemSelectionModel, QTimer, Qt
-from PyQt5.QtWidgets import QHBoxLayout, QFileDialog, QWidget, QMainWindow, QApplication
-
+from PyQt5.QtWidgets import QHBoxLayout, QFileDialog, QWidget, QMainWindow
 from isar.camera.camera import CameraService
 from isar.projection.projector import ProjectorView
 from isar.scene.annotationmodel import AnnotationsModel
@@ -13,6 +12,7 @@ from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
+
 
 logger = logging.getLogger("isar.domainlearning")
 
