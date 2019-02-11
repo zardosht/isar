@@ -1,5 +1,7 @@
 import logging
+import math
 import threading
+import time
 import traceback
 
 import cv2
@@ -15,17 +17,17 @@ logger = logging.getLogger("isar.projection.projector")
 debug = True
 
 
-class QtCore(object):
-    pass
+aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 
 
 class ProjectorView(QtWidgets.QWidget):
     def __init__(self, parent, screen_id, camera_service):
         super().__init__(parent)
         self.projector = None
-        self.width = 0
-        self.height = 0
-        self.scene_size = None
+        self.projector_width = 0
+        self.projector_height = 0
+        # self.scene_size = None
+        self.scene_size = Frame(1000, 700)
         self.calibrating = False
 
         self.image = None
@@ -42,26 +44,37 @@ class ProjectorView(QtWidgets.QWidget):
     def set_scene_image(self, scene_image):
         if self.calibrating:
             if debug: cv2.imwrite("tmp/tmp_files/calibration_image.jpg", scene_image)
-            scene_image = cv2.resize(scene_image, (self.width, self.height))
+            # scene_image_warpped = cv2.resize(scene_image, (self.width, self.height))
+            scene_image_warpped = scene_image
         else:
             if debug: cv2.imwrite("tmp/tmp_files/scene_image.jpg", scene_image)
-            scene_image = cv2.warpPerspective(scene_image, self.homography_matrix, (self.width, self.height))
-            if debug: cv2.imwrite("tmp/tmp_files/scene_image_warpped.jpg", scene_image)
+            scene_image_size = (scene_image.shape[1], scene_image.shape[0])
+            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, (self.projector_width, self.projector_height))
+            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, self.scene_size)
+            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, self.scene_size, cv2.WARP_INVERSE_MAP)
+            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, (500, 300), cv2.WARP_INVERSE_MAP)
+            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, (500, 30))
+            scene_image_warpped = scene_image
+            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, scene_image_size)
+            # scene_image_warpped = cv2.warpPerspective(scene_image, self.homography_matrix, scene_image_size, cv2.WARP_INVERSE_MAP)
 
-        height, width, bpc = scene_image.shape
+            if debug: cv2.imwrite("tmp/tmp_files/scene_image_warpped.jpg", scene_image_warpped)
+
+        height, width, bpc = scene_image_warpped.shape
         bpl = bpc * width
-        self.image = QtGui.QImage(scene_image.data, width, height, bpl, QtGui.QImage.Format_RGB888)
+        self.image = QtGui.QImage(scene_image_warpped.data, width, height, bpl, QtGui.QImage.Format_RGB888)
         self.setMinimumSize(self.image.size())
         logger.debug("Image size: %s", self.image.size())
         self.update()
 
     def init_projector(self, screen_id):
         self.projector = QtWidgets.QApplication.desktop().screenGeometry(screen_id)
-        self.width = int(self.projector.width())
-        self.height = int(self.projector.height())
-        self.scene_size = Frame(self.width, self.height)
+        self.projector_width = int(self.projector.width())
+        self.projector_height = int(self.projector.height())
 
-        blank_image = np.ones((self.height, self.width, 3), np.uint8)
+        # self.scene_size = Frame(self.projector_width, self.projector_height)
+
+        blank_image = np.ones((self.projector_height, self.projector_width, 3), np.uint8)
         blank_image[:] = (255, 0, 255)
 
         self.set_scene_image(blank_image)
@@ -70,12 +83,42 @@ class ProjectorView(QtWidgets.QWidget):
         qpainter = QtGui.QPainter()
         qpainter.begin(self)
         if self.image:
-            qpainter.drawImage(QPoint(0, 0), self.image)
+            w, h = event.rect().width(), event.rect().height()
+            x = (w - self.image.size().width()) / 2
+            y = (h - self.image.size().height()) / 2
+            qpainter.drawImage(QPoint(x, y), self.image)
         qpainter.end()
 
     def calibrate_projector(self):
+        # We don't need a 3D camera-projector calibration
+        # (which would require
+        #     * calibrating the camera sparately (using for examle a chessboard),
+        #     * then projecting a known pattern and calibrating the projector using camera image of that known pattern
+        #           [this works because we now know the parameters (including position and orientation) of the camera]
+        # )  see http://www.morethantechnical.com/2017/11/17/projector-camera-calibration-the-easy-way/
+        #
+        # What we need is a simple mapping between camera points and projector points.
+        # Why?
+        #    because we assume the projector points are the same as the 3D real world points. That is there
+        #       is no need to extra calibrate projector (know its parameters and position and orientation with regard to
+        #       3D real world)
+        # We make sure the keystone correction is adjusted on the projector (to get rid of perspective keystone effect)
+        # What we want now is to know if the camera says
+        #       "the bounding box of the hammer is position (10, 10) to (80, 200)",
+        #       what would those camera-space coordinates be in projector-space coordinates
+        # This can be achieved by a simple homography between camera and the projector.
+        # We use a chessboard pattern for calibration.
+        # The projector projects the chess board (known pattern)
+        # The camera sees the chessboard and correspondence points are found (chessboard corners)
+        # After that homography is found, we check it by projecting circles on "reprojected chessboard corners".
+        #       That is, we take the chessboard corners from camera image,
+        #                we re-calculate (reproject) them to projector-space by multiplying them with the homography.
+        #                we draw circles on the scene_image at the resulted (now projector-space) coordinates
+        #                the discrepancy of those circles with the chessboard corners in the projected image on the
+        #                table show how far our homography is estimating.
+
         self.calibrating = True
-        pattern_size, chessboard_img = create_chessboard_image(self.scene_size)
+        pattern_size, chessboard_img = create_chessboard_image(self.projector_width, self.projector_height)
         self.set_scene_image(chessboard_img)
         t = threading.Thread(target=self.calibrate, args=(chessboard_img, ))
         t.start()
@@ -87,12 +130,12 @@ class ProjectorView(QtWidgets.QWidget):
         found_homography = False
         while not found_homography:
             try:
-                projector_img = cv2.flip(projector_img, -1)
+                # projector_img = cv2.flip(projector_img, -1)
                 projector_points = get_chessboard_points("projector_points", projector_img)
 
                 camera_frame: CameraFrame = self.camera_service.get_frame()
                 camera_img = camera_frame.raw_image
-                camera_img = cv2.resize(camera_img, self.scene_size)
+                # camera_img = cv2.resize(camera_img, self.scene_size)
                 # camera_img = cv2.flip(camera_img, -1)
 
                 if debug: cv2.imwrite("tmp/tmp_files/calibration_image_on_table.jpg", camera_img)
@@ -105,6 +148,7 @@ class ProjectorView(QtWidgets.QWidget):
 
                 self.homography_matrix, mask = cv2.findHomography(camera_points, projector_points, cv2.RANSAC, 3)
                 # self.homography_matrix, mask = cv2.findHomography(projector_points, camera_points, cv2.RANSAC, 3)
+
                 logger.info("Homography matrix: " + str(self.homography_matrix))
 
                 if np.all(mask):
@@ -119,6 +163,21 @@ class ProjectorView(QtWidgets.QWidget):
                 logger.error("Error finding homography: ", str(exp))
                 traceback.print_tb(exp.__traceback__)
 
+        # testing the found homography
+        camera_frame: CameraFrame = self.camera_service.get_frame()
+        camera_img = camera_frame.raw_image
+        # camera_img = cv2.resize(camera_img, self.scene_size)
+
+        camera_points = get_chessboard_points("camera_points", camera_img)
+        reprojected_points = cv2.perspectiveTransform(np.array([camera_points]), self.homography_matrix)
+        reprojected_points = reprojected_points.squeeze()
+        test_chessboard_image = projector_img.copy()
+        for reprojected_point in reprojected_points:
+            cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (0, 0 , 255), 2)
+
+        self.set_scene_image(test_chessboard_image)
+        time.sleep(10)
+
         self.calibrating = False
 
     def update_projector_view(self):
@@ -128,30 +187,74 @@ class ProjectorView(QtWidgets.QWidget):
         camera_img = self.camera_service.get_frame().raw_image
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
 
+
+        # detect the scene border markers and get the scene boudaries from them.
+        # All scene images must be resized to scene boundaries and shown in the center of projector widget
+        marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
+        if len(marker_corners) != 2 :
+            logger.warning("Error detecting the scene corners. Not all four markers were detected. return.")
+            return
+
+        # compute scene rect in projector-space
+        scene_rect = compute_scene_rect(marker_corners, marker_ids, self.homography_matrix)
+        self.scene_size = (scene_rect[1], scene_rect[2])
+
         # dummy_scene_image = create_dummy_scene_image(self.scene_size)
         # dummy_scene_image_warpped = dummy_scene_image
 
         # dummy_scene_image = create_dummy_scene_image(self.camera_service.get_camera_capture_size())
         # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, self.scene_size)
 
-        dummy_scene_image = create_dummy_scene_image(self.scene_size)
-        dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, self.scene_size)
+        # dummy_scene_image = create_dummy_scene_image(self.scene_size)
+        # dummy_scene_image = create_dummy_scene_image((600, 400))
+        # dummy_scene_image = create_dummy_scene_image((900, 600))
+        # self.scene_size = Frame(800, 500)
+        dummy_scene_image = create_dummy_scene_image(self.projector_width, self.projector_height, scene_rect)
 
-        if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image_warpped.jpg", dummy_scene_image_warpped)
+        if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", dummy_scene_image)
+        # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, self.scene_size)
+        # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, (self.projector_width, self.projector_height))
+        # dummy_scene_image_warpped = cv2.warpPerspective(dummy_scene_image, self.homography_matrix, (800, 600))
 
-        return self.set_scene_image(dummy_scene_image_warpped)
+        # if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image_warpped.jpg", dummy_scene_image_warpped)
+
+        # return self.set_scene_image(dummy_scene_image_warpped)
+        self.set_scene_image(dummy_scene_image)
 
 
-def create_chessboard_image(scene_size):
+def compute_scene_rect(marker_corners, marker_ids, cam_proj_homography):
+    # marker corners are in clock-wise order
+    # there are only two markers. So, one has index 0, the other has index 1,
+    # however we don't know which one is marker 0 (the top-left marker)
+    top_left_index = 0
+    for idx, marker_id in enumerate(marker_ids):
+        if marker_id == 0:
+            top_left_index = idx
+
+    vertex1_marker = marker_corners[top_left_index].reshape(4, 2)
+    vertex2_marker = marker_corners[1 - top_left_index].reshape(4, 2)
+
+    c_v1 = (vertex1_marker[0][0], vertex1_marker[0][1])
+    c_v2 = (vertex2_marker[2][0], vertex2_marker[2][1])
+
+    proj_points = cv2.perspectiveTransform(np.array([[c_v1, c_v2]]), cam_proj_homography)
+    proj_points = proj_points.squeeze()
+    p_v1 = proj_points[0]
+    p_v2 = proj_points[1]
+
+    width, height = (abs(p_v1[0] - p_v2[0]), abs(p_v1[1] - p_v2[1]))
+    return int(p_v1[0]), int(p_v1[1]), int(width), int(height)
+
+
+def create_chessboard_image(width, height):
     logger.info("Create chessboard image.")
-    scene_width, scene_height = scene_size
-    center = int(scene_width/2), int(scene_height/2)
+    center = int(width/2), int(height/2)
     square_size = 50
     chessboard_width, chessboard_height = 10 * square_size, 7 * square_size
 
     chessboard = np.ones((chessboard_height, chessboard_width, 3), np.uint8)
     chessboard.fill(255)
-    image = np.ones((scene_height, scene_width, 3), np.uint8)
+    image = np.ones((height, width, 3), np.uint8)
     image.fill(255)
 
     xs = np.arange(0, chessboard_width, square_size)
@@ -170,14 +273,16 @@ def create_chessboard_image(scene_size):
     return (len(ys) - 1, len(xs) - 1), image
 
 
-def create_dummy_scene_image(scene_size):
-    width, height = scene_size
-    # scene_image = np.zeros((height, width, 3), np.uint8)
-    scene_image = np.ones((height, width, 3), np.uint8)
+def create_dummy_scene_image(projector_width, projector_height, scene_rect):
+    # scene_image = np.zero((height, width, 3), np.uint8)
+    width, height = scene_rect[2], scene_rect[3]
+    scene_image = np.ones((projector_height, projector_width, 3), np.uint8)
     scene_image[:] = (0, 255, 255)
 
+    vertex1 = (scene_rect[0], scene_rect[1])
+    vertex2 = (scene_rect[0] + width, scene_rect[1] + height)
     # scene_image = cv2.cvtColor(scene_image, cv2.COLOR_BGR2BGRA)
-    scene_image = cv2.rectangle(scene_image, (100, 100), (width - 100, height - 100), (0, 255, 0), 10)
+    scene_image = cv2.rectangle(scene_image, vertex1, vertex2, (0, 255, 0), 10)
     return scene_image
 
 
