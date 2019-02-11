@@ -10,6 +10,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, QPoint
 
 from isar.camera.camera import CameraService, CameraFrame
+from isar.projection import util
 from isar.scene.util import Frame
 
 logger = logging.getLogger("isar.projection.projector")
@@ -110,7 +111,7 @@ class ProjectorView(QtWidgets.QWidget):
         #                table show how far our homography is estimating.
 
         self.calibrating = True
-        pattern_size, chessboard_img = create_chessboard_image(self.projector_width, self.projector_height)
+        pattern_size, chessboard_img = util.create_chessboard_image(self.projector_width, self.projector_height)
         self.set_scene_image(chessboard_img)
         t = threading.Thread(target=self.calibrate, args=(chessboard_img, ))
         t.start()
@@ -123,7 +124,7 @@ class ProjectorView(QtWidgets.QWidget):
         while not found_homography:
             try:
                 # projector_img = cv2.flip(projector_img, -1)
-                projector_points = get_chessboard_points("projector_points", projector_img)
+                projector_points = util.get_chessboard_points("projector_points", projector_img)
 
                 camera_frame: CameraFrame = self.camera_service.get_frame()
                 camera_img = camera_frame.raw_image
@@ -132,7 +133,7 @@ class ProjectorView(QtWidgets.QWidget):
 
                 if debug: cv2.imwrite("tmp/tmp_files/calibration_image_on_table.jpg", camera_img)
 
-                camera_points = get_chessboard_points("camera_points", camera_img)
+                camera_points = util.get_chessboard_points("camera_points", camera_img)
 
                 if projector_points.shape != camera_points.shape:
                     logger.warning("Finding homography: projector_points and camera_points don't have the same shape!")
@@ -161,7 +162,7 @@ class ProjectorView(QtWidgets.QWidget):
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
         # camera_img = cv2.resize(camera_img, self.scene_size)
 
-        camera_points = get_chessboard_points("camera_points", camera_img)
+        camera_points = util.get_chessboard_points("camera_points", camera_img)
         reprojected_points = cv2.perspectiveTransform(np.array([camera_points]), self.homography_matrix)
         reprojected_points = reprojected_points.squeeze()
         test_chessboard_image = projector_img.copy()
@@ -187,7 +188,7 @@ class ProjectorView(QtWidgets.QWidget):
 
     def update_projector_view(self):
         # TODO: draw all the annotations on the scene_image
-        scene_image = create_dummy_scene_image(self.projector_width,
+        scene_image = util.create_dummy_scene_image(self.projector_width,
                                                self.projector_height,
                                                self.scene_rect)
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
@@ -218,65 +219,4 @@ def compute_scene_rect(marker_corners, marker_ids, cam_proj_homography):
     return int(p_v1[0]), int(p_v1[1]), int(width), int(height)
 
 
-def create_chessboard_image(width, height):
-    logger.info("Create chessboard image.")
-    center = int(width/2), int(height/2)
-    square_size = 50
-    chessboard_width, chessboard_height = 10 * square_size, 7 * square_size
 
-    chessboard = np.ones((chessboard_height, chessboard_width, 3), np.uint8)
-    chessboard.fill(255)
-    image = np.ones((height, width, 3), np.uint8)
-    image.fill(255)
-
-    xs = np.arange(0, chessboard_width, square_size)
-    ys = np.arange(0, chessboard_height, square_size)
-
-    for j, y in enumerate(ys):
-        for i, x in enumerate(xs):
-            if (i + j) % 2 == 0:
-                chessboard[y:y + square_size, x:x + square_size] = (0, 0, 0)
-    cv2.imwrite("tmp/tmp_files/chessboard.jpg", chessboard)
-
-    x, y = center[0] - int(chessboard_width / 2), center[1] - int(chessboard_height/2)
-    image[y:y+chessboard_height, x:x+chessboard_width] = chessboard
-    cv2.imwrite("tmp/tmp_files/projector_calibration_image.jpg", image)
-
-    return (len(ys) - 1, len(xs) - 1), image
-
-
-def create_dummy_scene_image(projector_width, projector_height, scene_rect):
-    # dummy_scene_image = np.zero((height, width, 3), np.uint8)
-    width, height = scene_rect[2], scene_rect[3]
-    dummy_scene_image = np.ones((projector_height, projector_width, 3), np.uint8)
-    dummy_scene_image[:] = (0, 255, 255)
-
-    vertex1 = (scene_rect[0], scene_rect[1])
-    vertex2 = (scene_rect[0] + width, scene_rect[1] + height)
-    # dummy_scene_image = cv2.cvtColor(dummy_scene_image, cv2.COLOR_BGR2BGRA)
-    dummy_scene_image = cv2.rectangle(dummy_scene_image, vertex1, vertex2, (0, 255, 0), 10)
-    if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", dummy_scene_image)
-    return dummy_scene_image
-
-
-def get_chessboard_points(window_name, img):
-    chessboard_points = []  # 2d points in image plane.
-
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Find the chess board corners
-    pattern = (9, 6)
-    ret, corners = cv2.findChessboardCorners(gray_img, pattern, None)
-
-    # If found, add object points, image points (after refining them)
-    if ret:
-        corners2 = cv2.cornerSubPix(gray_img, corners, (11, 11), (-1, -1), criteria)
-        chessboard_points.append(corners2)
-        # Draw and display the corners
-        # pattern = (9, 6)
-        # chessboard_with_corners = cv2.drawChessboardCorners(img, pattern, corners2, ret)
-        # cv2.namedWindow(window_name, cv2.WINDOW_GUI_NORMAL)
-        # cv2.imshow(window_name, chessboard_with_corners)
-
-    return np.array(chessboard_points).squeeze()
