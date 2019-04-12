@@ -188,9 +188,34 @@ class ProjectorView(QtWidgets.QWidget):
 
     def update_projector_view(self):
         # TODO: draw all the annotations on the scene_image
+
+
+        # first of course we need to load the project (in domainlearning)
+
+        #  create an empty scene image
+        #  check how you can use the annoation tools for drawing on it.
+        #  of course everything must be in projector coordinates and scaled to scene_size / scene_rect
+
+        camera_frame: CameraFrame = self.camera_service.get_frame()
+        camera_img = camera_frame.raw_image
+        if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
+
+        marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
+        if len(marker_corners) != 2 :
+            logger.warning("Error detecting the scene corners. Not all four markers were detected. return.")
+            return
+
+        # compute scene rect in projector-space
+        self.scene_rect = compute_scene_rect(marker_corners, marker_ids, self.homography_matrix)
+        self.scene_size = (self.scene_rect[1], self.scene_rect[2])
+
         scene_image = util.create_dummy_scene_image(self.projector_width,
                                                self.projector_height,
                                                self.scene_rect)
+
+
+
+
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
         self.set_scene_image(scene_image)
 

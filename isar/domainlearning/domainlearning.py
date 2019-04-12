@@ -18,7 +18,7 @@ logger = logging.getLogger("isar.domainlearning")
 
 
 class DomainLearningWindow(QWidget):
-    def __init__(self):
+    def __init__(self, screen_id):
         super().__init__()
         self.camera_view = None
         self.objects_view = None
@@ -28,7 +28,7 @@ class DomainLearningWindow(QWidget):
         self._camera_service: CameraService = None
         self.setup_camera_service()
 
-        self.setup_projector_view()
+        self.setup_projector_view(screen_id)
 
         self._object_detection_service = None
         self.setup_object_detection_service()
@@ -54,8 +54,7 @@ class DomainLearningWindow(QWidget):
         self.camera_view_container.layout().setContentsMargins(0, 0, 0, 0)
         self.camera_view_container.layout().addWidget(self.camera_view, stretch=1)
 
-    def setup_projector_view(self):
-        screen_id = 2
+    def setup_projector_view(self, screen_id):
         self.projector_view = ProjectorView(self.projector_view, screen_id, self._camera_service)
         self.projector_view.setWindowFlag(Qt.Window)
         self.calibrate_projector()
