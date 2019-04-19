@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 from PyQt5 import QtCore, uic
@@ -63,6 +64,8 @@ class DomainLearningWindow(QWidget):
         # scenes list
         self.calibrate_btn.clicked.connect(self.calibrate_projector)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
+        self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
+        self.scenes_list.selectionModel().selectionChanged.connect(self.sceneslist_current_changed)
 
     def calibrate_projector(self):
         self.projector_view.calibrating = True
@@ -70,10 +73,12 @@ class DomainLearningWindow(QWidget):
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
-        project_dir = QFileDialog.getExistingDirectory()
+        project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
+        project_dir = os.path.dirname(project_filename)
+        project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":
             return
-        project_name = self.project_name_le.text()
+        self.project_name_le.setText(project_name)
         scenes_model = self.scenes_list.model()
         scenes_model.load_project(project_dir, project_name)
         index = self.scenes_list.model().index(0, 0)
@@ -97,22 +102,38 @@ class DomainLearningWindow(QWidget):
         for po_s in self._object_detection_service.get_physical_objects().values():
             all_physical_obj.extend(po_s)
         self.physical_objects_model.set_all_physical_objects(all_physical_obj)
-        self.camera_view.physical_objects_model = self.physical_objects_model
+        self.camera_view.set_physical_objects_model(self.physical_objects_model)
+        self.projector_view.set_physical_objects_model(self.physical_objects_model)
         # self.objects_view.setModel(physical_objects_model)
 
         self.annotations_model = AnnotationsModel()
         self.annotations_model.set_scene(current_scene)
-        self.camera_view.annotations_model = self.annotations_model
+        self.camera_view.set_annotations_model(self.annotations_model)
+        self.projector_view.set_physical_objects_model(self.physical_objects_model)
         # self.annotations_list.setModel(annotations_model)
+
+    def sceneslist_current_changed(self):
+        current_index = self.scenes_list.selectionModel().currentIndex()
+        self.scenes_list.selectionModel().select(current_index, QItemSelectionModel.Select)
+
+        scenes_model = self.scenes_list.model()
+        scenes_model.set_current_scene(current_index)
+
+        self.annotations_model.set_scene(scenes_model.current_scene)
+        self.camera_view.set_annotations_model(self.annotations_model)
+        self.projector_view.set_annotations_model(self.annotations_model)
+
+        # self.objects_view.model().set_scene(scenes_model.current_scene)
+        # self.camera_view.set_physical_objects_model(self.objects_view.model())
 
     def setup_timers(self):
         self._cam_view_update_thread = CameraViewUpdateThread(self._camera_service)
         self._cam_view_update_thread.camera_frame_fetched.connect(self.update_camera_view)
-        self._cam_view_update_thread.start()
+        self._cam_view_update_thread.start(5)
 
         self._projector_view_timer = QTimer()
         self._projector_view_timer.timeout.connect(self.update_projector_view)
-        self._projector_view_timer.start(5)
+        # self._projector_view_timer.start(5)
 
     def update_camera_view(self, camera_frame):
         if camera_frame is None:
@@ -176,3 +197,4 @@ class DomainLearningMainWindow(QMainWindow):
     def closeEvent(self, event):
         self.centralWidget().close()
         super(DomainLearningMainWindow, self).closeEvent(event)
+

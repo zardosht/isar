@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 from isar.scene import util
 
 
-logger = logging.getLogger("isar.scenemodel")
+logger = logging.getLogger("isar.scene.scenemodel")
 
 
 class Project:

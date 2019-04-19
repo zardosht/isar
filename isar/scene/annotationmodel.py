@@ -15,7 +15,7 @@ from isar.scene import util, scenemodel
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
-logger = logging.getLogger("isar.annotationmodel")
+logger = logging.getLogger("isar.scene.annotationmodel")
 
 
 class AnnotationsModel(QAbstractListModel):

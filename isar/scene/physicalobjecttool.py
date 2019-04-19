@@ -1,3 +1,4 @@
+import logging
 import math
 import random
 import numpy as np
@@ -6,6 +7,8 @@ import cv2
 from isar.scene import util
 from isar.scene.physicalobjectmodel import PhysicalObject
 
+
+logger = logging.getLogger("isar.scene.physicalobjecttool")
 
 colors = [tuple(255 * np.random.rand(3)) for i in range(10)]
 

@@ -37,10 +37,11 @@ def create_chessboard_image(width, height):
 
 
 def create_dummy_scene_image(projector_width, projector_height, scene_rect):
+    # TODO: This some how needs rework. Define a scene_size attribute for the scene.
+    # TODO: The tabel scene_size will be defined using markers. Then you only need to render all
     # dummy_scene_image = np.zero((height, width, 3), np.uint8)
     width, height = scene_rect[2], scene_rect[3]
-    dummy_scene_image = np.ones((projector_height, projector_width, 3), np.uint8)
-    dummy_scene_image[:] = (0, 255, 255)
+    dummy_scene_image = create_empty_image((projector_width, projector_height), (0, 255, 255))
 
     vertex1 = (scene_rect[0], scene_rect[1])
     vertex2 = (scene_rect[0] + width, scene_rect[1] + height)
@@ -48,6 +49,12 @@ def create_dummy_scene_image(projector_width, projector_height, scene_rect):
     dummy_scene_image = cv2.rectangle(dummy_scene_image, vertex1, vertex2, (0, 255, 0), 10)
     if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", dummy_scene_image)
     return dummy_scene_image
+
+
+def create_empty_image(size, color):
+    empty_image = np.ones((size[1], size[0], 3), np.uint8)
+    empty_image[:] = color
+    return empty_image
 
 
 def get_chessboard_points(window_name, img):

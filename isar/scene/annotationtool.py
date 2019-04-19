@@ -11,7 +11,7 @@ from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, Circ
     SelectBoxAnnotation
 from isar.scene.util import Frame
 
-logger = logging.getLogger("isar.annotationtool")
+logger = logging.getLogger("isar.scene.annotationtool")
 
 
 class AnnotationTool:

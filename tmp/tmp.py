@@ -1,16 +1,26 @@
 
-
-phys_obj_predictions = {}
-
-phys_obj_predictions["aa"] = [1, 2, 3]
-phys_obj_predictions["bb"] = [4, 5, 6]
-
-for key in phys_obj_predictions:
-    print(key)
-    print(phys_obj_predictions[key])
+class MyClass:
+    def a_method(self):
+        print("MyClass.a_method()")
 
 
-# ============================================================================
+def a_method():
+    pass
+
+
+# # ============================================================================
+#
+# phys_obj_predictions = {}
+#
+# phys_obj_predictions["aa"] = [1, 2, 3]
+# phys_obj_predictions["bb"] = [4, 5, 6]
+#
+# for key in phys_obj_predictions:
+#     print(key)
+#     print(phys_obj_predictions[key])
+#
+#
+# # ============================================================================
 # from PyQt5.QtGui import QFont, QColor
 # from PyQt5.QtCore import QAbstractItemModel, QModelIndex, Qt, QAbstractListModel, QAbstractTableModel, QSize, QVariant
 # from PyQt5.QtWidgets import QApplication, QTreeView, QTableView, QListView
@@ -76,7 +86,7 @@ for key in phys_obj_predictions:
 #     TreeView.show()
 #     app.exec_()
 #
-# ============================================================================
+# # ============================================================================
 # a = float(12.3)
 # b = float(12)
 #
@@ -85,13 +95,13 @@ for key in phys_obj_predictions:
 #
 #
 #
-# ============================================================================
+# # ============================================================================
 # from ast import literal_eval
 #
 # a = literal_eval("\"jfkddkke ekeeke eekekke kek ek e\"")
 # print(a)
 #
-# ============================================================================
+# # ============================================================================
 # from array import array
 #
 # a = (1, 2)
@@ -103,7 +113,7 @@ for key in phys_obj_predictions:
 # print(c)
 # print(d)
 #
-# ============================================================================
+# #  ============================================================================
 #
 #
 # class Parent:
@@ -134,7 +144,7 @@ for key in phys_obj_predictions:
 # child.do_something()
 #
 #
-# ============================================================================
+# #  ============================================================================
 #
 #
 # class Vehicle:
@@ -155,7 +165,7 @@ for key in phys_obj_predictions:
 # car = Vehicle('Toyota', 'Corolla')
 # print(car, car.kind)
 #
-# ============================================================================
+# #  ============================================================================
 #
 #
 # class A(object):
@@ -207,7 +217,7 @@ for key in phys_obj_predictions:
 # # PickTarget A
 #
 #
-# ============================================================================
+# # ============================================================================
 #
 #
 # class A:
@@ -233,7 +243,7 @@ for key in phys_obj_predictions:
 # d.foo()
 #
 #
-# ============================================================================
+# # ============================================================================
 #
 #
 # class SimpleList:
@@ -303,7 +313,7 @@ for key in phys_obj_predictions:
 # print(SortedIntList.mro())
 #
 #
-# ============================================================================
+# # ============================================================================
 #
 #
 # class Base1:
@@ -344,7 +354,7 @@ for key in phys_obj_predictions:
 #     main()
 #
 #
-# ============================================================================
+# # ============================================================================
 #
 # class Foo:
 #     def __init__(self):

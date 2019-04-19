@@ -27,7 +27,7 @@ When a physical object is removed form the scene the annotations attached to it 
 
 """
 
-logger = logging.getLogger("isar.physicalobjectmodel")
+logger = logging.getLogger("isar.scene.physicalobjectmodel")
 
 
 class PhysicalObjectsModel(QAbstractListModel):
