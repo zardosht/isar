@@ -267,7 +267,7 @@ class SceneDefinitionWindow(QWidget):
             return
 
         if not self.scene_size_initialized:
-            return
+            logger.warning("Scene size is not initialized.")
 
         self.camera_view.set_camera_frame(camera_frame)
 
@@ -286,15 +286,11 @@ class SceneDefinitionWindow(QWidget):
         phys_obj_model.update_present_physical_objects(phys_obj_predictions)
 
     def initialize_scene_size(self):
-        t = Thread(target=self.__initialize_scene_size)
-        t.start()
-
-    def __initialize_scene_size(self):
         max_iter = 100
         num_iter = -1
         while True:
             num_iter += 1
-            camera_frame = self._camera_service.get_frame(flipped_y=True)
+            camera_frame = self._camera_service.get_frame()
             if camera_frame is None:
                 # logger.error("camera_frame is None")
                 continue
@@ -303,10 +299,14 @@ class SceneDefinitionWindow(QWidget):
             result = sceneutil.compute_scene_rect(camera_frame)
             if result is None and num_iter < max_iter:
                 continue
-            else:
+            elif result is not None:
                 self.scene_rect = result
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
                 self.scene_size_initialized = True
+                logger.info("Scene size initialized successfully!")
+                break
+            else:
+                logger.warning("Could not initialize the scene size.")
                 break
 
     def get_camera_view_scale_factor(self):
