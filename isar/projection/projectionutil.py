@@ -41,7 +41,7 @@ def create_dummy_scene_image(projector_width, projector_height, scene_rect):
     # TODO: The tabel scene_size will be defined using markers. Then you only need to render all
     # dummy_scene_image = np.zero((height, width, 3), np.uint8)
     width, height = scene_rect[2], scene_rect[3]
-    dummy_scene_image = create_empty_image((projector_width, projector_height), (0, 255, 255))
+    dummy_scene_image = create_empty_image((projector_width, projector_height), (0, 0, 255))
 
     vertex1 = (scene_rect[0], scene_rect[1])
     vertex2 = (scene_rect[0] + width, scene_rect[1] + height)

@@ -240,12 +240,18 @@ class ProjectorView(QtWidgets.QWidget):
                                                               self.scene_rect)
 
         # # self.scene_renderer.opencv_img = util.create_empty_image((self.projector_width, self.projector_height), (0, 255, 255))
+
         # self.scene_renderer.opencv_img = scene_image
-        #
-        # self.scene_renderer.draw_scene_physical_objects()
-        # self.scene_renderer.draw_scene_annotations()
+        srect_x, srect_y, srect_width, srect_height = self.scene_rect
+        print(srect_width, srect_height)
+        self.scene_renderer.opencv_img = scene_image[srect_y:srect_y + srect_height, srect_x:srect_x + srect_width].copy()
+
+
+        self.scene_renderer.draw_scene_physical_objects()
+        self.scene_renderer.draw_scene_annotations()
 
         # scene_image = cv2.resize(self.scene_renderer.opencv_img, self.scene_size)
+        scene_image[srect_y:srect_y + srect_height, srect_x:srect_x + srect_width] = self.scene_renderer.opencv_img
 
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
         self.set_scene_image(scene_image)

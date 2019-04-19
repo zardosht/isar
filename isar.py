@@ -41,7 +41,7 @@ def main():
     servicemanager.start_services()
 
     scene_defintion = True
-    # scene_defintion = False
+    scene_defintion = False
     if scene_defintion:
         scene_def_window = QMainWindow(None)
         scene_def_window.setCentralWidget(SceneDefinitionWindow())
