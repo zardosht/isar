@@ -128,12 +128,12 @@ class DomainLearningWindow(QWidget):
 
     def setup_timers(self):
         self._cam_view_update_thread = CameraViewUpdateThread(self._camera_service)
-        self._cam_view_update_thread.camera_frame_fetched.connect(self.update_camera_view)
-        self._cam_view_update_thread.start(5)
+        # self._cam_view_update_thread.camera_frame_fetched.connect(self.update_camera_view)
+        # self._cam_view_update_thread.start(5)
 
         self._projector_view_timer = QTimer()
         self._projector_view_timer.timeout.connect(self.update_projector_view)
-        # self._projector_view_timer.start(5)
+        self._projector_view_timer.start(5)
 
     def update_camera_view(self, camera_frame):
         if camera_frame is None:
