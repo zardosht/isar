@@ -9,6 +9,7 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, QPoint
 
+from isar import scene
 from isar.camera.camera import CameraService, CameraFrame
 from isar.projection import util
 from isar.scene.scenerenderer import SceneRenderer
@@ -17,8 +18,6 @@ from isar.scene.util import Frame
 logger = logging.getLogger("isar.projection.projector")
 
 debug = False
-
-aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 
 
 class ProjectorView(QtWidgets.QWidget):
@@ -31,6 +30,7 @@ class ProjectorView(QtWidgets.QWidget):
         self.scene_size = None
         self.scene_rect = None
         self.calibrating = False
+        self.scene_size_initialized = False
 
         self.image = None
         self.homography_matrix = np.identity(3, dtype=np.float64)
@@ -128,8 +128,8 @@ class ProjectorView(QtWidgets.QWidget):
         self.calibrating = True
         pattern_size, chessboard_img = util.create_chessboard_image(self.projector_width, self.projector_height)
         self.set_scene_image(chessboard_img)
-        t = threading.Thread(target=self.calibrate, args=(chessboard_img,))
-        t.start()
+        t_calib = threading.Thread(target=self.calibrate, args=(chessboard_img,))
+        t_calib.start()
 
     def calibrate(self, projector_img):
         self.camera_service.start_capture()
@@ -185,21 +185,37 @@ class ProjectorView(QtWidgets.QWidget):
             cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (0, 0, 255), 2)
 
         self.set_scene_image(test_chessboard_image)
-        time.sleep(10)
-
-        # Detect the scene border markers and get the scene boudaries from them.
-        # All scene images must be resized to scene boundaries and shown in the center of projector widget
-        marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
-        if len(marker_corners) != 2:
-            logger.warning("Error detecting the scene corners. Not all four markers were detected. return.")
-            return
-
-        # compute scene rect in projector-space
-        self.scene_rect = compute_scene_rect(marker_corners, marker_ids, self.homography_matrix)
-        self.scene_size = (self.scene_rect[1], self.scene_rect[2])
+        time.sleep(5)
 
         # calibration finished
         self.calibrating = False
+
+    def init_scene_size(self):
+        if self.homography_matrix is None:
+            logger.warning("Homography matrix is None. Cannot calculate scene size.")
+            return
+
+        max_iter = 100
+        num_iter = -1
+        while True:
+            num_iter += 1
+            camera_frame = self.camera_service.get_frame()
+            if camera_frame is None:
+                # logger.error("camera_frame is None")
+                continue
+
+            # compute scene rect in projector-space
+            result = scene.util.compute_scene_rect(camera_frame, self.homography_matrix)
+            if result is None and num_iter < max_iter:
+                continue
+            elif result is not None:
+                self.scene_rect = result
+                self.scene_size = (self.scene_rect[2], self.scene_rect[3])
+                self.scene_size_initialized = True
+                break
+            else:
+                logger.warning("Could no calculate scene size.")
+                break
 
     def update_projector_view(self):
         # TODO: draw all the annotations on the scene_image
@@ -210,28 +226,23 @@ class ProjectorView(QtWidgets.QWidget):
         #  check how you can use the annoation tools for drawing on it.
         #  of course everything must be in projector coordinates and scaled to scene_size / scene_rect
 
+        if not self.scene_size_initialized:
+            logger.warning("Scene size is not initialized")
+            return
+
         camera_frame: CameraFrame = self.camera_service.get_frame()
         camera_img = camera_frame.raw_image
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
-
-        marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
-        if len(marker_corners) != 2:
-            logger.warning("Error detecting the scene corners. Not all four markers were detected. return.")
-            return
-
-        # compute scene rect in projector-space
-        self.scene_rect = compute_scene_rect(marker_corners, marker_ids, self.homography_matrix)
-        self.scene_size = (self.scene_rect[2], self.scene_rect[3])
 
         scene_image = util.create_dummy_scene_image(self.projector_width,
                                                     self.projector_height,
                                                     self.scene_rect)
 
-        # self.scene_renderer.opencv_img = util.create_empty_image((self.projector_width, self.projector_height), (0, 255, 255))
-        self.scene_renderer.opencv_img = scene_image
-
-        self.scene_renderer.draw_scene_physical_objects()
-        self.scene_renderer.draw_scene_annotations()
+        # # self.scene_renderer.opencv_img = util.create_empty_image((self.projector_width, self.projector_height), (0, 255, 255))
+        # self.scene_renderer.opencv_img = scene_image
+        #
+        # self.scene_renderer.draw_scene_physical_objects()
+        # self.scene_renderer.draw_scene_annotations()
 
         # scene_image = cv2.resize(self.scene_renderer.opencv_img, self.scene_size)
 
@@ -239,26 +250,3 @@ class ProjectorView(QtWidgets.QWidget):
         self.set_scene_image(scene_image)
 
 
-def compute_scene_rect(marker_corners, marker_ids, cam_proj_homography):
-    # there are only two markers. So, one has index 0, the other has index 1,
-    # however we don't know which one is marker 0 (the marker with id 0 must be placed physically at the top-left)
-    top_left_marker_index = 0
-    for idx, marker_id in enumerate(marker_ids):
-        if marker_id == 0:
-            top_left_marker_index = idx
-
-    vertex1_marker = marker_corners[top_left_marker_index].reshape(4, 2)
-    vertex2_marker = marker_corners[1 - top_left_marker_index].reshape(4, 2)
-
-    # marker corners are in clock-wise order
-    # find coordinates of top-left (0) corner of marker 0 and bottom-right (2) corner of marker 1
-    c_v1 = (vertex1_marker[0][0], vertex1_marker[0][1])
-    c_v2 = (vertex2_marker[2][0], vertex2_marker[2][1])
-
-    proj_points = cv2.perspectiveTransform(np.array([[c_v1, c_v2]]), cam_proj_homography)
-    proj_points = proj_points.squeeze()
-    p_v1 = proj_points[0]
-    p_v2 = proj_points[1]
-
-    width, height = (abs(p_v1[0] - p_v2[0]), abs(p_v1[1] - p_v2[1]))
-    return int(p_v1[0]), int(p_v1[1]), int(width), int(height)

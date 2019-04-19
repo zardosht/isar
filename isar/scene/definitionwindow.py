@@ -1,3 +1,6 @@
+from threading import Thread
+
+import cv2
 import functools
 import logging
 
@@ -6,7 +9,7 @@ from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject, Qt, QItem
 from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag, QCloseEvent
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
 
-from isar.camera.camera import CameraService
+from isar.camera.camera import CameraService, CameraFrame
 from isar.scene import util, scenemodel
 from isar.scene.annotationmodel import AnnotationsModel, Annotation
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
@@ -32,6 +35,10 @@ class SceneDefinitionWindow(QWidget):
 
         self._camera_service: CameraService = None
         self.setup_camera_service()
+
+        self.scene_size_initialized = False
+        self.scene_rect = None
+        self.scene_size = None
 
         self._object_detection_service = None
         self.setup_object_detection_service()
@@ -75,10 +82,12 @@ class SceneDefinitionWindow(QWidget):
 
         self.delete_btn.clicked.connect(self.delete_btn_clicked)
 
+        self.init_scene_size_btn.clicked.connect(self.initialize_scene_size)
+
         self.save_proj_btn.clicked.connect(self.save_project_btn_clicked)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
         self.create_proj_btn.clicked.connect(self.create_project_btn_clicked)
-
+        
         # annotation buttons
         for btn in self.annotation_buttons.buttons():
             btn.clicked.connect(functools.partial(self.annotation_btn_clicked, btn))
@@ -257,6 +266,9 @@ class SceneDefinitionWindow(QWidget):
             # logger.error("camera_frame is None")
             return
 
+        if not self.scene_size_initialized:
+            return
+
         self.camera_view.set_camera_frame(camera_frame)
 
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
@@ -273,11 +285,34 @@ class SceneDefinitionWindow(QWidget):
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
         phys_obj_model.update_present_physical_objects(phys_obj_predictions)
 
+    def initialize_scene_size(self):
+        t = Thread(target=self.__initialize_scene_size)
+        t.start()
+
+    def __initialize_scene_size(self):
+        max_iter = 100
+        num_iter = -1
+        while True:
+            num_iter += 1
+            camera_frame = self._camera_service.get_frame(flipped_y=True)
+            if camera_frame is None:
+                # logger.error("camera_frame is None")
+                continue
+
+            # compute scene rect in projector-space
+            result = util.compute_scene_rect(camera_frame)
+            if result is None and num_iter < max_iter:
+                continue
+            else:
+                self.scene_rect = result
+                self.scene_size = (self.scene_rect[2], self.scene_rect[3])
+                self.scene_size_initialized = True
+                break
+
     def get_camera_view_scale_factor(self):
-        capture_size = self._camera_service.get_camera_capture_size()
-        if capture_size is not None:
-            width_scale = self.camera_view.geometry().width() / capture_size[0]
-            height_scale = self.camera_view.geometry().height() / capture_size[1]
+        if self.scene_size is not None:
+            width_scale = self.camera_view.geometry().width() / self.scene_size[0]
+            height_scale = self.camera_view.geometry().height() / self.scene_size[1]
             return width_scale, height_scale
         else:
             return None

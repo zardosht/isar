@@ -1,3 +1,4 @@
+import cv2
 import logging
 import math
 import traceback
@@ -9,6 +10,7 @@ from PyQt5.QtGui import QImage, QPixmap
 
 logger = logging.getLogger("isar.scene.util")
 
+aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 
 class RefFrame(NamedTuple):
     x: float
@@ -155,7 +157,40 @@ def draw_image_on(opencv_img, image, position, position_is_topleft=True):
         traceback.print_tb(exp.__traceback__)
 
 
+def compute_scene_rect(camera_frame, cam_proj_homography=None):
+    camera_img = camera_frame.raw_image
+    # Detect the scene border markers and get the scene boudaries from them.
+    # All scene images must be resized to scene boundaries and shown in the center of projector widget
+    marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
+    if len(marker_corners) != 2:
+        logger.warning("Error detecting the scene corners. Not all two markers were detected. return.")
+        return
 
+    # there are only two markers. So, one has index 0, the other has index 1,
+    # however we don't know which one is marker 0 (the marker with id 0 must be placed physically at the top-left)
+    top_left_marker_index = 0
+    for idx, marker_id in enumerate(marker_ids):
+        if marker_id == 0:
+            top_left_marker_index = idx
+
+    vertex1_marker = marker_corners[top_left_marker_index].reshape(4, 2)
+    vertex2_marker = marker_corners[1 - top_left_marker_index].reshape(4, 2)
+
+    # marker corners are in clock-wise order
+    # find coordinates of top-left (0) corner of marker 0 and bottom-right (2) corner of marker 1
+    c_v1 = (vertex1_marker[0][0], vertex1_marker[0][1])
+    c_v2 = (vertex2_marker[2][0], vertex2_marker[2][1])
+
+    if cam_proj_homography is not None:
+        proj_points = cv2.perspectiveTransform(np.array([[c_v1, c_v2]]), cam_proj_homography)
+        proj_points = proj_points.squeeze()
+        p_v1 = proj_points[0]
+        p_v2 = proj_points[1]
+        width, height = (abs(p_v1[0] - p_v2[0]), abs(p_v1[1] - p_v2[1]))
+        return int(p_v1[0]), int(p_v1[1]), int(width), int(height)
+    else:
+        width, height = (abs(c_v1[0] - c_v2[0]), abs(c_v1[1] - c_v2[1]))
+        return int(c_v1[0]), int(c_v1[1]), int(width), int(height)
 
 
 

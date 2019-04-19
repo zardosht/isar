@@ -83,6 +83,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="init_scene_size_btn">
+        <property name="text">
+         <string>Init Scene Size</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

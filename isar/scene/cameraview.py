@@ -3,7 +3,7 @@ import pickle
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QCursor
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QMessageBox
 
 from isar.scene import annotationtool, util, physicalobjecttool
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
@@ -78,6 +78,11 @@ class CameraView(QLabel):
                 event.ignore()
 
         def dropEvent(self, event: QDropEvent):
+            if not self.scene_definition_windows.scene_size_initialized:
+                QMessageBox.warning(None, "Error", "Scene size is not initialized!")
+                event.ignore()
+                return
+
             if event.mimeData().hasFormat(PhysicalObjectsModel.MIME_TYPE):
                 dropped_po = pickle.loads(event.mimeData().data(PhysicalObjectsModel.MIME_TYPE))
                 if dropped_po:
@@ -95,7 +100,10 @@ class CameraView(QLabel):
 
         def mousePressEvent(self, event):
             if self.active_annotation_tool:
-                self.active_annotation_tool.mouse_press_event(self, event)
+                if not self.scene_definition_windows.scene_size_initialized:
+                    QMessageBox.warning(None, "Error", "Scene size is not initialized!")
+                else:
+                    self.active_annotation_tool.mouse_press_event(self, event)
 
             super().mousePressEvent(event)
 

@@ -63,6 +63,7 @@ class DomainLearningWindow(QWidget):
     def setup_signals(self):
         # scenes list
         self.calibrate_btn.clicked.connect(self.calibrate_projector)
+        self.init_scene_size_btn.clicked.connect(self.init_scene_size)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
         self.scenes_list.selectionModel().selectionChanged.connect(self.sceneslist_current_changed)
@@ -70,6 +71,9 @@ class DomainLearningWindow(QWidget):
     def calibrate_projector(self):
         self.projector_view.calibrating = True
         self.projector_view.calibrate_projector()
+
+    def init_scene_size(self):
+        self.projector_view.init_scene_size()
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
