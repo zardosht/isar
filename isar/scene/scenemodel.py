@@ -6,7 +6,7 @@ import jsonpickle
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
-from isar.scene import util
+from isar.scene import sceneutil
 
 
 logger = logging.getLogger("isar.scene.scenemodel")
@@ -41,7 +41,7 @@ class ScenesModel(QAbstractListModel):
         if role == Qt.EditRole:
             new_name = self.scenes[index.row()].name
             try:
-                if util.is_valid_name(str(value)):
+                if sceneutil.is_valid_name(str(value)):
                     new_name = str(value)
             except Exception as e:
                 print("Error editing scene name", e)

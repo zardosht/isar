@@ -10,7 +10,7 @@ from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag, QCl
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
 
 from isar.camera.camera import CameraService, CameraFrame
-from isar.scene import util, scenemodel
+from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import AnnotationsModel, Annotation
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
 from isar.scene.cameraview import CameraView
@@ -87,7 +87,7 @@ class SceneDefinitionWindow(QWidget):
         self.save_proj_btn.clicked.connect(self.save_project_btn_clicked)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
         self.create_proj_btn.clicked.connect(self.create_project_btn_clicked)
-        
+
         # annotation buttons
         for btn in self.annotation_buttons.buttons():
             btn.clicked.connect(functools.partial(self.annotation_btn_clicked, btn))
@@ -300,7 +300,7 @@ class SceneDefinitionWindow(QWidget):
                 continue
 
             # compute scene rect in projector-space
-            result = util.compute_scene_rect(camera_frame)
+            result = sceneutil.compute_scene_rect(camera_frame)
             if result is None and num_iter < max_iter:
                 continue
             else:
@@ -358,7 +358,7 @@ class PhysicalObjectsView(QListView):
         drag = QDrag(self)
         drag.setMimeData(mime_data)
         if self.selected_po is not None:
-            pixmap: QPixmap = util.get_pixmap_from_np_image(self.selected_po.template_image)
+            pixmap: QPixmap = sceneutil.get_pixmap_from_np_image(self.selected_po.template_image)
             scale_factor = self.main_window.get_camera_view_scale_factor()
             width = scale_factor[0] * pixmap.width()
             height = scale_factor[1] * pixmap.height()

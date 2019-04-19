@@ -5,11 +5,11 @@ import os
 import cv2
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 
-from isar.scene import util, scenemodel
+from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
     SelectBoxAnnotation
-from isar.scene.util import Frame
+from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
 
@@ -77,16 +77,16 @@ class CircleAnnotationTool(AnnotationTool):
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
         self.annotation.center.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
-            radius = util.calc_distance(self.annotation.center.get_value(), (img_x, img_y))
+            radius = sceneutil.calc_distance(self.annotation.center.get_value(), (img_x, img_y))
             self.annotation.radius.set_value(int(radius))
 
     def mouse_release_event(self, camera_view, event):
@@ -111,7 +111,7 @@ class CircleAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.radius.get_value():
             return
 
-        center = util.convert_object_to_image(self.annotation.center.get_value(), self.phys_obj)
+        center = sceneutil.convert_object_to_image(self.annotation.center.get_value(), self.phys_obj)
         radius = self.annotation.radius.get_value()
 
         cv2.circle(self._img,
@@ -136,14 +136,14 @@ class RectangleAnnotationTool(AnnotationTool):
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
         self.v1 = (img_x, img_y)
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
             self.v2 = (img_x, img_y)
 
@@ -187,11 +187,11 @@ class RectangleAnnotationTool(AnnotationTool):
             v1 = [0, 0]
             v1[0] = position[0] - int(width / 2)
             v1[1] = position[1] - int(height / 2)
-            self.v1 = util.convert_object_to_image(v1, self.phys_obj)
+            self.v1 = sceneutil.convert_object_to_image(v1, self.phys_obj)
             v2 = [0, 0]
             v2[0] = position[0] + int(width / 2)
             v2[1] = position[1] + int(height / 2)
-            self.v2 = util.convert_object_to_image(v2, self.phys_obj)
+            self.v2 = sceneutil.convert_object_to_image(v2, self.phys_obj)
             color = self.annotation.color.get_value()
             thickness = self.annotation.thickness.get_value()
 
@@ -215,14 +215,14 @@ class LineAnnotationTool(AnnotationTool):
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
         self.annotation.start.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
             self.annotation.end.set_value((img_x, img_y))
 
@@ -238,8 +238,8 @@ class LineAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.end.get_value():
             return
 
-        start = util.convert_object_to_image(self.annotation.start.get_value(), self.phys_obj)
-        end = util.convert_object_to_image(self.annotation.end.get_value(), self.phys_obj)
+        start = sceneutil.convert_object_to_image(self.annotation.start.get_value(), self.phys_obj)
+        end = sceneutil.convert_object_to_image(self.annotation.end.get_value(), self.phys_obj)
 
         cv2.line(self._img,
                  start,
@@ -249,7 +249,7 @@ class LineAnnotationTool(AnnotationTool):
 
     def is_annotation_valid(self):
         # Has the lind the minimum lenght?
-        length = util.calc_distance(self.annotation.start.get_value(), self.annotation.end.get_value())
+        length = sceneutil.calc_distance(self.annotation.start.get_value(), self.annotation.end.get_value())
         if length is None:
             return False
         if length < LineAnnotation.MINIMUM_LENGTH:
@@ -268,7 +268,7 @@ class TextAnnotationTool(AnnotationTool):
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
         self.annotation.position.set_value((img_x, img_y))
 
@@ -288,7 +288,7 @@ class TextAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.text.get_value():
             return
 
-        position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
         text = self.annotation.text.get_value()
         font_scale = self.annotation.font_scale.get_value()
         color = self.annotation.color.get_value()
@@ -329,14 +329,14 @@ class ArrowAnnotationTool(AnnotationTool):
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
         self.annotation.head.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
             self.annotation.tail.set_value((img_x, img_y))
 
@@ -352,8 +352,8 @@ class ArrowAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.tail.get_value():
             return
 
-        head = util.convert_object_to_image(self.annotation.head.get_value(), self.phys_obj)
-        tail = util.convert_object_to_image(self.annotation.tail.get_value(), self.phys_obj)
+        head = sceneutil.convert_object_to_image(self.annotation.head.get_value(), self.phys_obj)
+        tail = sceneutil.convert_object_to_image(self.annotation.tail.get_value(), self.phys_obj)
 
         text = self.annotation.text.get_value()
         text = " " + text + " "
@@ -367,7 +367,7 @@ class ArrowAnnotationTool(AnnotationTool):
         tip_length = self.annotation.tip_length.get_value()
 
         text_size, _ = cv2.getTextSize(text, font, font_scale, text_thickness)
-        left2right, _ = util.get_left2right_topdown(tail, head)
+        left2right, _ = sceneutil.get_left2right_topdown(tail, head)
 
         text_position = list(tail)
         if left2right:
@@ -393,7 +393,7 @@ class ArrowAnnotationTool(AnnotationTool):
 
     def is_annotation_valid(self):
         # Has the lind the minimum lenght?
-        length = util.calc_distance(self.annotation.tail.get_value(), self.annotation.head.get_value())
+        length = sceneutil.calc_distance(self.annotation.tail.get_value(), self.annotation.head.get_value())
         if length is None:
             return False
         if length < ArrowAnnotation.MINIMUM_LENGTH:
@@ -425,14 +425,14 @@ class ImageAnnotationTool(AnnotationTool):
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-        img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
         self.v1 = (img_x, img_y)
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
             camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
-            img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+            img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
             self.v2 = (img_x, img_y)
 
@@ -472,7 +472,7 @@ class ImageAnnotationTool(AnnotationTool):
             return
 
         if self.annotation:
-            position = util.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
+            position = sceneutil.convert_object_to_image(self.annotation.position.get_value(), self.phys_obj)
             width = self.annotation.width.get_value()
             height = self.annotation.height.get_value()
             img_path = os.path.join(
@@ -487,7 +487,7 @@ class ImageAnnotationTool(AnnotationTool):
             if image.shape[0] != height or image.shape[1] != width:
                 image = cv2.resize(image, (width, height))
 
-            util.draw_image_on(self._img, image, position)
+            sceneutil.draw_image_on(self._img, image, position)
         else:
             if self.v2 is None:
                 return

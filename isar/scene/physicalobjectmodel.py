@@ -6,7 +6,7 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QMimeData, QModelIndex
 from PyQt5.QtGui import QBrush
 
 from isar.scene.scenemodel import Scene
-from isar.scene.util import RefFrame
+from isar.scene.sceneutil import RefFrame
 
 """
 Objects can be added in two ways to the scene: 

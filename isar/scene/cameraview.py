@@ -5,10 +5,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QCursor
 from PyQt5.QtWidgets import QLabel, QMessageBox
 
-from isar.scene import annotationtool, util, physicalobjecttool
+from isar.scene import annotationtool, sceneutil, physicalobjecttool
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenerenderer import SceneRenderer
-from isar.scene.util import Frame
+from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.cameraview")
 
@@ -56,7 +56,7 @@ class CameraView(QLabel):
                 self.active_annotation_tool.annotations_model = self.__annotations_model
                 self.active_annotation_tool.draw()
 
-            out_image = util.get_qimage_from_np_image(self.opencv_img)
+            out_image = sceneutil.get_qimage_from_np_image(self.opencv_img)
             # out_image = out_image.mirrored(horizontal=True, vertical=False)
             self.setPixmap(QPixmap.fromImage(out_image))
             self.setScaledContents(True)
@@ -89,7 +89,7 @@ class CameraView(QLabel):
                     self.dropped_physical_object = dropped_po
 
                     self.__physical_objects_model.add_physical_object_to_scene(dropped_po)
-                    dropped_po.scene_position = util.mouse_coordinates_to_image_coordinates(
+                    dropped_po.scene_position = sceneutil.mouse_coordinates_to_image_coordinates(
                         event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
                     event.setDropAction(Qt.CopyAction)
                     event.accept()
@@ -113,15 +113,15 @@ class CameraView(QLabel):
                 return
 
             if self.image_frame is not None:
-                img_x, img_y = util.mouse_coordinates_to_image_coordinates(
+                img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                     event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
                 self.scene_definition_windows.update_mouse_position_label((img_x, img_y))
 
                 mouse_on_object = False
                 for phys_obj in self.__physical_objects_model.get_scene_physical_objects():
-                    if util.intersects_with_phys_obj((img_x, img_y), phys_obj):
+                    if sceneutil.intersects_with_phys_obj((img_x, img_y), phys_obj):
                         phys_obj_name = phys_obj.name
-                        obj_x, obj_y = util.convert_image_to_object((img_x, img_y), phys_obj.ref_frame)
+                        obj_x, obj_y = sceneutil.convert_image_to_object((img_x, img_y), phys_obj.ref_frame)
                         self.scene_definition_windows.update_mouse_position_label((obj_x, obj_y), phys_obj_name)
                         mouse_on_object = True
                         break

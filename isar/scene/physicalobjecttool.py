@@ -4,7 +4,7 @@ import random
 import numpy as np
 import cv2
 
-from isar.scene import util
+from isar.scene import sceneutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 
 
@@ -14,7 +14,7 @@ colors = [tuple(255 * np.random.rand(3)) for i in range(10)]
 
 
 def draw_physical_object_image(opencv_img, phys_obj: PhysicalObject):
-    util.draw_image_on(opencv_img, phys_obj.template_image, phys_obj.scene_position, position_is_topleft=True)
+    sceneutil.draw_image_on(opencv_img, phys_obj.template_image, phys_obj.scene_position, position_is_topleft=True)
 
 
 def draw_physical_object_bounding_box(opencv_img, phys_obj: PhysicalObject):

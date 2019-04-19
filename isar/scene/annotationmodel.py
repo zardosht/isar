@@ -11,7 +11,7 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableMode
 from PyQt5.QtWidgets import QCheckBox, QComboBox, QItemDelegate, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel
 
-from isar.scene import util, scenemodel
+from isar.scene import sceneutil, scenemodel
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
@@ -56,7 +56,7 @@ class AnnotationsModel(QAbstractListModel):
         if role == Qt.EditRole:
             new_name = self.__annotations[index.row()].name
             try:
-                if util.is_valid_name(str(value)):
+                if sceneutil.is_valid_name(str(value)):
                     new_name = str(value)
             except Exception as e:
                 print("Error editing annotation name", e)

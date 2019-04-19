@@ -9,11 +9,11 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, QPoint
 
-from isar import scene
 from isar.camera.camera import CameraService, CameraFrame
-from isar.projection import util
+from isar.projection import projectionutil
+from isar.scene import sceneutil
 from isar.scene.scenerenderer import SceneRenderer
-from isar.scene.util import Frame
+
 
 logger = logging.getLogger("isar.projection.projector")
 
@@ -126,7 +126,7 @@ class ProjectorView(QtWidgets.QWidget):
         #                table show how far our homography is estimating.
 
         self.calibrating = True
-        pattern_size, chessboard_img = util.create_chessboard_image(self.projector_width, self.projector_height)
+        pattern_size, chessboard_img = projectionutil.create_chessboard_image(self.projector_width, self.projector_height)
         self.set_scene_image(chessboard_img)
         t_calib = threading.Thread(target=self.calibrate, args=(chessboard_img,))
         t_calib.start()
@@ -139,7 +139,7 @@ class ProjectorView(QtWidgets.QWidget):
         while not found_homography:
             try:
                 # projector_img = cv2.flip(projector_img, -1)
-                projector_points = util.get_chessboard_points("projector_points", projector_img)
+                projector_points = projectionutil.get_chessboard_points("projector_points", projector_img)
 
                 camera_frame: CameraFrame = self.camera_service.get_frame()
                 camera_img = camera_frame.raw_image
@@ -148,7 +148,7 @@ class ProjectorView(QtWidgets.QWidget):
 
                 if debug: cv2.imwrite("tmp/tmp_files/calibration_image_on_table.jpg", camera_img)
 
-                camera_points = util.get_chessboard_points("camera_points", camera_img)
+                camera_points = projectionutil.get_chessboard_points("camera_points", camera_img)
 
                 if projector_points.shape != camera_points.shape:
                     logger.warning("Finding homography: projector_points and camera_points don't have the same shape!")
@@ -177,7 +177,7 @@ class ProjectorView(QtWidgets.QWidget):
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
         # camera_img = cv2.resize(camera_img, self.scene_size)
 
-        camera_points = util.get_chessboard_points("camera_points", camera_img)
+        camera_points = projectionutil.get_chessboard_points("camera_points", camera_img)
         reprojected_points = cv2.perspectiveTransform(np.array([camera_points]), self.homography_matrix)
         reprojected_points = reprojected_points.squeeze()
         test_chessboard_image = projector_img.copy()
@@ -205,7 +205,7 @@ class ProjectorView(QtWidgets.QWidget):
                 continue
 
             # compute scene rect in projector-space
-            result = scene.util.compute_scene_rect(camera_frame, self.homography_matrix)
+            result = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
             if result is None and num_iter < max_iter:
                 continue
             elif result is not None:
@@ -234,9 +234,9 @@ class ProjectorView(QtWidgets.QWidget):
         camera_img = camera_frame.raw_image
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
 
-        scene_image = util.create_dummy_scene_image(self.projector_width,
-                                                    self.projector_height,
-                                                    self.scene_rect)
+        scene_image = projectionutil.create_dummy_scene_image(self.projector_width,
+                                                              self.projector_height,
+                                                              self.scene_rect)
 
         # # self.scene_renderer.opencv_img = util.create_empty_image((self.projector_width, self.projector_height), (0, 255, 255))
         # self.scene_renderer.opencv_img = scene_image
