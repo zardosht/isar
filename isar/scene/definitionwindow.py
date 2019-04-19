@@ -83,6 +83,7 @@ class SceneDefinitionWindow(QWidget):
         self.delete_btn.clicked.connect(self.delete_btn_clicked)
 
         self.init_scene_size_btn.clicked.connect(self.initialize_scene_size)
+        self.reset_scene_size_btn.clicked.connect(self.reset_scene_size)
 
         self.save_proj_btn.clicked.connect(self.save_project_btn_clicked)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
@@ -261,7 +262,9 @@ class SceneDefinitionWindow(QWidget):
         self.properties_view.setItemDelegate(phys_obj_combo_delegate)
 
     def update_camera_view(self):
-        camera_frame = self._camera_service.get_frame(flipped_y=True)
+        # camera_frame = self._camera_service.get_frame(flipped_y=True)
+        camera_frame = self._camera_service.get_frame()
+
         if camera_frame is None:
             # logger.error("camera_frame is None")
             return
@@ -308,6 +311,11 @@ class SceneDefinitionWindow(QWidget):
             else:
                 logger.warning("Could not initialize the scene size.")
                 break
+
+    def reset_scene_size(self):
+        self.scene_rect = None
+        self.scene_size = None
+        self.scene_size_initialized = False
 
     def get_camera_view_scale_factor(self):
         if self.scene_size is not None:

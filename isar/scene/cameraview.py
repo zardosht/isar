@@ -43,7 +43,13 @@ class CameraView(QLabel):
             self.scene_renderer.set_physical_objects_model(self.__physical_objects_model)
 
         def set_camera_frame(self, camera_frame):
-            self.opencv_img = camera_frame.scene_image
+            if not self.scene_definition_windows.scene_size_initialized:
+                logger.warning("Scene size is not initialized.")
+                self.opencv_img = camera_frame.scene_image
+            else:
+                x, y, width, height = self.scene_definition_windows.scene_rect
+                self.opencv_img = camera_frame.scene_image[y:y + height, x:x + width].copy()
+
             self.scene_renderer.opencv_img = self.opencv_img
             self.image_frame = Frame(self.opencv_img.shape[1], self.opencv_img.shape[0])
 

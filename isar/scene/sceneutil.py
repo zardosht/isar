@@ -125,6 +125,24 @@ def get_left2right_topdown(v1, v2):
     return left_to_right, topdown
 
 
+def flip_image(img, flip_x=False, flip_y=False, copy=False):
+    # flipCode	a flag to specify how to flip the array;
+    # 0 means flipping around the x-axis and
+    # positive value (for example, 1) means flipping around y-axis.
+    # Negative value (for example, -1) means flipping around both axes.
+    result = img
+    if copy:
+        result = img.copy()
+
+    if flip_x:
+        result = cv2.flip(result, 0)
+
+    if flip_y:
+        result = cv2.flip(result, 1)
+
+    return result
+
+
 def draw_image_on(opencv_img, image, position, position_is_topleft=True):
     try:
         img_height, img_width, _ = image.shape

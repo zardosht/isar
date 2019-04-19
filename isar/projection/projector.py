@@ -212,6 +212,7 @@ class ProjectorView(QtWidgets.QWidget):
                 self.scene_rect = result
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
                 self.scene_size_initialized = True
+                logger.info("Scene size initialized successfully!")
                 break
             else:
                 logger.warning("Could no calculate scene size.")
