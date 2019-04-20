@@ -27,10 +27,12 @@ class ProjectorView(QtWidgets.QWidget):
         self.projector = None
         self.projector_width = 0
         self.projector_height = 0
-        self.scene_size = None
-        self.scene_rect = None
         self.calibrating = False
-        self.scene_size_initialized = False
+
+        self.scene_size_p = None
+        self.scene_rect_p = None
+        self.scene_homography = None
+        self.scene_size_p_initialized = False
 
         self.image = None
         self.homography_matrix = np.identity(3, dtype=np.float64)
@@ -205,13 +207,14 @@ class ProjectorView(QtWidgets.QWidget):
                 continue
 
             # compute scene rect in projector-space
-            result = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
+            result, scene_homography = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
             if result is None and num_iter < max_iter:
                 continue
             elif result is not None:
-                self.scene_rect = result
-                self.scene_size = (self.scene_rect[2], self.scene_rect[3])
-                self.scene_size_initialized = True
+                self.scene_rect_p = result
+                self.scene_size_p = (self.scene_rect_p[2], self.scene_rect_p[3])
+                self.scene_homography = scene_homography
+                self.scene_size_p_initialized = True
                 logger.info("Scene size initialized successfully!")
                 break
             else:
@@ -227,8 +230,8 @@ class ProjectorView(QtWidgets.QWidget):
         #  check how you can use the annoation tools for drawing on it.
         #  of course everything must be in projector coordinates and scaled to scene_size / scene_rect
 
-        if not self.scene_size_initialized:
-            logger.warning("Scene size is not initialized")
+        if not self.scene_size_p_initialized:
+            logger.warning("Projector scene size is not initialized")
             return
 
         camera_frame: CameraFrame = self.camera_service.get_frame()
@@ -237,32 +240,35 @@ class ProjectorView(QtWidgets.QWidget):
 
         scene_image = projectionutil.create_dummy_scene_image(self.projector_width,
                                                               self.projector_height,
-                                                              self.scene_rect)
+                                                              self.scene_rect_p)
 
 
 
         # # self.scene_renderer.opencv_img = util.create_empty_image((self.projector_width, self.projector_height), (0, 255, 255))
 
-        srect_x, srect_y, srect_width, srect_height = self.scene_rect
-        print(srect_width, srect_height)
-        # self.scene_renderer.opencv_img = scene_image
-        # self.scene_renderer.opencv_img = scene_image[srect_y:srect_y + srect_height, srect_x:srect_x + srect_width].copy()
-        self.scene_renderer.opencv_img = projectionutil.create_empty_image((1090, 727), (255, 0, 0))
+        srect_x, srect_y, srect_width, srect_height = self.scene_rect_p
 
+        # print(srect_width, srect_height)
+
+        # TODO: must come from the persisted scene (json)
+        scene_size_c = (670, 460)
+        self.scene_renderer.opencv_img = projectionutil.create_empty_image(scene_size_c, (255, 0, 0))
 
         self.scene_renderer.draw_scene_physical_objects()
         self.scene_renderer.draw_scene_annotations()
 
         if debug: cv2.imwrite("tmp/tmp_files/scene_renderer_opencv_img.jpg", self.scene_renderer.opencv_img)
 
-        # scene_image = cv2.resize(self.scene_renderer.opencv_img, self.scene_size)
         # scene_image[srect_y:srect_y + srect_height, srect_x:srect_x + srect_width] = self.scene_renderer.opencv_img
 
-        # scene_renderer_opencv_img_warpped = \
-        #     cv2.warpPerspective(self.scene_renderer.opencv_img, self.homography_matrix, (srect_width, srect_height))
 
-        scene_renderer_opencv_img_warpped = cv2.resize(self.scene_renderer.opencv_img, (srect_width, srect_height))
+        # scene_renderer_opencv_img_warpped = cv2.resize(self.scene_renderer.opencv_img, (srect_width, srect_height))
+
+        scene_renderer_opencv_img_warpped = \
+            cv2.warpPerspective(self.scene_renderer.opencv_img, self.scene_homography, (srect_width, srect_height))
+
         if debug: cv2.imwrite("tmp/tmp_files/scene_renderer_opencv_img_warpped.jpg", scene_renderer_opencv_img_warpped)
+
         scene_image[srect_y:srect_y + srect_height, srect_x:srect_x + srect_width] = scene_renderer_opencv_img_warpped
 
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)

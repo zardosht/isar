@@ -1,13 +1,60 @@
+import cv2
+import numpy as np
 
-class MyClass:
-    def a_method(self):
-        print("MyClass.a_method()")
+v1_marker = np.array([[447., 117.],
+ [501.,  115.],
+ [502.,  169.],
+ [448., 171.]])
+
+v2_marker = np.array([[1474.,  800.],
+ [1530.,  797.],
+ [1535., 853.],
+ [1477., 858.]])
+
+cam_proj_homography = np.array([[ 9.39041649e-01, -1.15517376e-03, -2.42452010e+02],
+ [ 2.27973037e-02,  9.66755076e-01, -8.65972180e+01],
+ [-2.12478066e-05,  4.18114680e-05,  1.00000000e+00]])
+
+v1_marker_normalized = v1_marker - v1_marker[0]
+v2_marker_normalized = v2_marker - v1_marker[0]
+
+v1_marker_p = cv2.perspectiveTransform(np.array([v1_marker]), cam_proj_homography).squeeze()
+v2_marker_p = cv2.perspectiveTransform(np.array([v2_marker]), cam_proj_homography).squeeze()
+
+v1_marker_p_normalized = v1_marker_p - v1_marker_p[0]
+v2_marker_p_normalized = v2_marker_p - v1_marker_p[0]
+
+camera_points = np.vstack((v1_marker_normalized, v2_marker_normalized))
+projector_points = np.vstack((v1_marker_p_normalized, v2_marker_p_normalized))
+
+print(camera_points.shape)
+print(projector_points.shape)
+
+scene_homography, _ = cv2.findHomography(np.array([camera_points]), np.array([projector_points]), cv2.RANSAC, 3)
+
+# scene_homography, _ = cv2.findHomography(
+#  np.array([camera_points]).squeeze(), np.array([projector_points]).squeeze(), cv2.RANSAC, 3)
 
 
-def a_method():
-    pass
+# print(v1_marker_normalized)
+# print(v2_marker_normalized)
+#
+print(scene_homography)
 
 
+
+
+# # ============================================================================
+#
+# class MyClass:
+#     def a_method(self):
+#         print("MyClass.a_method()")
+#
+#
+# def a_method():
+#     pass
+#
+#
 # # ============================================================================
 #
 # phys_obj_predictions = {}

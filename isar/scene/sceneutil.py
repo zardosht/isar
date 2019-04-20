@@ -182,7 +182,7 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
     marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
     if len(marker_corners) != 2:
         logger.warning("Error detecting the scene corners. Not all two markers were detected. return.")
-        return
+        return None, None
 
     # there are only two markers. So, one has index 0, the other has index 1,
     # however we don't know which one is marker 0 (the marker with id 0 must be placed physically at the top-left)
@@ -204,11 +204,36 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
         proj_points = proj_points.squeeze()
         p_v1 = proj_points[0]
         p_v2 = proj_points[1]
-        width, height = (abs(p_v1[0] - p_v2[0]), abs(p_v1[1] - p_v2[1]))
-        return int(p_v1[0]), int(p_v1[1]), int(width), int(height)
+        scene_width_p, scene_height_p = (abs(p_v1[0] - p_v2[0]), abs(p_v1[1] - p_v2[1]))
+
+        scene_homography = compute_scene_homography(vertex1_marker, vertex2_marker, cam_proj_homography)
+        scene_rect_p = int(p_v1[0]), int(p_v1[1]), int(scene_width_p), int(scene_height_p)
+
+        return scene_rect_p, scene_homography
     else:
-        width, height = (abs(c_v1[0] - c_v2[0]), abs(c_v1[1] - c_v2[1]))
-        return int(c_v1[0]), int(c_v1[1]), int(width), int(height)
+        scene_width_c, scene_height_c = (abs(c_v1[0] - c_v2[0]), abs(c_v1[1] - c_v2[1]))
+        scene_rect_c = int(c_v1[0]), int(c_v1[1]), int(scene_width_c), int(scene_height_c)
+        return scene_rect_c, None
+
+
+def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography):
+    v1_marker_normalized = v1_marker - v1_marker[0]
+    v2_marker_normalized = v2_marker - v1_marker[0]
+
+    v1_marker_p = cv2.perspectiveTransform(np.array([v1_marker]), cam_proj_homography).squeeze()
+    v2_marker_p = cv2.perspectiveTransform(np.array([v2_marker]), cam_proj_homography).squeeze()
+
+    v1_marker_p_normalized = v1_marker_p - v1_marker_p[0]
+    v2_marker_p_normalized = v2_marker_p - v1_marker_p[0]
+
+    camera_points = np.vstack((v1_marker_normalized, v2_marker_normalized))
+    projector_points = np.vstack((v1_marker_p_normalized, v2_marker_p_normalized))
+
+    scene_homography, _ = cv2.findHomography(np.array([camera_points]),  np.array([projector_points]), cv2.RANSAC, 3)
+    # scene_homography, _ = cv2.findHomography(np.array([projector_points]), np.array([camera_points]), cv2.RANSAC, 3)
+
+    return scene_homography
+
 
 
 

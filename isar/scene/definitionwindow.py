@@ -299,7 +299,7 @@ class SceneDefinitionWindow(QWidget):
                 continue
 
             # compute scene rect in projector-space
-            result = sceneutil.compute_scene_rect(camera_frame)
+            result, _ = sceneutil.compute_scene_rect(camera_frame)
             if result is None and num_iter < max_iter:
                 continue
             elif result is not None:
