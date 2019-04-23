@@ -161,11 +161,20 @@ class DomainLearningWindow(QWidget):
         if self.projector_view.calibrating:
             return
         else:
-            self.projector_view.update_projector_view()
+            camera_frame = self._camera_service.get_frame()
+            self.projector_view.update_projector_view(camera_frame)
+
+        if self.track_objects_checkbox.isChecked():
+            scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
+            if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
+                self._object_detection_service.get_present_objects(camera_frame,
+                                                                   scene_phys_objs_names,
+                                                                   callback=self.on_obj_detection_complete)
+        else:
+            self.physical_objects_model.update_present_physical_objects(None)
 
     def on_obj_detection_complete(self, phys_obj_predictions):
-        phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
-        phys_obj_model.update_present_physical_objects(phys_obj_predictions)
+        self.physical_objects_model.update_present_physical_objects(phys_obj_predictions)
 
     def close(self):
         self._projector_view_timer.stop()

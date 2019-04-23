@@ -303,11 +303,11 @@ class SceneDefinitionWindow(QWidget):
                 continue
 
             # compute scene rect in projector-space
-            result, _ = sceneutil.compute_scene_rect(camera_frame)
-            if result is None and num_iter < max_iter:
+            secene_rect_c, _, _ = sceneutil.compute_scene_rect(camera_frame)
+            if secene_rect_c is None and num_iter < max_iter:
                 continue
-            elif result is not None:
-                self.scene_rect = result
+            elif secene_rect_c is not None:
+                self.scene_rect = secene_rect_c
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
                 self.scene_size_initialized = True
                 if self.scenes_model is not None:

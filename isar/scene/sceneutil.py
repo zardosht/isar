@@ -208,6 +208,9 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
     c_v1 = (vertex1_marker[0][0], vertex1_marker[0][1])
     c_v2 = (vertex2_marker[2][0], vertex2_marker[2][1])
 
+    scene_width_c, scene_height_c = (abs(c_v1[0] - c_v2[0]), abs(c_v1[1] - c_v2[1]))
+    scene_rect_c = int(c_v1[0]), int(c_v1[1]), int(scene_width_c), int(scene_height_c)
+
     if cam_proj_homography is not None:
         proj_points = cv2.perspectiveTransform(np.array([[c_v1, c_v2]]), cam_proj_homography)
         proj_points = proj_points.squeeze()
@@ -218,11 +221,10 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
         scene_homography = compute_scene_homography(vertex1_marker, vertex2_marker, cam_proj_homography, camera_img)
         scene_rect_p = int(p_v1[0]), int(p_v1[1]), int(scene_width_p), int(scene_height_p)
 
-        return scene_rect_p, scene_homography
+        return scene_rect_c, scene_rect_p, scene_homography
     else:
-        scene_width_c, scene_height_c = (abs(c_v1[0] - c_v2[0]), abs(c_v1[1] - c_v2[1]))
-        scene_rect_c = int(c_v1[0]), int(c_v1[1]), int(scene_width_c), int(scene_height_c)
-        return scene_rect_c, None
+
+        return scene_rect_c, None, None
 
 
 def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography, camera_img):

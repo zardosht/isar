@@ -31,6 +31,7 @@ class ProjectorView(QtWidgets.QWidget):
         self.projector_height = 0
         self.calibrating = False
 
+        self.scene_rect_c = None
         self.scene_size_p = None
         self.scene_rect_p = None
         self.scene_homography = None
@@ -209,11 +210,12 @@ class ProjectorView(QtWidgets.QWidget):
                 continue
 
             # compute scene rect in projector-space
-            result, scene_homography = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
-            if result is None and num_iter < max_iter:
+            scene_rect_c, scene_rect_p, scene_homography = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
+            if scene_rect_p is None and num_iter < max_iter:
                 continue
-            elif result is not None:
-                self.scene_rect_p = result
+            elif scene_rect_p is not None:
+                self.scene_rect_c = scene_rect_c
+                self.scene_rect_p = scene_rect_p
                 self.scene_size_p = (self.scene_rect_p[2], self.scene_rect_p[3])
                 self.scene_homography = scene_homography
                 self.scene_size_p_initialized = True
@@ -223,7 +225,7 @@ class ProjectorView(QtWidgets.QWidget):
                 logger.warning("Could no calculate scene size.")
                 break
 
-    def update_projector_view(self):
+    def update_projector_view(self, camera_frame):
         # TODO: draw all the annotations on the scene_image
 
         # first of course we need to load the project (in domainlearning)
@@ -236,7 +238,7 @@ class ProjectorView(QtWidgets.QWidget):
             logger.warning("Projector scene size is not initialized. Return!")
             return
 
-        camera_frame: CameraFrame = self.camera_service.get_frame()
+        # camera_frame: CameraFrame = self.camera_service.get_frame()
         camera_img = camera_frame.raw_image
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
 
@@ -250,6 +252,8 @@ class ProjectorView(QtWidgets.QWidget):
         current_project = isar.scene.scenemodel.current_project
         if current_project is not None:
             scene_size_c = current_project.scene_size
+
+        self.scene_renderer.scene_rect = self.scene_rect_c
         self.scene_renderer.opencv_img = projectionutil.create_empty_image(scene_size_c, (255, 0, 0))
 
         self.scene_renderer.draw_scene_physical_objects()
