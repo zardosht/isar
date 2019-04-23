@@ -17,6 +17,7 @@ class Project:
         self.name = None
         self.base_path = None
         self.scenes = None
+        self.scene_size = None
 
 
 current_project: Project = None
@@ -29,6 +30,7 @@ class ScenesModel(QAbstractListModel):
         super().__init__()
         self.scenes = [Scene("New Scene")]
         self.current_scene = self.scenes[0]
+        self.scene_size = None
 
     def rowCount(self, parent):
         return len(self.scenes)
@@ -102,6 +104,7 @@ class ScenesModel(QAbstractListModel):
         new_project_created = False
         if current_project is None:
             create_project(parent_dir, project_name)
+            current_project.scene_size = self.scene_size
             new_project_created = True
 
         save_path = os.path.join(current_project.base_path, current_project.name + ".json")

@@ -9,9 +9,11 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, QPoint
 
+import isar
 from isar.camera.camera import CameraService, CameraFrame
 from isar.projection import projectionutil
 from isar.scene import sceneutil
+from isar.scene.scenemodel import current_project
 from isar.scene.scenerenderer import SceneRenderer
 
 
@@ -244,8 +246,10 @@ class ProjectorView(QtWidgets.QWidget):
 
         srect_x_p, srect_y_p, srect_width_p, srect_height_p = self.scene_rect_p
 
-        # TODO: must come from the persisted scene (json)
-        scene_size_c = (1011, 705)
+        scene_size_c = (self.projector_width, self.projector_height)
+        current_project = isar.scene.scenemodel.current_project
+        if current_project is not None:
+            scene_size_c = current_project.scene_size
         self.scene_renderer.opencv_img = projectionutil.create_empty_image(scene_size_c, (255, 0, 0))
 
         self.scene_renderer.draw_scene_physical_objects()

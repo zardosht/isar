@@ -44,6 +44,7 @@ class SceneDefinitionWindow(QWidget):
         self.setup_object_detection_service()
 
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
+        self.scenes_model = None
         self.setup_models()
         self.setup_signals()
 
@@ -237,8 +238,8 @@ class SceneDefinitionWindow(QWidget):
         self._timer.start(5)
 
     def setup_models(self):
-        scenes_model = ScenesModel()
-        self.scenes_list.setModel(scenes_model)
+        self.scenes_model = ScenesModel()
+        self.scenes_list.setModel(self.scenes_model)
         current_scene = self.scenes_list.model().current_scene
 
         physical_objects_model = PhysicalObjectsModel()
@@ -306,6 +307,9 @@ class SceneDefinitionWindow(QWidget):
                 self.scene_rect = result
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
                 self.scene_size_initialized = True
+                if self.scenes_model is not None:
+                    self.scenes_model.scene_size = self.scene_size
+
                 logger.info("Scene size initialized successfully!")
                 break
             else:
@@ -313,6 +317,7 @@ class SceneDefinitionWindow(QWidget):
                 break
 
     def reset_scene_size(self):
+        #TODO: Experimental. Remove in production code. Also remove the button.
         self.scene_rect = None
         self.scene_size = None
         self.scene_size_initialized = False
