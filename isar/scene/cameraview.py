@@ -47,6 +47,7 @@ class CameraView(QLabel):
                 logger.warning("Scene size is not initialized.")
                 self.opencv_img = camera_frame.scene_image
             else:
+                self.scene_renderer.scene_rect = self.scene_definition_windows.scene_rect
                 x, y, width, height = self.scene_definition_windows.scene_rect
                 self.opencv_img = camera_frame.scene_image[y:y + height, x:x + width].copy()
 

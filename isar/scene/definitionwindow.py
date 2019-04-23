@@ -1,3 +1,4 @@
+import os
 from threading import Thread
 
 import cv2
@@ -186,10 +187,12 @@ class SceneDefinitionWindow(QWidget):
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
-        project_dir = QFileDialog.getExistingDirectory()
+        project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
+        project_dir = os.path.dirname(project_filename)
+        project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":
             return
-        project_name = self.project_name_le.text()
+        self.project_name_le.setText(project_name)
         scenes_model = self.scenes_list.model()
         scenes_model.load_project(project_dir, project_name)
         index = self.scenes_list.model().index(0, 0)

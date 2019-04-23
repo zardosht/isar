@@ -124,6 +124,7 @@ class DomainLearningWindow(QWidget):
         scenes_model.set_current_scene(current_index)
 
         self.annotations_model.set_scene(scenes_model.current_scene)
+        self.physical_objects_model.set_scene(scenes_model.current_scene)
         self.camera_view.set_annotations_model(self.annotations_model)
         self.projector_view.set_annotations_model(self.annotations_model)
 
