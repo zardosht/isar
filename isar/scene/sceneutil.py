@@ -180,19 +180,23 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
     # Detect the scene border markers and get the scene boudaries from them.
     # All scene images must be resized to scene boundaries and shown in the center of projector widget
     marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
-    if len(marker_corners) != 2:
-        logger.warning("Error detecting the scene corners. Not all two markers were detected. return.")
-        return None, None
 
     # there are only two markers. So, one has index 0, the other has index 1,
     # however we don't know which one is marker 0 (the marker with id 0 must be placed physically at the top-left)
-    top_left_marker_index = 0
+    top_left_marker_index = -1   # that's the marker with id 0
+    bottom_right_marker_index = -1  # that's the marker with id 1
     for idx, marker_id in enumerate(marker_ids):
         if marker_id == 0:
             top_left_marker_index = idx
+        if marker_id == 1:
+            bottom_right_marker_index = idx
+
+    if top_left_marker_index == -1 or bottom_right_marker_index == -1:
+        logger.warning("Error detecting the scene corners. Not all two markers were detected. return.")
+        return None, None
 
     vertex1_marker = marker_corners[top_left_marker_index].reshape(4, 2)
-    vertex2_marker = marker_corners[1 - top_left_marker_index].reshape(4, 2)
+    vertex2_marker = marker_corners[bottom_right_marker_index].reshape(4, 2)
 
     # marker corners are in clock-wise order
     # find coordinates of top-left (0) corner of marker 0 and bottom-right (2) corner of marker 1
@@ -206,17 +210,20 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
         p_v2 = proj_points[1]
         scene_width_p, scene_height_p = (abs(p_v1[0] - p_v2[0]), abs(p_v1[1] - p_v2[1]))
 
-        scene_homography = compute_scene_homography(vertex1_marker, vertex2_marker, cam_proj_homography)
+        scene_homography, scene_affine_transform = compute_scene_homography(vertex1_marker, vertex2_marker, cam_proj_homography, camera_img)
         scene_rect_p = int(p_v1[0]), int(p_v1[1]), int(scene_width_p), int(scene_height_p)
 
-        return scene_rect_p, scene_homography
+        return scene_rect_p, scene_homography, scene_affine_transform
     else:
         scene_width_c, scene_height_c = (abs(c_v1[0] - c_v2[0]), abs(c_v1[1] - c_v2[1]))
         scene_rect_c = int(c_v1[0]), int(c_v1[1]), int(scene_width_c), int(scene_height_c)
-        return scene_rect_c, None
+        return scene_rect_c, None, None
 
 
-def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography):
+def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography, camera_img):
+    # TODO: tray to calcuated scene homography with more accuracy using more point.
+    #  Now we only have 8 corresponce point. For example using a chessboard
+
     v1_marker_normalized = v1_marker - v1_marker[0]
     v2_marker_normalized = v2_marker - v1_marker[0]
 
@@ -229,10 +236,31 @@ def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography):
     camera_points = np.vstack((v1_marker_normalized, v2_marker_normalized))
     projector_points = np.vstack((v1_marker_p_normalized, v2_marker_p_normalized))
 
+
+    # ============================================
+    # Experimental: Only in order to have more points for calculating
+    # scene homography between camera vs. projector scene
+    marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
+    for marker_id in marker_ids:
+        if marker_id == 0 or marker_id == 1:
+            continue
+
+        marker = marker_corners[marker_id.squeeze()].reshape(4, 2)
+        marker_normalized = marker - v1_marker[0]
+
+        marker_p = cv2.perspectiveTransform(np.array([marker]), cam_proj_homography).squeeze()
+        marker_p_normalized = marker_p - v1_marker_p[0]
+
+        camera_points = np.append(camera_points, marker_normalized, axis=0)
+        projector_points = np.append(projector_points, marker_p_normalized, axis=0)
+
+    # ============================================
+
     scene_homography, _ = cv2.findHomography(np.array([camera_points]),  np.array([projector_points]), cv2.RANSAC, 3)
+    scene_affine_transform = cv2.getAffineTransform(np.array([camera_points[0:3]]), np.array([projector_points[0:3]]))
     # scene_homography, _ = cv2.findHomography(np.array([projector_points]), np.array([camera_points]), cv2.RANSAC, 3)
 
-    return scene_homography
+    return scene_homography, scene_affine_transform
 
 
 
