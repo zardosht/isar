@@ -27,10 +27,10 @@ class CameraService(Service):
         self._capture = cv2.VideoCapture(self.cam_id)
 
         # TODO: possibly for later
-        width = 1280
-        height = 720
-        self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        # width = 1280
+        # height = 720
+        # self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        # self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         # self.capture.set(cv2.CAP_PROP_FPS, 24)
 
         if not self._capture.isOpened():

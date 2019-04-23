@@ -32,7 +32,6 @@ class ProjectorView(QtWidgets.QWidget):
         self.scene_size_p = None
         self.scene_rect_p = None
         self.scene_homography = None
-        self.scene_affine_transform = None
         self.scene_size_p_initialized = False
 
         self.image = None
@@ -208,13 +207,12 @@ class ProjectorView(QtWidgets.QWidget):
                 continue
 
             # compute scene rect in projector-space
-            result, scene_homography, scene_affine_transform = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
+            result, scene_homography = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
             if result is None and num_iter < max_iter:
                 continue
             elif result is not None:
                 self.scene_rect_p = result
                 self.scene_size_p = (self.scene_rect_p[2], self.scene_rect_p[3])
-                self.scene_affine_transform = scene_affine_transform
                 self.scene_homography = scene_homography
                 self.scene_size_p_initialized = True
                 logger.info("Scene size initialized successfully!")
@@ -244,44 +242,34 @@ class ProjectorView(QtWidgets.QWidget):
                                                               self.projector_height,
                                                               self.scene_rect_p)
 
-
-
-        # # self.scene_renderer.opencv_img = util.create_empty_image((self.projector_width, self.projector_height), (0, 255, 255))
-
-        srect_x, srect_y, srect_width, srect_height = self.scene_rect_p
-
-        # print(srect_width, srect_height)
+        srect_x_p, srect_y_p, srect_width_p, srect_height_p = self.scene_rect_p
 
         # TODO: must come from the persisted scene (json)
-        scene_size_c = (670, 460)
+        whole_img_c = projectionutil.create_empty_image((1920, 1080), (255, 0, 255))
+        scene_size_c = (1011, 705)
         self.scene_renderer.opencv_img = projectionutil.create_empty_image(scene_size_c, (255, 0, 0))
 
         self.scene_renderer.draw_scene_physical_objects()
         self.scene_renderer.draw_scene_annotations()
 
+        whole_img_c[108:108+scene_size_c[1], 450:450+scene_size_c[0]] = self.scene_renderer.opencv_img
+        if debug: cv2.imwrite("tmp/tmp_files/whole_img_c_with_scene_renderer_opencv_img.jpg", whole_img_c)
+
+        whole_img_c_warpped = \
+            cv2.warpPerspective(whole_img_c, self.homography_matrix, (self.projector_width, self.projector_height), borderMode=cv2.BORDER_TRANSPARENT)
+        if debug: cv2.imwrite("tmp/tmp_files/whole_img_c_warpped.jpg", whole_img_c_warpped)
+
+        scene_renderer_opencv_img_warpped = whole_img_c_warpped[srect_y_p:srect_y_p + srect_height_p, srect_x_p:srect_x_p + srect_width_p]
         if debug: cv2.imwrite("tmp/tmp_files/scene_renderer_opencv_img.jpg", self.scene_renderer.opencv_img)
 
-        # scene_image[srect_y:srect_y + srect_height, srect_x:srect_x + srect_width] = self.scene_renderer.opencv_img
-
-        scene_renderer_opencv_img_warpped = cv2.resize(self.scene_renderer.opencv_img, (srect_width, srect_height))
-
-        # scene_renderer_opencv_img_resized = cv2.resize(self.scene_renderer.opencv_img, (srect_width, srect_height))
-        # scene_renderer_opencv_img_warpped = \
-        #     cv2.warpPerspective(scene_renderer_opencv_img_resized, self.scene_homography, (srect_width, srect_height))
+        # scene_renderer_opencv_img_warpped = cv2.resize(self.scene_renderer.opencv_img, (srect_width_p, srect_height_p))
 
         # scene_renderer_opencv_img_warpped = \
-        #     cv2.warpPerspective(self.scene_renderer.opencv_img, self.scene_homography, (srect_width, srect_height))
-
-        # scene_renderer_opencv_img_warpped = \
-        #     cv2.warpPerspective(self.scene_renderer.opencv_img, self.scene_homography,
-        #     (srect_width, srect_height), flags=cv2.WARP_INVERSE_MAP)
-
-        # scene_renderer_opencv_img_warpped = \
-        #     cv2.warpAffine(self.scene_renderer.opencv_img, self.scene_affine_transform, (srect_width, srect_height))
+        #     cv2.warpPerspective(self.scene_renderer.opencv_img, self.scene_homography, (srect_width_p, srect_height_p))
 
         if debug: cv2.imwrite("tmp/tmp_files/scene_renderer_opencv_img_warpped.jpg", scene_renderer_opencv_img_warpped)
 
-        scene_image[srect_y:srect_y + srect_height, srect_x:srect_x + srect_width] = scene_renderer_opencv_img_warpped
+        scene_image[srect_y_p:srect_y_p + srect_height_p, srect_x_p:srect_x_p + srect_width_p] = scene_renderer_opencv_img_warpped
 
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
         self.set_scene_image(scene_image)
