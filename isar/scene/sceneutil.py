@@ -221,8 +221,8 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
 
 
 def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography, camera_img):
-    # TODO: tray to calcuated scene homography with more accuracy using more point.
-    #  Now we only have 8 corresponce point. For example using a chessboard
+    # I tried also to calculate the scene homography with more points. But it didn't change the results:
+    # the scene projected on the table is still rotated. I don't use this scene homography.
 
     v1_marker_normalized = v1_marker - v1_marker[0]
     v2_marker_normalized = v2_marker - v1_marker[0]
