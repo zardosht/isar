@@ -304,14 +304,18 @@ class SceneDefinitionWindow(QWidget):
                 continue
 
             # compute scene rect in projector-space
-            secene_rect_c, _, _ = sceneutil.compute_scene_rect(camera_frame)
-            if secene_rect_c is None and num_iter < max_iter:
+            scene_rect_c, _, _ = sceneutil.compute_scene_rect(camera_frame)
+            if scene_rect_c is None and num_iter < max_iter:
                 continue
-            elif secene_rect_c is not None:
-                self.scene_rect = secene_rect_c
+            elif scene_rect_c is not None:
+                self.scene_rect = scene_rect_c
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
-                self.scene_scale_factor = sceneutil.get_scene_scale_factor(camera_frame.raw_image.shape, secene_rect_c)
+                self.scene_scale_factor = sceneutil.get_scene_scale_factor(camera_frame.raw_image.shape, scene_rect_c)
                 self.scene_size_initialized = True
+
+                sceneutil.scene_rect_c = scene_rect_c
+                sceneutil.scene_scale_factor_c = self.scene_scale_factor
+
                 if self.scenes_model is not None:
                     self.scenes_model.scene_size = self.scene_size
 

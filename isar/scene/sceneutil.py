@@ -11,6 +11,8 @@ logger = logging.getLogger("isar.scene.util")
 
 aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 
+scene_rect_c = None
+scene_scale_factor_c = None
 
 class RefFrame(NamedTuple):
     x: float
@@ -259,6 +261,13 @@ def get_scene_scale_factor(camera_img_shape, scene_rect_c):
     camera_img_width = camera_img_shape[1]
     camera_img_height = camera_img_shape[0]
     return scene_width_c / camera_img_width, scene_height_c / camera_img_height
+
+
+def camera_coord_to_scene_coord(cam_coord):
+    if scene_rect_c is None:
+        return cam_coord
+
+    return cam_coord[0] - scene_rect_c[0], cam_coord[1] - scene_rect_c[1]
 
 
 

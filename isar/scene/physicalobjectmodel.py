@@ -5,6 +5,7 @@ import pickle
 from PyQt5.QtCore import QAbstractListModel, Qt, QMimeData, QModelIndex
 from PyQt5.QtGui import QBrush
 
+from isar.scene import sceneutil
 from isar.scene.scenemodel import Scene
 from isar.scene.sceneutil import RefFrame
 
@@ -194,7 +195,7 @@ class PhysicalObject:
     @top_left.setter
     def top_left(self, value):
         self.__top_left = value
-        self.__scene_position = value
+        self.__scene_position = sceneutil.camera_coord_to_scene_coord(value)
 
     @property
     def scene_position(self):

@@ -35,6 +35,7 @@ class ProjectorView(QtWidgets.QWidget):
         self.scene_size_p = None
         self.scene_rect_p = None
         self.scene_homography = None
+        self.scene_scale_factor_c = None
         self.scene_size_p_initialized = False
 
         self.image = None
@@ -218,7 +219,12 @@ class ProjectorView(QtWidgets.QWidget):
                 self.scene_rect_p = scene_rect_p
                 self.scene_size_p = (self.scene_rect_p[2], self.scene_rect_p[3])
                 self.scene_homography = scene_homography
+                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor(camera_frame.raw_image.shape, self.scene_rect_c)
                 self.scene_size_p_initialized = True
+
+                sceneutil.scene_rect_c = self.scene_rect_c
+                sceneutil.scene_scale_factor_c = self.scene_scale_factor_c
+
                 logger.info("Scene size initialized successfully!")
                 break
             else:
@@ -254,7 +260,7 @@ class ProjectorView(QtWidgets.QWidget):
             scene_size_c = current_project.scene_size
 
         self.scene_renderer.scene_rect = self.scene_rect_c
-        self.scene_renderer.scene_scale_factor = sceneutil.get_scene_scale_factor(camera_img.shape, self.scene_rect_c)
+        self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
         self.scene_renderer.opencv_img = projectionutil.create_empty_image(scene_size_c, (255, 255, 255))
 
         self.scene_renderer.draw_scene_physical_objects()
