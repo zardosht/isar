@@ -266,7 +266,10 @@ class ProjectorView(QtWidgets.QWidget):
 
         if debug: cv2.imwrite("tmp/tmp_files/scene_renderer_opencv_img_warpped.jpg", scene_renderer_opencv_img_warpped)
 
-        scene_image[srect_y_p:srect_y_p + srect_height_p, srect_x_p:srect_x_p + srect_width_p] = scene_renderer_opencv_img_warpped
+        end_index_y = min(srect_y_p + srect_height_p, scene_image.shape[0])
+        end_index_x = min(srect_x_p + srect_width_p, scene_image.shape[1])
+        scene_image[srect_y_p:end_index_y,
+                    srect_x_p:end_index_x] = scene_renderer_opencv_img_warpped
 
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
         self.set_scene_image(scene_image)

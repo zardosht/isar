@@ -172,7 +172,6 @@ class PhysicalObject:
         self.template_image = None
 
         self.__scene_position = None
-        self.__scene_frame = None
         self.__annotations = []
 
         self._tracking = False
@@ -198,14 +197,6 @@ class PhysicalObject:
     @scene_position.setter
     def scene_position(self, scene_position):
         self.__scene_position = scene_position
-
-    @property
-    def scene_frame(self):
-        return self.__scene_frame
-
-    @scene_frame.setter
-    def scene_frame(self, scene_frame):
-        self.__scene_frame = scene_frame
 
     @property
     def ref_frame(self):
@@ -257,7 +248,6 @@ class PhysicalObject:
         self.__annotations.clear()
 
         self.__scene_position = None
-        self.__scene_frame = None
 
         self._tracking = False
         self.detection_confidence = None

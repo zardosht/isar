@@ -48,6 +48,7 @@ class CameraView(QLabel):
                 self.opencv_img = camera_frame.scene_image
             else:
                 self.scene_renderer.scene_rect = self.scene_definition_windows.scene_rect
+                self.scene_renderer.scene_scale_factor = self.scene_definition_windows.scene_scale_factor
                 x, y, width, height = self.scene_definition_windows.scene_rect
                 self.opencv_img = camera_frame.scene_image[y:y + height, x:x + width].copy()
 
@@ -96,8 +97,11 @@ class CameraView(QLabel):
                     self.dropped_physical_object = dropped_po
 
                     self.__physical_objects_model.add_physical_object_to_scene(dropped_po)
-                    dropped_po.scene_position = sceneutil.mouse_coordinates_to_image_coordinates(
-                        event.pos().x(), event.pos().y(), self.camera_view_size, self.image_frame)
+                    dropped_po.scene_position = \
+                        sceneutil.mouse_coordinates_to_image_coordinates(event.pos().x(),
+                                                                         event.pos().y(),
+                                                                         self.camera_view_size,
+                                                                         self.image_frame)
                     event.setDropAction(Qt.CopyAction)
                     event.accept()
                 else:

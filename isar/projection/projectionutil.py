@@ -6,7 +6,7 @@ import cv2
 
 logger = logging.getLogger("isar.projection.util")
 
-debug = False
+debug = True
 
 
 def create_chessboard_image(width, height):
@@ -27,11 +27,11 @@ def create_chessboard_image(width, height):
         for i, x in enumerate(xs):
             if (i + j) % 2 == 0:
                 chessboard[y:y + square_size, x:x + square_size] = (0, 0, 0)
-    cv2.imwrite("tmp/tmp_files/chessboard.jpg", chessboard)
+    if debug: cv2.imwrite("tmp/tmp_files/chessboard.jpg", chessboard)
 
     x, y = center[0] - int(chessboard_width / 2), center[1] - int(chessboard_height/2)
     image[y:y+chessboard_height, x:x+chessboard_width] = chessboard
-    cv2.imwrite("tmp/tmp_files/projector_calibration_image.jpg", image)
+    if debug: cv2.imwrite("tmp/tmp_files/projector_calibration_image.jpg", image)
 
     return (len(ys) - 1, len(xs) - 1), image
 
@@ -46,7 +46,7 @@ def create_dummy_scene_image(projector_width, projector_height, scene_rect):
     vertex1 = (scene_rect[0], scene_rect[1])
     vertex2 = (scene_rect[0] + width, scene_rect[1] + height)
     # dummy_scene_image = cv2.cvtColor(dummy_scene_image, cv2.COLOR_BGR2BGRA)
-    dummy_scene_image = cv2.rectangle(dummy_scene_image, vertex1, vertex2, (0, 255, 0), 10)
+    dummy_scene_image = cv2.rectangle(dummy_scene_image, vertex1, vertex2, (0, 255, 0), 5)
     if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", dummy_scene_image)
     return dummy_scene_image
 

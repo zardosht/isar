@@ -40,6 +40,7 @@ class SceneDefinitionWindow(QWidget):
         self.scene_size_initialized = False
         self.scene_rect = None
         self.scene_size = None
+        self.scene_scale_factor = None
 
         self._object_detection_service = None
         self.setup_object_detection_service()
@@ -309,6 +310,7 @@ class SceneDefinitionWindow(QWidget):
             elif secene_rect_c is not None:
                 self.scene_rect = secene_rect_c
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
+                self.scene_scale_factor = self.get_scene_scale_factor(secene_rect_c)
                 self.scene_size_initialized = True
                 if self.scenes_model is not None:
                     self.scenes_model.scene_size = self.scene_size
@@ -332,6 +334,12 @@ class SceneDefinitionWindow(QWidget):
             return width_scale, height_scale
         else:
             return None
+
+    def get_scene_scale_factor(self, scene_rect):
+        cam_capture_size = self._camera_service.get_camera_capture_size()
+        width_scale_factor = scene_rect[2] / cam_capture_size[0]
+        height_scale_factor = scene_rect[3] / cam_capture_size[1]
+        return width_scale_factor, height_scale_factor
 
     def update_mouse_position_label(self, position, obj_name=None):
         if obj_name is None and position is not None:

@@ -40,9 +40,8 @@ def main():
 
     servicemanager.start_services()
 
-    scene_defintion = True
-    scene_defintion = False
-    if scene_defintion:
+    scene_defintion = input("Scene Definition (y/n)?")
+    if scene_defintion == "y":
         scene_def_window = QMainWindow(None)
         scene_def_window.setCentralWidget(SceneDefinitionWindow())
         scene_def_window.show()

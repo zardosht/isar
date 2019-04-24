@@ -11,6 +11,7 @@ logger = logging.getLogger("isar.scene.util")
 
 aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 
+
 class RefFrame(NamedTuple):
     x: float
     y: float
