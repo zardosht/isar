@@ -134,6 +134,12 @@ class PhysicalObjectsModel(QAbstractListModel):
             present_phys_objs = []
             predictions = phys_obj_predictions[obj_detector]
             if predictions is None or len(predictions) == 0:
+                if len(self.__present_physical_objects) == 0:
+                    continue
+                if obj_detector in self.__present_physical_objects:
+                    for phys_obj in self.__present_physical_objects[obj_detector]:
+                        phys_obj.update_tracking(None)
+                    del self.__present_physical_objects[obj_detector]
                 continue
 
             for scene_phys_obj in scene_phys_objs:

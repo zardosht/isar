@@ -310,7 +310,7 @@ class SceneDefinitionWindow(QWidget):
             elif secene_rect_c is not None:
                 self.scene_rect = secene_rect_c
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
-                self.scene_scale_factor = self.get_scene_scale_factor(secene_rect_c)
+                self.scene_scale_factor = sceneutil.get_scene_scale_factor(camera_frame.raw_image.shape, secene_rect_c)
                 self.scene_size_initialized = True
                 if self.scenes_model is not None:
                     self.scenes_model.scene_size = self.scene_size

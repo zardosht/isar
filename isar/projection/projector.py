@@ -15,7 +15,7 @@ from isar.projection import projectionutil
 from isar.scene import sceneutil
 from isar.scene.scenemodel import current_project
 from isar.scene.scenerenderer import SceneRenderer
-
+from isar.scene.sceneutil import get_scene_scale_factor
 
 logger = logging.getLogger("isar.projection.projector")
 
@@ -254,6 +254,7 @@ class ProjectorView(QtWidgets.QWidget):
             scene_size_c = current_project.scene_size
 
         self.scene_renderer.scene_rect = self.scene_rect_c
+        self.scene_renderer.scene_scale_factor = sceneutil.get_scene_scale_factor(camera_img.shape, self.scene_rect_c)
         self.scene_renderer.opencv_img = projectionutil.create_empty_image(scene_size_c, (255, 255, 255))
 
         self.scene_renderer.draw_scene_physical_objects()
@@ -273,5 +274,6 @@ class ProjectorView(QtWidgets.QWidget):
 
         if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
         self.set_scene_image(scene_image)
+
 
 

@@ -253,5 +253,13 @@ def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography, camera_i
     return scene_homography
 
 
+def get_scene_scale_factor(camera_img_shape, scene_rect_c):
+    scene_width_c = scene_rect_c[2]
+    scene_height_c = scene_rect_c[3]
+    camera_img_width = camera_img_shape[1]
+    camera_img_height = camera_img_shape[0]
+    return scene_width_c / camera_img_width, scene_height_c / camera_img_height
+
+
 
 
