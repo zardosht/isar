@@ -20,6 +20,7 @@ class AnnotationTool:
         self._image_frame = None
         self.phys_obj = None
         self.scene_rect = None
+        self.scene_scale_factor = (1., 1.)
         self._drawing = False
         self.annotation = None
         self.annotations_model = None
@@ -44,11 +45,12 @@ class AnnotationTool:
         pass
 
 
-def draw_annotation(opencv_img, annotation, phys_obj=None, scene_rect=None):
+def draw_annotation(opencv_img, annotation, phys_obj=None, scene_rect=None, scene_scale_factor=(1., 1.)):
     annotation_tool = annotation_tools[annotation.__class__.__name__]
     annotation_tool.set_image(opencv_img)
     annotation_tool.phys_obj = phys_obj
     annotation_tool.scene_rect = scene_rect
+    annotation_tool.scene_scale_factor = scene_scale_factor
     annotation_tool.annotation = annotation
     annotation_tool.set_drawing(True)
     annotation_tool.draw()
@@ -113,7 +115,8 @@ class CircleAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.radius.get_value():
             return
 
-        center = sceneutil.convert_object_to_image(self.annotation.center.get_value(), self.phys_obj, self.scene_rect)
+        center = sceneutil.convert_object_to_image(self.annotation.center.get_value(),
+                                                   self.phys_obj, self.scene_rect, self.scene_scale_factor)
         radius = self.annotation.radius.get_value()
 
         cv2.circle(self._img,
@@ -189,11 +192,11 @@ class RectangleAnnotationTool(AnnotationTool):
             v1 = [0, 0]
             v1[0] = position[0] - int(width / 2)
             v1[1] = position[1] - int(height / 2)
-            self.v1 = sceneutil.convert_object_to_image(v1, self.phys_obj, self.scene_rect)
+            self.v1 = sceneutil.convert_object_to_image(v1, self.phys_obj, self.scene_rect, self.scene_scale_factor)
             v2 = [0, 0]
             v2[0] = position[0] + int(width / 2)
             v2[1] = position[1] + int(height / 2)
-            self.v2 = sceneutil.convert_object_to_image(v2, self.phys_obj, self.scene_rect)
+            self.v2 = sceneutil.convert_object_to_image(v2, self.phys_obj, self.scene_rect, self.scene_scale_factor)
             color = self.annotation.color.get_value()
             thickness = self.annotation.thickness.get_value()
 
@@ -240,8 +243,10 @@ class LineAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.end.get_value():
             return
 
-        start = sceneutil.convert_object_to_image(self.annotation.start.get_value(), self.phys_obj, self.scene_rect)
-        end = sceneutil.convert_object_to_image(self.annotation.end.get_value(), self.phys_obj, self.scene_rect)
+        start = sceneutil.convert_object_to_image(self.annotation.start.get_value(),
+                                                  self.phys_obj, self.scene_rect, self.scene_scale_factor)
+        end = sceneutil.convert_object_to_image(self.annotation.end.get_value(), self.phys_obj,
+                                                self.scene_rect, self.scene_scale_factor)
 
         cv2.line(self._img,
                  start,
@@ -291,7 +296,7 @@ class TextAnnotationTool(AnnotationTool):
             return
 
         position = sceneutil.convert_object_to_image(
-            self.annotation.position.get_value(), self.phys_obj, self.scene_rect)
+            self.annotation.position.get_value(), self.phys_obj, self.scene_rect, self.scene_scale_factor)
         text = self.annotation.text.get_value()
         font_scale = self.annotation.font_scale.get_value()
         color = self.annotation.color.get_value()
@@ -355,8 +360,10 @@ class ArrowAnnotationTool(AnnotationTool):
         if not self.annotation or not self.annotation.tail.get_value():
             return
 
-        head = sceneutil.convert_object_to_image(self.annotation.head.get_value(), self.phys_obj, self.scene_rect)
-        tail = sceneutil.convert_object_to_image(self.annotation.tail.get_value(), self.phys_obj, self.scene_rect)
+        head = sceneutil.convert_object_to_image(self.annotation.head.get_value(),
+                                                 self.phys_obj, self.scene_rect, self.scene_scale_factor)
+        tail = sceneutil.convert_object_to_image(self.annotation.tail.get_value(),
+                                                 self.phys_obj, self.scene_rect, self.scene_scale_factor)
 
         text = self.annotation.text.get_value()
         text = " " + text + " "
@@ -474,8 +481,8 @@ class ImageAnnotationTool(AnnotationTool):
             return
 
         if self.annotation:
-            position = sceneutil.convert_object_to_image(
-                self.annotation.position.get_value(), self.phys_obj, self.scene_rect)
+            position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                         self.phys_obj, self.scene_rect, self.scene_scale_factor)
             width = self.annotation.width.get_value()
             height = self.annotation.height.get_value()
             img_path = os.path.join(

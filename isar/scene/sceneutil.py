@@ -85,7 +85,7 @@ def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):
     return int(x * x_scale), int(y * y_scale)
 
 
-def convert_object_to_image(point, phys_obj, scene_rect=None):
+def convert_object_to_image(point, phys_obj, scene_rect=None, scene_scale_factor=(1., 1.)):
     if phys_obj is None:
         return point
 
@@ -101,20 +101,22 @@ def convert_object_to_image(point, phys_obj, scene_rect=None):
         if scene_rect is not None:
             return point[0] + object_frame.x - scene_rect[0], point[1] + object_frame.y - scene_rect[1]
         else:
-            return point[0] + object_frame.x, point[1] + object_frame.y
+            return int((point[0] * scene_scale_factor[0]) + object_frame.x), \
+                   int((point[1] * scene_scale_factor[1]) + object_frame.y)
 
 
-def convert_image_to_object(point, object_frame:RefFrame):
+def convert_image_to_object(point, object_frame:RefFrame, scene_scale_factor=(1., 1.)):
     if object_frame is None:
         return point
 
-    return point[0] - object_frame.x, point[1] - object_frame.y
+    return int((point[0] - object_frame.x) * (1 / scene_scale_factor[0])), \
+        int((point[1] - object_frame.y) * (1 / scene_scale_factor[1]))
 
 
-def intersects_with_phys_obj(point, phys_obj):
+def intersects_with_phys_obj(point, phys_obj, scene_scale_factor=(1., 1.)):
     obj_frame = phys_obj.ref_frame
-    return obj_frame.x <= point[0] <= obj_frame.x + obj_frame.width and \
-           obj_frame.y <= point[1] <= obj_frame.y + obj_frame.height
+    return obj_frame.x <= point[0] <= obj_frame.x + obj_frame.width * scene_scale_factor[0] and \
+        obj_frame.y <= point[1] <= obj_frame.y + obj_frame.height * scene_scale_factor[1]
 
 
 def get_left2right_topdown(v1, v2):

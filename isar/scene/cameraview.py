@@ -21,6 +21,8 @@ class CameraView(QLabel):
 
             self.opencv_img = None
             self.image_frame = None
+            self.scene_rect = None
+            self.scene_scale_factor = None
             self.active_annotation_tool = None
             self.__annotations_model = None
             self.__physical_objects_model: PhysicalObjectsModel = None
@@ -47,8 +49,10 @@ class CameraView(QLabel):
                 logger.warning("Scene size is not initialized.")
                 self.opencv_img = camera_frame.scene_image
             else:
-                self.scene_renderer.scene_rect = self.scene_definition_windows.scene_rect
-                self.scene_renderer.scene_scale_factor = self.scene_definition_windows.scene_scale_factor
+                self.scene_rect = self.scene_definition_windows.scene_rect
+                self.scene_scale_factor = self.scene_definition_windows.scene_scale_factor
+                self.scene_renderer.scene_rect = self.scene_rect
+                self.scene_renderer.scene_scale_factor = self.scene_scale_factor
                 x, y, width, height = self.scene_definition_windows.scene_rect
                 self.opencv_img = camera_frame.scene_image[y:y + height, x:x + width].copy()
 
@@ -130,9 +134,9 @@ class CameraView(QLabel):
 
                 mouse_on_object = False
                 for phys_obj in self.__physical_objects_model.get_scene_physical_objects():
-                    if sceneutil.intersects_with_phys_obj((img_x, img_y), phys_obj):
+                    if sceneutil.intersects_with_phys_obj((img_x, img_y), phys_obj, self.scene_scale_factor):
                         phys_obj_name = phys_obj.name
-                        obj_x, obj_y = sceneutil.convert_image_to_object((img_x, img_y), phys_obj.ref_frame)
+                        obj_x, obj_y = sceneutil.convert_image_to_object((img_x, img_y), phys_obj.ref_frame, self.scene_scale_factor)
                         self.scene_definition_windows.update_mouse_position_label((obj_x, obj_y), phys_obj_name)
                         mouse_on_object = True
                         break
