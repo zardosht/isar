@@ -170,9 +170,6 @@ class RectangleAnnotationTool(AnnotationTool):
 
         self.set_drawing(False)
 
-    def set_drawing(self, drawing):
-        self._drawing = drawing
-
     @staticmethod
     def is_annotation_valid(width, height):
         return abs(width) >= RectangleAnnotation.MINIMUM_WIDTH \
@@ -467,9 +464,6 @@ class ImageAnnotationTool(AnnotationTool):
             self.annotations_model.add_annotation(annotation)
 
         self.set_drawing(False)
-
-    def set_drawing(self, drawing):
-        self._drawing = drawing
 
     @staticmethod
     def is_annotation_valid(width, height):

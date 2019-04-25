@@ -45,7 +45,7 @@ def main():
         scene_def_window = QMainWindow(None)
         scene_def_window.setCentralWidget(SceneDefinitionWindow())
         scene_def_window.show()
-    else:
+    elif scene_defintion == "n":
         domain_learning_window = DomainLearningMainWindow()
         domain_learning_window.setCentralWidget(DomainLearningWindow(screen_id=2))
         domain_learning_window.move(100, 100)
