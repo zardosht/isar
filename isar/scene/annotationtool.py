@@ -451,19 +451,24 @@ class ImageAnnotationTool(AnnotationTool):
         height = self.v2[1] - self.v1[1]
         position = [self.v1[0] + int(width / 2), self.v1[1] + int(height / 2)]
 
-        image_path, _ = QFileDialog.getOpenFileName()
-        if image_path is None or image_path == "":
+        file_path, _ = QFileDialog.getOpenFileName()
+        if file_path is None or file_path == "":
             return
 
         if self.is_annotation_valid(width, height):
-            annotation = ImageAnnotation()
-            annotation.set_position(position)
-            annotation.width.set_value(abs(width))
-            annotation.height.set_value(abs(height))
-            annotation.image_path.set_value(image_path)
+            annotation = self.create_annotation(height, file_path, position, width)
             self.annotations_model.add_annotation(annotation)
 
         self.set_drawing(False)
+
+    @staticmethod
+    def create_annotation(height, file_path, position, width):
+        annotation = ImageAnnotation()
+        annotation.set_position(position)
+        annotation.width.set_value(abs(width))
+        annotation.height.set_value(abs(height))
+        annotation.image_path.set_value(file_path)
+        return annotation
 
     @staticmethod
     def is_annotation_valid(width, height):
@@ -475,33 +480,65 @@ class ImageAnnotationTool(AnnotationTool):
             return
 
         if self.annotation:
-            position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
-                                                         self.phys_obj, self.scene_rect, self.scene_scale_factor)
-            width = self.annotation.width.get_value()
-            height = self.annotation.height.get_value()
-            img_path = os.path.join(
-                scenemodel.current_project.base_path, self.annotation.image_path.get_value())
-            image = None
-            if img_path in ImageAnnotationTool.image_cache:
-                image = ImageAnnotationTool.image_cache[img_path]
-            else:
-                image = cv2.imread(str(img_path))
-                ImageAnnotationTool.image_cache[img_path] = image
-
-            if image.shape[0] != height or image.shape[1] != width:
-                image = cv2.resize(image, (width, height))
-
-            sceneutil.draw_image_on(self._img, image, position)
+            self.draw_annotation()
         else:
-            if self.v2 is None:
-                return
-            color = self.color
-            thickness = self.thickness
-            cv2.rectangle(self._img,
-                          tuple(self.v1),
-                          tuple(self.v2),
-                          color,
-                          thickness)
+            self.draw_size_box()
+
+    def draw_annotation(self):
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                     self.phys_obj, self.scene_rect, self.scene_scale_factor)
+        width = self.annotation.width.get_value()
+        height = self.annotation.height.get_value()
+        img_path = os.path.join(
+            scenemodel.current_project.base_path, self.annotation.image_path.get_value())
+        image = None
+        if img_path in ImageAnnotationTool.image_cache:
+            image = ImageAnnotationTool.image_cache[img_path]
+        else:
+            image = cv2.imread(str(img_path))
+            ImageAnnotationTool.image_cache[img_path] = image
+
+        if image.shape[0] != height or image.shape[1] != width:
+            image = cv2.resize(image, (width, height))
+
+        sceneutil.draw_image_on(self._img, image, position)
+
+    def draw_size_box(self):
+        if self.v2 is None:
+            return
+        color = self.color
+        thickness = self.thickness
+        cv2.rectangle(self._img,
+                      tuple(self.v1),
+                      tuple(self.v2),
+                      color,
+                      thickness)
+
+
+class VideoAnnotationTool(ImageAnnotationTool):
+    def __init__(self):
+        super(VideoAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        super().mouse_press_event(camera_view, event)
+
+    def mouse_move_event(self, camera_view, event):
+        super().mouse_move_event(camera_view, event)
+
+    def mouse_release_event(self, camera_view, event):
+        super().mouse_release_event(camera_view, event)
+
+    def draw(self):
+        super().draw()
+
+    def draw_annotation(self):
+        logger.info("Not implemented.")
+        pass
+
+    @staticmethod
+    def create_annotation(height, file_path, position, width):
+        logger.info("Not implemented.")
+        pass
 
 
 class SelectAnnotationTool(AnnotationTool):
@@ -527,27 +564,6 @@ class SelectAnnotationTool(AnnotationTool):
 class TimerAnnotationTool(AnnotationTool):
     def __init__(self):
         super(TimerAnnotationTool, self).__init__()
-
-    def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def draw(self):
-        logger.info("Not implemented.")
-        pass
-
-
-class VideoAnnotationTool(AnnotationTool):
-    def __init__(self):
-        super(VideoAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
         logger.info("Not implemented.")

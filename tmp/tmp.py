@@ -1,58 +1,75 @@
-import cv2
-import numpy as np
 
 
-a = np.array([2])
-print(a)
-print(a == 2)
-print(a.squeeze())
-
-
-
-def aa():
-   v1_marker = np.array([[447., 117.],
-       [501.,  115.],
-       [502.,  169.],
-       [448., 171.]])
-
-   v2_marker = np.array([[1474.,  800.],
-       [1530.,  797.],
-       [1535., 853.],
-       [1477., 858.]])
-
-   cam_proj_homography = np.array([[ 9.39041649e-01, -1.15517376e-03, -2.42452010e+02],
-       [ 2.27973037e-02,  9.66755076e-01, -8.65972180e+01],
-       [-2.12478066e-05,  4.18114680e-05,  1.00000000e+00]])
-
-   v1_marker_normalized = v1_marker - v1_marker[0]
-   v2_marker_normalized = v2_marker - v1_marker[0]
-
-   v1_marker_p = cv2.perspectiveTransform(np.array([v1_marker]), cam_proj_homography).squeeze()
-   v2_marker_p = cv2.perspectiveTransform(np.array([v2_marker]), cam_proj_homography).squeeze()
-
-   v1_marker_p_normalized = v1_marker_p - v1_marker_p[0]
-   v2_marker_p_normalized = v2_marker_p - v1_marker_p[0]
-
-   camera_points = np.vstack((v1_marker_normalized, v2_marker_normalized))
-   projector_points = np.vstack((v1_marker_p_normalized, v2_marker_p_normalized))
-
-   print(camera_points.shape)
-   print(projector_points.shape)
-
-   scene_homography, _ = cv2.findHomography(np.array([camera_points]), np.array([projector_points]), cv2.RANSAC, 3)
-
-   # scene_homography, _ = cv2.findHomography(
-   #  np.array([camera_points]).squeeze(), np.array([projector_points]).squeeze(), cv2.RANSAC, 3)
-
-
-   # print(v1_marker_normalized)
-   # print(v2_marker_normalized)
-   #
-   print(scene_homography)
-
-
-
-
+# # ============================================================================
+#
+# class MyClass:
+#     def __init__(self):
+#         self.position = (1, 1)
+#
+#
+# my_obj = MyClass()
+# print(my_obj.position)
+#
+# my_obj.poison = (10, 10)
+# print(my_obj.poison)
+#
+#
+# # ============================================================================
+#
+# import cv2
+# import numpy as np
+#
+#
+# a = np.array([2])
+# print(a)
+# print(a == 2)
+# print(a.squeeze())
+#
+#
+#
+# def aa():
+#    v1_marker = np.array([[447., 117.],
+#        [501.,  115.],
+#        [502.,  169.],
+#        [448., 171.]])
+#
+#    v2_marker = np.array([[1474.,  800.],
+#        [1530.,  797.],
+#        [1535., 853.],
+#        [1477., 858.]])
+#
+#    cam_proj_homography = np.array([[ 9.39041649e-01, -1.15517376e-03, -2.42452010e+02],
+#        [ 2.27973037e-02,  9.66755076e-01, -8.65972180e+01],
+#        [-2.12478066e-05,  4.18114680e-05,  1.00000000e+00]])
+#
+#    v1_marker_normalized = v1_marker - v1_marker[0]
+#    v2_marker_normalized = v2_marker - v1_marker[0]
+#
+#    v1_marker_p = cv2.perspectiveTransform(np.array([v1_marker]), cam_proj_homography).squeeze()
+#    v2_marker_p = cv2.perspectiveTransform(np.array([v2_marker]), cam_proj_homography).squeeze()
+#
+#    v1_marker_p_normalized = v1_marker_p - v1_marker_p[0]
+#    v2_marker_p_normalized = v2_marker_p - v1_marker_p[0]
+#
+#    camera_points = np.vstack((v1_marker_normalized, v2_marker_normalized))
+#    projector_points = np.vstack((v1_marker_p_normalized, v2_marker_p_normalized))
+#
+#    print(camera_points.shape)
+#    print(projector_points.shape)
+#
+#    scene_homography, _ = cv2.findHomography(np.array([camera_points]), np.array([projector_points]), cv2.RANSAC, 3)
+#
+#    # scene_homography, _ = cv2.findHomography(
+#    #  np.array([camera_points]).squeeze(), np.array([projector_points]).squeeze(), cv2.RANSAC, 3)
+#
+#
+#    # print(v1_marker_normalized)
+#    # print(v2_marker_normalized)
+#    #
+#    print(scene_homography)
+#
+#
+#
 # # ============================================================================
 #
 # class MyClass:
@@ -164,10 +181,14 @@ def aa():
 # b = (1, 2) * 3
 # c = [1, 2] * 3
 # d = 3 * array('i', a)
+# d.append(12)
+# # d.append("adfa") # TypeError: an integer is required (got type str)
 #
 # print(b)
 # print(c)
+# print(type(c))
 # print(d)
+# print(type(d))
 #
 # #  ============================================================================
 #

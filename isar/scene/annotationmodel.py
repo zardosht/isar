@@ -425,7 +425,28 @@ class AudioAnnotation(Annotation):
 class VideoAnnotation(Annotation):
     def __init__(self):
         super(VideoAnnotation, self).__init__()
-        self.video_path = ""
+
+        self.video_path = FilePathAnnotationProperty("VideoFilename", None, self)
+        self.properties.append(self.video_path)
+
+        self.width = IntAnnotationProperty("Width", 5, self)
+        self.properties.append(self.width)
+
+        self.height = IntAnnotationProperty("Height", 5, self)
+        self.properties.append(self.height)
+
+        self.keep_aspect_ratio = BooleanAnnotationProperty("Keep Aspect Ratio", True, self)
+        self.properties.append(self.keep_aspect_ratio)
+
+        self.loop_playing = BooleanAnnotationProperty("Loop Playing", False, self)
+        self.properties.append(self.loop_playing)
+
+        self.start_playing_automatically = BooleanAnnotationProperty("Play Automatically", False, self)
+        self.properties.append(self.start_playing_automatically)
+
+        self.stopped = True
+        self.playing = False
+        self.current_frame = 0
 
 
 class RelationshipAnnotation(Annotation):

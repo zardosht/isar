@@ -203,7 +203,7 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
 
     if top_left_marker_index == -1 or bottom_right_marker_index == -1:
         logger.warning("Error detecting the scene corners. Not all two markers were detected. return.")
-        return None, None
+        return None, None, None
 
     vertex1_marker = marker_corners[top_left_marker_index].reshape(4, 2)
     vertex2_marker = marker_corners[bottom_right_marker_index].reshape(4, 2)
