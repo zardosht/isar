@@ -237,6 +237,12 @@ class Annotation:
         self.scene = None
         self.name = None
 
+    def reset_runtime_state(self):
+        # runtime state of an annotation are those attributes that are not AnnotationProperty,
+        # and change during runtime. For example the "stopped" or "playing" attribute of a VideoAnnotation.
+        # The value of these attributes are persisted. They must be reset however, when the project is loaded.
+        pass
+
 
 """
 Text
@@ -448,6 +454,11 @@ class VideoAnnotation(Annotation):
         self.playing = True
         self.current_frame = 0
 
+    def reset_runtime_state(self):
+        self.stopped = False
+        self.playing = True
+        self.current_frame = 0
+
 
 class RelationshipAnnotation(Annotation):
     def __init__(self):
@@ -627,7 +638,6 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         if isinstance(editor, QComboBox):
-            # TODO: find the property that requires a phys obj value and set its value
             annotation_property = index.model().get_annotation_property(index)
             if isinstance(annotation_property, PhysicalObjectAnnotationProperty):
                 combo_index = editor.currentIndex()

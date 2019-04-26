@@ -122,6 +122,9 @@ class ScenesModel(QAbstractListModel):
             self.beginResetModel()
             current_project = jsonpickle.decode(frozen)
             self.scenes = current_project.scenes
+            for scene in self.scenes:
+                scene.reset_runtime_state()
+
             self.endResetModel()
             self.update_view(None)
 
@@ -166,6 +169,7 @@ class Scene:
         return self.__annotations
 
     def get_physical_object_annotations(self, phys_obj):
+        logger.warning("TODO: not implemetned yet")
         pass
 
     def get_all_annotations(self):
@@ -175,6 +179,10 @@ class Scene:
             all_annotations.extend(phys_obj.get_annotations())
 
         return tuple(all_annotations)
+
+    def reset_runtime_state(self):
+        for annotation in self.get_all_annotations():
+            annotation.reset_runtime_state()
 
 
 def create_project(parent_dir, project_name):
