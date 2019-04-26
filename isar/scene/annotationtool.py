@@ -1,8 +1,10 @@
 import logging
 import math
 import os
+from threading import Thread
 
 import cv2
+import numpy as np
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 
 from isar.scene import sceneutil, scenemodel
@@ -516,8 +518,11 @@ class ImageAnnotationTool(AnnotationTool):
 
 
 class VideoAnnotationTool(ImageAnnotationTool):
+    video_cache = {}
+
     def __init__(self):
         super(VideoAnnotationTool, self).__init__()
+        self.loading_video = False
 
     def mouse_press_event(self, camera_view, event):
         super().mouse_press_event(camera_view, event)
@@ -532,13 +537,70 @@ class VideoAnnotationTool(ImageAnnotationTool):
         super().draw()
 
     def draw_annotation(self):
-        logger.info("Not implemented.")
-        pass
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                     self.phys_obj, self.scene_rect, self.scene_scale_factor)
+        width = self.annotation.width.get_value()
+        height = self.annotation.height.get_value()
+        video_path = os.path.join(
+            scenemodel.current_project.base_path, self.annotation.video_path.get_value())
+        frame = None
+        if video_path in VideoAnnotationTool.video_cache:
+            video = VideoAnnotationTool.video_cache[video_path]
+            if self.annotation.stopped:
+                # set frame to the zeroth frame
+                frame = video[0]
+            else:
+                frame_num = self.annotation.current_frame
+                if frame_num >= len(video) and not self.annotation.loop_playback.get_value():
+                    self.annotation.stopped = True
+                    frame_num = 0
+                frame = video[frame_num]
+                self.annotation.current_frame += 1
+                if self.annotation.current_frame >= len(video):
+                    if self.annotation.loop_playback.get_value():
+                        self.annotation.current_frame = 0
+                    else:
+                        self.annotation.playing = False
+                        self.annotation.stopped = True
+        else:
+            frame = cv2.imread("isar/ui/images/video_loading.png")
+            if not self.loading_video:
+                self.loading_video = True
+                t = Thread(target=self.load_video, args=(str(video_path), ))
+                t.start()
+
+        if frame is None:
+            frame = sceneutil.create_empty_image((width, height), (0, 0, 0))
+
+        if frame.shape[0] != height or frame.shape[1] != width:
+            frame = cv2.resize(frame, (width, height))
+        sceneutil.draw_image_on(self._img, frame, position)
+
+    def load_video(self, video_path):
+        capture = cv2.VideoCapture(video_path)
+        if capture is None:
+            logger.error("ERROR: Could not open vidoe.")
+
+        video = []
+        ret = True
+        while ret:
+            ret, frame = capture.read()
+            if ret:
+                video.append(frame)
+            else:
+                logger.warning("WARNING: Could not read frame.")
+
+        self.video_cache[video_path] = video
+        self.loading_video = False
 
     @staticmethod
     def create_annotation(height, file_path, position, width):
-        logger.info("Not implemented.")
-        pass
+        annotation = VideoAnnotation()
+        annotation.set_position(position)
+        annotation.width.set_value(abs(width))
+        annotation.height.set_value(abs(height))
+        annotation.video_path.set_value(file_path)
+        return annotation
 
 
 class SelectAnnotationTool(AnnotationTool):

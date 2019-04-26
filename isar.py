@@ -40,18 +40,19 @@ def main():
 
     servicemanager.start_services()
 
-    scene_defintion = input("Scene Definition (y/n)?")
+    scene_defintion = input("Scene Definition (y/n)? ")
     if scene_defintion == "y":
         scene_def_window = QMainWindow(None)
         scene_def_window.setCentralWidget(SceneDefinitionWindow())
         scene_def_window.show()
+        app.exec()
+
     elif scene_defintion == "n":
         domain_learning_window = DomainLearningMainWindow()
         domain_learning_window.setCentralWidget(DomainLearningWindow(screen_id=2))
         domain_learning_window.move(100, 100)
         domain_learning_window.show()
-
-    app.exec()
+        app.exec()
 
     time.sleep(0.5)
     servicemanager.stop_services()

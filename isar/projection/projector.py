@@ -261,7 +261,7 @@ class ProjectorView(QtWidgets.QWidget):
 
         self.scene_renderer.scene_rect = self.scene_rect_c
         self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
-        self.scene_renderer.opencv_img = projectionutil.create_empty_image(scene_size_c, (255, 255, 255))
+        self.scene_renderer.opencv_img = sceneutil.create_empty_image(scene_size_c, (255, 255, 255))
 
         self.scene_renderer.draw_scene_physical_objects()
         self.scene_renderer.draw_scene_annotations()

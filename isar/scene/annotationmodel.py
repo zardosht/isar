@@ -438,14 +438,14 @@ class VideoAnnotation(Annotation):
         self.keep_aspect_ratio = BooleanAnnotationProperty("Keep Aspect Ratio", True, self)
         self.properties.append(self.keep_aspect_ratio)
 
-        self.loop_playing = BooleanAnnotationProperty("Loop Playing", False, self)
-        self.properties.append(self.loop_playing)
+        self.loop_playback = BooleanAnnotationProperty("Loop Playback", False, self)
+        self.properties.append(self.loop_playback)
 
         self.start_playing_automatically = BooleanAnnotationProperty("Play Automatically", False, self)
         self.properties.append(self.start_playing_automatically)
 
-        self.stopped = True
-        self.playing = False
+        self.stopped = False
+        self.playing = True
         self.current_frame = 0
 
 
