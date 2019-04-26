@@ -630,8 +630,16 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
             return editor
 
         elif isinstance(annotation_property, BooleanAnnotationProperty):
-            # TODO: implement update_orientation
-            pass
+            boolean_combo = QComboBox(parent)
+            boolean_combo.clear()
+            boolean_combo.addItem("True")
+            boolean_combo.addItem("False")
+            if annotation_property.get_value() is True:
+                boolean_combo.setCurrentIndex(0)
+            else:
+                boolean_combo.setCurrentIndex(1)
+            boolean_combo.currentIndexChanged.connect(self.boolean_combo_index_changed)
+            return boolean_combo
 
         else:
             return super().createEditor(parent, option, index)
@@ -639,21 +647,22 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         if isinstance(editor, QComboBox):
             annotation_property = index.model().get_annotation_property(index)
+            combo_index = editor.currentIndex()
+            if combo_index == -1:
+                return
             if isinstance(annotation_property, PhysicalObjectAnnotationProperty):
-                combo_index = editor.currentIndex()
-                if combo_index == -1:
-                    return
                 phys_obj = self.phys_obj_combo_items[combo_index]
                 model.setData(index, phys_obj, Qt.EditRole)
+            elif isinstance(annotation_property, BooleanAnnotationProperty):
+                if combo_index == 0:
+                    model.setData(index, True, Qt.EditRole)
+                elif combo_index == 1:
+                    model.setData(index, False, Qt.EditRole)
 
         elif isinstance(editor, FilePathEditorWidget):
             annotation_property = index.model().get_annotation_property(index)
             if isinstance(annotation_property, FilePathAnnotationProperty):
                 model.setData(index, self.filename, Qt.EditRole)
-
-        elif isinstance(editor, QCheckBox):
-            # TODO: implement
-            pass
 
         else:
             super().setModelData(editor, model, index)
@@ -663,6 +672,9 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
 
     def file_dialog_file_selected(self, filename):
         self.filename = filename
+        self.commitData.emit(self.sender())
+
+    def boolean_combo_index_changed(self):
         self.commitData.emit(self.sender())
 
 
@@ -854,7 +866,26 @@ class StringAnnotationProperty(AnnotationProperty):
 
 
 class BooleanAnnotationProperty(AnnotationProperty):
-    pass
+    def set_value(self, value):
+        if isinstance(value, str):
+            literal = get_literal_from_str(value)
+            if literal is not None and isinstance(literal, bool):
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(literal)
+                else:
+                    self._value = literal
+                    return True
+            else:
+                return False
+        else:
+            if isinstance(value, bool):
+                if self.setter_name is not None:
+                    return getattr(self.annotation, self.setter_name)(value)
+                else:
+                    self._value = value
+                    return True
+            else:
+                return False
 
 
 
