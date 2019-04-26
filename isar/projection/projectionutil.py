@@ -7,7 +7,7 @@ from isar.scene import sceneutil
 
 logger = logging.getLogger("isar.projection.util")
 
-debug = True
+debug = False
 
 
 def create_chessboard_image(width, height):

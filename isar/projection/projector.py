@@ -19,7 +19,7 @@ from isar.scene.sceneutil import get_scene_scale_factor
 
 logger = logging.getLogger("isar.projection.projector")
 
-debug = True
+debug = False
 
 
 class ProjectorView(QtWidgets.QWidget):
