@@ -549,10 +549,15 @@ class VideoAnnotationTool(ImageAnnotationTool):
             if self.annotation.stopped:
                 # set frame to the zeroth frame
                 frame = video[0]
+            elif self.annotation.paused:
+                frame_num = self.annotation.current_frame
+                frame = video[frame_num]
             else:
                 frame_num = self.annotation.current_frame
                 if frame_num >= len(video) and not self.annotation.loop_playback.get_value():
                     self.annotation.stopped = True
+                    self.annotation.playing = False
+                    self.annotation.paused = False
                     frame_num = 0
                 frame = video[frame_num]
                 self.annotation.current_frame += 1
@@ -561,6 +566,7 @@ class VideoAnnotationTool(ImageAnnotationTool):
                         self.annotation.current_frame = 0
                     else:
                         self.annotation.playing = False
+                        self.annotation.paused = False
                         self.annotation.stopped = True
         else:
             frame = cv2.imread("isar/ui/images/video_loading.png")
@@ -603,24 +609,20 @@ class VideoAnnotationTool(ImageAnnotationTool):
         return annotation
 
 
-class SelectAnnotationTool(AnnotationTool):
+class SelectionTool(AnnotationTool):
     def __init__(self):
-        super(SelectAnnotationTool, self).__init__()
+        super(SelectionTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        for annotation in self.annotations_model.get_all_annotations():
+            if annotation.intersects_with_point((img_x, img_y)):
+                self.annotation = annotation
 
     def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def draw(self):
-        pass
+        self.annotation.select()
 
 
 class TimerAnnotationTool(AnnotationTool):
@@ -725,7 +727,7 @@ annotation_tool_btns = {
     "line_btn": LineAnnotationTool(),
     "rectangle_btn": RectangleAnnotationTool(),
     "circle_btn": CircleAnnotationTool(),
-    "select_btn": SelectAnnotationTool(),
+    "select_btn": SelectionTool(),
     "select_box_btn": SelectBoxAnnotationTool(),
     "text_btn": TextAnnotationTool(),
     "timer_btn": TimerAnnotationTool(),

@@ -161,6 +161,8 @@ class CameraView(QLabel):
             else:
                 self.active_annotation_tool = annotationtool.annotation_tool_btns[annotation_btn_name]
                 self.active_annotation_tool.annotations_model = self.__annotations_model
+                self.active_annotation_tool.scene_rect = self.scene_rect
+                self.active_annotation_tool.scene_scale_factor = self.scene_scale_factor
 
         def resizeEvent(self, resize_event):
             self.camera_view_size = Frame(self.size().width(), self.size().height())

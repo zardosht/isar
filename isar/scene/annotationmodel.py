@@ -92,7 +92,7 @@ class AnnotationsModel(QAbstractListModel):
         if self.__scene is None:
             return
 
-        if len(self.__annotations) == 0:    # keep at least one scene
+        if len(self.__annotations) == 0:  # keep at least one scene
             return
 
         if len(self.__annotations) <= selected_index.row():
@@ -180,7 +180,6 @@ class AnnotationsModel(QAbstractListModel):
 
 class Annotation:
     def __init__(self):
-        self.name = "Annotation"
         self.scene = None
         # Owner of  an annotation is either the scene or a physical object. An annotation can have only one owner.
         # self.owner = None
@@ -195,6 +194,9 @@ class Annotation:
 
         self.update_orientation = BooleanAnnotationProperty("Update Orientation", False, self)
         self.properties.append(self.update_orientation)
+
+        # TODO: For later if we want to draw annotations based on their selection state.
+        self.is_selected = False
 
     def set_position(self, position):
         # must be implemented by subclasses if needed.
@@ -235,13 +237,21 @@ class Annotation:
         self.properties.clear()
         self.scene.delete_annotation(self)
         self.scene = None
-        self.name = None
+
+    def intersects_with_point(self, point):
+        return False
+
+    def select(self):
+        self.on_select()
+
+    def on_select(self):
+        pass
 
     def reset_runtime_state(self):
         # runtime state of an annotation are those attributes that are not AnnotationProperty,
         # and change during runtime. For example the "stopped" or "playing" attribute of a VideoAnnotation.
         # The value of these attributes are persisted. They must be reset however, when the project is loaded.
-        pass
+        self.is_selected = False
 
 
 """
@@ -322,7 +332,6 @@ class ArrowAnnotation(Annotation):
 
 
 class LineAnnotation(Annotation):
-
     MINIMUM_LENGTH = 10
 
     def __init__(self):
@@ -352,7 +361,6 @@ class LineAnnotation(Annotation):
 
 
 class RectangleAnnotation(Annotation):
-
     MINIMUM_WIDTH = 10
     MINIMUM_HEIGHT = 10
 
@@ -373,7 +381,6 @@ class RectangleAnnotation(Annotation):
 
 
 class CircleAnnotation(Annotation):
-
     MINIMUM_RADIUS = 5
 
     def __init__(self):
@@ -447,18 +454,43 @@ class VideoAnnotation(Annotation):
         self.loop_playback = BooleanAnnotationProperty("Loop Playback", False, self)
         self.properties.append(self.loop_playback)
 
-        self.start_playing_automatically = BooleanAnnotationProperty("Play Automatically", False, self)
-        self.properties.append(self.start_playing_automatically)
-
         self.stopped = False
         self.playing = True
+        self.paused = False
         self.current_frame = 0
 
     def reset_runtime_state(self):
+        super().reset_runtime_state()
         self.stopped = False
         self.playing = True
+        self.paused = False
         self.current_frame = 0
 
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        width = self.width.get_value()
+        height = self.height.get_value()
+        return position[0] <= point[0] <= position[0] + width and \
+            position[1] <= point[1] <= position[1] + height
+
+    def on_select(self):
+        # TODO: Actually the toggling of play mode upon selection should happen
+        #  when we are in ApplicationMode.EXECUTION
+        #  Generally, the bahavior of annotations upon selection, should be defined
+        #  depending on if we are in AUTHORING or EXECUTION mode.
+        if self.playing:
+            self.paused = True
+            self.playing = False
+            self.stopped = False
+        elif self.stopped:
+            self.current_frame = 0
+            self.playing = True
+            self.paused = False
+            self.stopped = False
+        elif self.paused:
+            self.playing = True
+            self.paused = False
+            self.stopped = False
 
 class RelationshipAnnotation(Annotation):
     def __init__(self):
@@ -679,7 +711,6 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
 
 
 class FilePathEditorWidget(QWidget):
-
     filename_selected = pyqtSignal(str)
 
     def __init__(self, parent):
@@ -814,7 +845,7 @@ class IntTupleAnnotationProperty(AnnotationProperty):
 
 
 class FloatAnnotationProperty(AnnotationProperty):
-     def set_value(self, value):
+    def set_value(self, value):
         if isinstance(value, str):
             literal = get_literal_from_str(value)
             if literal and isinstance(literal, (float, int)):
@@ -886,8 +917,3 @@ class BooleanAnnotationProperty(AnnotationProperty):
                     return True
             else:
                 return False
-
-
-
-
-

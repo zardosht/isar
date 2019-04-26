@@ -4,6 +4,8 @@ import time
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
+import isar
+from isar import ApplicationMode
 from isar.domainlearning.domainlearning import DomainLearningWindow, DomainLearningMainWindow
 from isar.scene.definitionwindow import SceneDefinitionWindow
 from isar.services import servicemanager
@@ -42,12 +44,14 @@ def main():
 
     scene_defintion = input("Scene Definition (y/n)? ")
     if scene_defintion == "y":
+        isar.application_mode = ApplicationMode.AUTHORING
         scene_def_window = QMainWindow(None)
         scene_def_window.setCentralWidget(SceneDefinitionWindow())
         scene_def_window.show()
         app.exec()
 
     elif scene_defintion == "n":
+        isar.application_mode = ApplicationMode.EXECUTION
         domain_learning_window = DomainLearningMainWindow()
         domain_learning_window.setCentralWidget(DomainLearningWindow(screen_id=2))
         domain_learning_window.move(100, 100)
