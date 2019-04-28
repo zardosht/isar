@@ -270,6 +270,13 @@ def camera_coord_to_scene_coord(cam_coord):
     return cam_coord[0] - scene_rect_c[0], cam_coord[1] - scene_rect_c[1]
 
 
+def camera_coords_to_scene_coord(cam_coords):
+    result = []
+    for cam_coord in cam_coords:
+        result.append(camera_coord_to_scene_coord(cam_coord))
+    return result
+
+
 def create_empty_image(size, color):
     empty_image = np.ones((size[1], size[0], 3), np.uint8)
     empty_image[:] = color

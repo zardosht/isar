@@ -43,6 +43,7 @@ class SceneDefinitionWindow(QWidget):
         self.scene_scale_factor = None
 
         self._object_detection_service = None
+        self._selection_stick_service = None
         self.setup_object_detection_service()
 
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
@@ -235,6 +236,7 @@ class SceneDefinitionWindow(QWidget):
 
     def setup_object_detection_service(self):
         self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
+        self._selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
 
     def setup_timer(self):
         self._timer = QTimer()
@@ -277,6 +279,7 @@ class SceneDefinitionWindow(QWidget):
         if not self.scene_size_initialized:
             logger.warning("Scene size is not initialized.")
 
+        self._selection_stick_service.camera_img = camera_frame.raw_image
         self.camera_view.set_camera_frame(camera_frame)
 
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()

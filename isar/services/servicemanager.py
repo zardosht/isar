@@ -5,6 +5,7 @@ from enum import Enum
 from isar.camera.camera import CameraService
 from isar.tracking import objectdetection
 from isar.tracking.objectdetection import ObjectDetectionService
+from isar.tracking.selectionstick import SelectionStickService
 
 __services = {}
 
@@ -16,6 +17,7 @@ class ServiceNames(Enum):
     CAMERA1 = 1
     OBJECT_DETECTION = 2
     PROJECTOR = 3
+    SELECTION_STICK = 4
 
 
 def start_services():
@@ -32,6 +34,14 @@ def start_services():
         objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION)
         objectdetection_service.start()
         __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
+    except Exception as exp:
+        logger.error(exp)
+        traceback.print_tb(exp.__traceback__)
+
+    try:
+        selection_stick_service = SelectionStickService(ServiceNames.SELECTION_STICK)
+        selection_stick_service.start()
+        __services[ServiceNames.SELECTION_STICK] = selection_stick_service
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
