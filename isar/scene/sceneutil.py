@@ -115,12 +115,6 @@ def convert_image_to_object(point, object_frame:RefFrame, scene_scale_factor=(1.
         int((point[1] - object_frame.y) * (1 / scene_scale_factor[1]))
 
 
-def intersects_with_phys_obj(point, phys_obj, scene_scale_factor=(1., 1.)):
-    obj_frame = phys_obj.ref_frame
-    return obj_frame.x <= point[0] <= obj_frame.x + obj_frame.width * scene_scale_factor[0] and \
-        obj_frame.y <= point[1] <= obj_frame.y + obj_frame.height * scene_scale_factor[1]
-
-
 def get_left2right_topdown(v1, v2):
     width = v2[0] - v1[0]
     left_to_right = False

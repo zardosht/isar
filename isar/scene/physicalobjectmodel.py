@@ -269,3 +269,9 @@ class PhysicalObject:
     def __eq__(self, other):
         return isinstance(other, PhysicalObject) and self.name == other.name
 
+    def collides_with_point(self, point, scene_scale_factor=(1., 1.)):
+        obj_frame = self.ref_frame
+        return obj_frame.x <= point[0] <= obj_frame.x + obj_frame.width * scene_scale_factor[0] and \
+               obj_frame.y <= point[1] <= obj_frame.y + obj_frame.height * scene_scale_factor[1]
+
+

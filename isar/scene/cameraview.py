@@ -147,7 +147,7 @@ class CameraView(QLabel):
 
                 mouse_on_object = False
                 for phys_obj in self.__physical_objects_model.get_scene_physical_objects():
-                    if sceneutil.intersects_with_phys_obj((img_x, img_y), phys_obj, self.scene_scale_factor):
+                    if phys_obj.collides_with_point((img_x, img_y), phys_obj, self.scene_scale_factor):
                         phys_obj_name = phys_obj.name
                         obj_x, obj_y = sceneutil.convert_image_to_object((img_x, img_y), phys_obj.ref_frame, self.scene_scale_factor)
                         self.scene_definition_windows.update_mouse_position_label((obj_x, obj_y), phys_obj_name)

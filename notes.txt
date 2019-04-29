@@ -1,5 +1,19 @@
 
 
+
+
+— a thread for detecting the marker
+This thread continoisly detects the marker, and updates self.current_rect
+
+— a thread for firing selection events: 
+This thread continoisly queries scene physical objects and annotations for colliding with the center point of self.current_rect. If a collision is detected, the timestamp is recorded. If after 3 seconds the collision is still active, a SelectionEvent is fired, with list of annotations and physical objects that are selected. 
+
+— An event manager that registers listeners for different event types and fires the events. Firing an event means calling all listeners for that event with the given event params. 
+
+— A selection service that is listener for SelectionEvents. When event is called, the on_select() event of all parameter annotations and physical objects is called (in a separate thread?)
+
+
+=======================================================
 [See below.]
 
 * We don't need object detection when designing the scene.
