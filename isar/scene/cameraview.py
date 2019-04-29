@@ -67,13 +67,8 @@ class CameraView(QLabel):
             self.scene_renderer.draw_scene_annotations()
 
             # =========== experimental =============
-            seleciton_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
-            rect = seleciton_stick_service.get_current_rect()
-            if rect is not None:
-                rect_in_scene = sceneutil.camera_coords_to_scene_coord(rect)
-                v1 = (int(rect_in_scene[0][0]), int(rect_in_scene[0][1]))
-                v2 = (int(rect_in_scene[2][0]), int(rect_in_scene[2][1]))
-                cv2.rectangle(self.opencv_img, v1, v2, (255, 0, 255), thickness=2)
+            selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
+            selection_stick_service.draw_current_rect(self.opencv_img)
             # ======================================
 
             if self.active_annotation_tool:

@@ -69,7 +69,16 @@ class SelectionStickService(Service):
     def stop(self):
         self._stop_event.set()
 
+    def draw_current_rect(self, img):
+        rect = self.__current_rect
+        if rect is not None:
+            rect_in_scene = sceneutil.camera_coords_to_scene_coord(rect)
+            v1 = (int(rect_in_scene[0][0]), int(rect_in_scene[0][1]))
+            v2 = (int(rect_in_scene[2][0]), int(rect_in_scene[2][1]))
+            cv2.rectangle(img, v1, v2, (255, 0, 255), thickness=2)
+
     def get_current_rect(self):
         return self.__current_rect
+
 
 

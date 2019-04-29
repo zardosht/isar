@@ -329,7 +329,7 @@ class SceneDefinitionWindow(QWidget):
                 break
 
     def reset_scene_size(self):
-        #TODO: Experimental. Remove in production code. Also remove the button.
+        # TODO: Experimental. Remove in production code. Also remove the button.
         self.scene_rect = None
         self.scene_size = None
         self.scene_size_initialized = False
