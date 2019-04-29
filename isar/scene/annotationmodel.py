@@ -180,6 +180,7 @@ class AnnotationsModel(QAbstractListModel):
 
 class Annotation:
     def __init__(self):
+        self.name = "Annotation"
         self.scene = None
         # Owner of  an annotation is either the scene or a physical object. An annotation can have only one owner.
         # self.owner = None

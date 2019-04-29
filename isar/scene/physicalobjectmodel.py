@@ -270,8 +270,13 @@ class PhysicalObject:
         return isinstance(other, PhysicalObject) and self.name == other.name
 
     def collides_with_point(self, point, scene_scale_factor=(1., 1.)):
-        obj_frame = self.ref_frame
-        return obj_frame.x <= point[0] <= obj_frame.x + obj_frame.width * scene_scale_factor[0] and \
-               obj_frame.y <= point[1] <= obj_frame.y + obj_frame.height * scene_scale_factor[1]
+        # Drawing tempalte image on the scene. The ref_frame is in scene_coordinates
+        obj_frame = list(self.ref_frame)
+        if self.is_tracking():
+            # Real object is on the table. The ref_frame is in image_coordinates
+            obj_frame[0], obj_frame[1] = sceneutil.camera_coord_to_scene_coord((self.ref_frame.x, self.ref_frame.y))
 
+        x, y, width, height = obj_frame
+        return x <= point[0] <= x + width * scene_scale_factor[0] and \
+                   y <= point[1] <= y + height * scene_scale_factor[1]
 

@@ -40,9 +40,8 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    servicemanager.start_services()
-
     scene_defintion = input("Scene Definition (y/n)? ")
+    servicemanager.start_services()
     if scene_defintion == "y":
         isar.application_mode = ApplicationMode.AUTHORING
         scene_def_window = QMainWindow(None)

@@ -19,7 +19,7 @@ from isar.scene.physicalobjectmodel import PhysicalObjectsModel, PhysicalObject
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
-
+from isar.tracking.selectionstick import SelectionStickService
 
 logger = logging.getLogger("isar.scene.definitionwindow")
 
@@ -43,7 +43,7 @@ class SceneDefinitionWindow(QWidget):
         self.scene_scale_factor = None
 
         self._object_detection_service = None
-        self._selection_stick_service = None
+        self._selection_stick_service: SelectionStickService = None
         self.setup_object_detection_service()
 
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
@@ -261,6 +261,9 @@ class SceneDefinitionWindow(QWidget):
         annotations_model.set_scene(current_scene)
         self.camera_view.set_annotations_model(annotations_model)
         self.annotations_list.setModel(annotations_model)
+
+        self._selection_stick_service.set_physical_objects_model(physical_objects_model)
+        self._selection_stick_service.set_annotations_model(annotations_model)
 
         properties_model = AnnotationPropertiesModel()
         self.properties_view.setModel(properties_model)

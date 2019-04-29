@@ -12,6 +12,7 @@ logger = logging.getLogger("isar.scene.util")
 aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 
 scene_rect_c = None
+scene_rect_p = None
 scene_scale_factor_c = None
 
 class RefFrame(NamedTuple):
@@ -262,6 +263,13 @@ def camera_coord_to_scene_coord(cam_coord):
         return cam_coord
 
     return cam_coord[0] - scene_rect_c[0], cam_coord[1] - scene_rect_c[1]
+
+
+def projector_coord_to_scene_coord_p(proj_coord):
+    if scene_rect_p is None:
+        return proj_coord
+
+    return proj_coord[0] - scene_rect_p[0], proj_coord[1] - scene_rect_p[1]
 
 
 def camera_coords_to_scene_coord(cam_coords):

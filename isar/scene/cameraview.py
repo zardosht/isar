@@ -7,6 +7,7 @@ from PyQt5.QtGui import QImage, QPixmap, QDragEnterEvent, QDragMoveEvent, QDropE
 from PyQt5.QtWidgets import QLabel, QMessageBox
 
 from isar.scene import annotationtool, sceneutil, physicalobjecttool
+from isar.scene.annotationtool import AnnotationTool
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenerenderer import SceneRenderer
 from isar.scene.sceneutil import Frame
@@ -26,7 +27,7 @@ class CameraView(QLabel):
             self.image_frame = None
             self.scene_rect = None
             self.scene_scale_factor = None
-            self.active_annotation_tool = None
+            self.active_annotation_tool: AnnotationTool = None
             self.__annotations_model = None
             self.__physical_objects_model: PhysicalObjectsModel = None
 
@@ -167,7 +168,7 @@ class CameraView(QLabel):
             if not annotation_btn_name:
                 self.active_annotation_tool = None
             else:
-                self.active_annotation_tool = annotationtool.annotation_tool_btns[annotation_btn_name]
+                self.active_annotation_tool: AnnotationTool = annotationtool.annotation_tool_btns[annotation_btn_name]
                 self.active_annotation_tool.annotations_model = self.__annotations_model
                 self.active_annotation_tool.scene_rect = self.scene_rect
                 self.active_annotation_tool.scene_scale_factor = self.scene_scale_factor

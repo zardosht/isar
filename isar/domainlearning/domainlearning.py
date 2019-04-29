@@ -32,6 +32,7 @@ class DomainLearningWindow(QWidget):
         self.setup_projector_view(screen_id)
 
         self._object_detection_service = None
+        self._selection_stick_service = None
         self.setup_object_detection_service()
 
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
@@ -94,6 +95,7 @@ class DomainLearningWindow(QWidget):
 
     def setup_object_detection_service(self):
         self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
+        self._selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
 
     def setup_models(self):
         self.scenes_model = ScenesModel()
@@ -114,6 +116,10 @@ class DomainLearningWindow(QWidget):
         self.annotations_model.set_scene(current_scene)
         self.camera_view.set_annotations_model(self.annotations_model)
         self.projector_view.set_physical_objects_model(self.physical_objects_model)
+
+        self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)
+        self._selection_stick_service.set_annotations_model(self.annotations_model)
+
         # self.annotations_list.setModel(annotations_model)
 
     def sceneslist_current_changed(self):
@@ -162,6 +168,7 @@ class DomainLearningWindow(QWidget):
             return
         else:
             camera_frame = self._camera_service.get_frame()
+            self._selection_stick_service.camera_img = camera_frame.raw_image
             self.projector_view.update_projector_view(camera_frame)
 
         if self.track_objects_checkbox.isChecked():

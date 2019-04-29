@@ -16,6 +16,8 @@ from isar.scene import sceneutil
 from isar.scene.scenemodel import current_project
 from isar.scene.scenerenderer import SceneRenderer
 from isar.scene.sceneutil import get_scene_scale_factor
+from isar.services import servicemanager
+from isar.services.servicemanager import ServiceNames
 
 logger = logging.getLogger("isar.projection.projector")
 
@@ -223,6 +225,7 @@ class ProjectorView(QtWidgets.QWidget):
                 self.scene_size_p_initialized = True
 
                 sceneutil.scene_rect_c = self.scene_rect_c
+                sceneutil.scene_rect_p = self.scene_rect_p
                 sceneutil.scene_scale_factor_c = self.scene_scale_factor_c
 
                 logger.info("Scene size initialized successfully!")
@@ -266,6 +269,11 @@ class ProjectorView(QtWidgets.QWidget):
         self.scene_renderer.draw_scene_physical_objects()
         self.scene_renderer.draw_scene_annotations()
 
+        # =========== experimental =============
+        selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
+        selection_stick_service.draw_current_rect(self.scene_renderer.opencv_img, self.homography_matrix, self.scene_homography)
+        # ======================================
+
         scene_renderer_opencv_img_warpped = cv2.resize(self.scene_renderer.opencv_img, (srect_width_p, srect_height_p))
 
         # scene_renderer_opencv_img_warpped = \
@@ -275,6 +283,10 @@ class ProjectorView(QtWidgets.QWidget):
 
         end_index_y = min(srect_y_p + srect_height_p, scene_image.shape[0])
         end_index_x = min(srect_x_p + srect_width_p, scene_image.shape[1])
+
+        if (end_index_y - srect_y_p) != scene_renderer_opencv_img_warpped.shape[0]:
+            scene_renderer_opencv_img_warpped = scene_renderer_opencv_img_warpped[0:(end_index_y - srect_y_p)]
+
         scene_image[srect_y_p:end_index_y,
                     srect_x_p:end_index_x] = scene_renderer_opencv_img_warpped
 
