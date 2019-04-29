@@ -58,14 +58,13 @@ class SelectionStickService(Service):
                     self.__current_rect = None
 
     def _start_event_detection(self):
-        while not self._stop_event.set():
+        while not self._stop_event.is_set():
             # get the center of marker rect
             # check if the center collides with any annotation and physcical objects.
             # put colliding objects/annotations with the timestamp in a dic
             # check the colliding objects, if more that three seconds colliding, then fire event.
 
             pass
-
 
     def stop(self):
         self._stop_event.set()
