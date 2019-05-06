@@ -6,6 +6,8 @@ import threading
 
 import numpy as np
 
+from isar.events import eventmanager
+from isar.events.eventmanager import SelectionEvent
 from isar.scene import sceneutil
 from isar.services.service import Service
 
@@ -108,6 +110,7 @@ class SelectionStickService(Service):
                         first = self.event_timers_phys_obj[phys_obj_name]
                         if time.time() - first > 3:
                             self.fire_selection_event(phys_obj)
+                            del self.event_timers_phys_obj[phys_obj_name]
 
                     break
 
@@ -128,6 +131,7 @@ class SelectionStickService(Service):
                         first = self.event_timers_annotation[annotation_name]
                         if time.time() - first > 3:
                             self.fire_selection_event(annotation)
+                            del self.event_timers_annotation[annotation_name]
 
             if not collides_with_annotation:
                 self.event_timers_annotation.clear()
@@ -142,8 +146,11 @@ class SelectionStickService(Service):
     def stop(self):
         self._stop_event.set()
 
-    def fire_selection_event(self, target):
+    @staticmethod
+    def fire_selection_event(target):
         logger.info("Fire SelectionEvent on: " + str(target))
+        selection_event = SelectionEvent(target)
+        eventmanager.fire_event(selection_event)
 
     def draw_current_rect(self, img, camera_projector_homography=None, scene_homography=None):
         current_rect = self.__current_rect

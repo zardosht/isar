@@ -3,6 +3,9 @@ import traceback
 from enum import Enum
 
 from isar.camera.camera import CameraService
+from isar.events import eventmanager
+from isar.events.eventmanager import SelectionEvent
+from isar.events.selectionservice import SelectionService
 from isar.tracking import objectdetection
 from isar.tracking.objectdetection import ObjectDetectionService
 from isar.tracking.selectionstick import SelectionStickService
@@ -42,6 +45,9 @@ def start_services():
         selection_stick_service = SelectionStickService(ServiceNames.SELECTION_STICK)
         selection_stick_service.start()
         __services[ServiceNames.SELECTION_STICK] = selection_stick_service
+
+        selection_service = SelectionService()
+        eventmanager.register_listener(SelectionEvent.__name__, selection_service)
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
