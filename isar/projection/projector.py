@@ -273,9 +273,6 @@ class ProjectorView(QtWidgets.QWidget):
         # if current_project is not None:
         #     scene_size_c = current_project.scene_size
 
-        # self.scene_renderer.scene_rect = self.scene_rect_c
-        self.scene_renderer.scene_rect = self.scene_rect_p
-
         # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
         # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_p
         self.scene_renderer.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])

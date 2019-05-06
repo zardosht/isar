@@ -11,7 +11,6 @@ class SceneRenderer:
         self.__annotations_model = None
         self.__physical_objects_model = None
         self.opencv_img = None
-        self.scene_rect = None
         self.scene_scale_factor = None
 
     def set_annotations_model(self, annotations_model):
@@ -43,18 +42,18 @@ class SceneRenderer:
 
         for phys_obj in scene_phys_objs:
             if phys_obj in present_phys_objs:
-                physicalobjecttool.draw_physical_object_bounding_box(self.opencv_img, phys_obj, self.scene_rect)
-                self.draw_physical_object_annotations(phys_obj, self.scene_rect, None)
+                physicalobjecttool.draw_physical_object_bounding_box(self.opencv_img, phys_obj)
+                self.draw_physical_object_annotations(phys_obj, None)
             else:
                 physicalobjecttool.draw_physical_object_image(self.opencv_img, self.scene_scale_factor, phys_obj)
-                self.draw_physical_object_annotations(phys_obj, None, self.scene_scale_factor)
+                self.draw_physical_object_annotations(phys_obj, self.scene_scale_factor)
 
-    def draw_physical_object_annotations(self, phys_obj, scene_rect, scene_scale_factor):
+    def draw_physical_object_annotations(self, phys_obj, scene_scale_factor):
         if phys_obj is None or phys_obj.get_annotations() is None or len(phys_obj.get_annotations()) == 0:
             return
 
         for annotation in phys_obj.get_annotations():
-            annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj, scene_rect, scene_scale_factor)
+            annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj, scene_scale_factor)
 
 
 

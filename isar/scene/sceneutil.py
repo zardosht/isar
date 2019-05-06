@@ -94,24 +94,24 @@ def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):
     return int(x * x_scale), int(y * y_scale)
 
 
-def convert_object_to_image(point, phys_obj, scene_rect=None, scene_scale_factor=(1., 1.)):
+def convert_object_to_image(point, phys_obj, scene_scale_factor=(1., 1.)):
     if phys_obj is None:
         return point
+
+    if point is None:
+        return point
+
+    if scene_scale_factor is None:
+        scene_scale_factor = (1., 1.)
 
     object_frame = phys_obj.ref_frame
     if phys_obj.is_tracking() and phys_obj.pose_estimation is not None:
         homogenous_position = np.array((point[0], point[1], 1)).reshape((3, 1))
         new_position = np.dot(phys_obj.pose_estimation.homography, homogenous_position)
-        if scene_rect is not None:
-            return new_position[0] + object_frame.x - scene_rect[0], new_position[1] + object_frame.y - scene_rect[1]
-        else:
-            return new_position[0] + object_frame.x, new_position[1] + object_frame.y
+        return new_position[0] + object_frame.x, new_position[1] + object_frame.y
     else:
-        if scene_rect is not None:
-            return point[0] + object_frame.x - scene_rect[0], point[1] + object_frame.y - scene_rect[1]
-        else:
-            return int((point[0] * scene_scale_factor[0]) + object_frame.x), \
-                   int((point[1] * scene_scale_factor[1]) + object_frame.y)
+        return int((point[0] * scene_scale_factor[0]) + object_frame.x), \
+               int((point[1] * scene_scale_factor[1]) + object_frame.y)
 
 
 def convert_image_to_object(point, object_frame:RefFrame, scene_scale_factor=(1., 1.)):

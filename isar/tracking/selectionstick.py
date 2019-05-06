@@ -153,7 +153,7 @@ class SelectionStickService(Service):
                 v1 = projected_points[0]
                 v2 = projected_points[1]
             else:
-                rect_in_scene = sceneutil.camera_coords_to_scene_coord(current_rect)
+                rect_in_scene = sceneutil.camera_coords_to_scene_coords(current_rect)
                 v1 = (rect_in_scene[0][0], rect_in_scene[0][1])
                 v2 = (rect_in_scene[2][0], rect_in_scene[2][1])
 

@@ -55,7 +55,6 @@ class CameraView(QLabel):
             else:
                 self.scene_rect = self.scene_definition_windows.scene_rect
                 self.scene_scale_factor = self.scene_definition_windows.scene_scale_factor_c
-                self.scene_renderer.scene_rect = self.scene_rect
                 self.scene_renderer.scene_scale_factor = self.scene_scale_factor
                 x, y, width, height = self.scene_definition_windows.scene_rect
                 self.opencv_img = camera_frame.scene_image[y:y + height, x:x + width].copy()
@@ -170,7 +169,6 @@ class CameraView(QLabel):
             else:
                 self.active_annotation_tool: AnnotationTool = annotationtool.annotation_tool_btns[annotation_btn_name]
                 self.active_annotation_tool.annotations_model = self.__annotations_model
-                self.active_annotation_tool.scene_rect = self.scene_rect
                 self.active_annotation_tool.scene_scale_factor = self.scene_scale_factor
 
         def resizeEvent(self, resize_event):

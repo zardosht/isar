@@ -212,8 +212,8 @@ class PhysicalObject:
             width = self.template_image.shape[1]
             height = self.template_image.shape[0]
         else:
-            tl = sceneutil.convert_camera_coord_to_porjector_coord(self.__top_left)
-            br = sceneutil.convert_camera_coord_to_porjector_coord(self.bottom_right)
+            tl = sceneutil.camera_coord_to_scene_coord(self.__top_left)
+            br = sceneutil.camera_coord_to_scene_coord(self.bottom_right)
             width = int(math.fabs(br[0] - tl[0]))
             height = int(math.fabs(br[1] - tl[1]))
 
@@ -272,7 +272,6 @@ class PhysicalObject:
     def collides_with_point(self, point, scene_scale_factor=(1., 1.)):
         # Drawing tempalte image on the scene. The ref_frame is in scene_coordinates
         x, y, width, height = self.ref_frame
-        x, y = sceneutil.projector_coord_to_scene_coord_p((x, y))
         if self.is_tracking():
             return x <= point[0] <= x + width and \
                    y <= point[1] <= y + height
