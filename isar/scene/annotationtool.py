@@ -500,6 +500,10 @@ class ImageAnnotationTool(AnnotationTool):
             image = cv2.imread(str(img_path))
             ImageAnnotationTool.image_cache[img_path] = image
 
+        if image is None:
+            logger.warning("Image is None")
+            return
+
         if image.shape[0] != height or image.shape[1] != width:
             image = cv2.resize(image, (width, height))
 

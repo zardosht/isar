@@ -54,7 +54,7 @@ class CameraView(QLabel):
                 self.opencv_img = camera_frame.scene_image
             else:
                 self.scene_rect = self.scene_definition_windows.scene_rect
-                self.scene_scale_factor = self.scene_definition_windows.scene_scale_factor
+                self.scene_scale_factor = self.scene_definition_windows.scene_scale_factor_c
                 self.scene_renderer.scene_rect = self.scene_rect
                 self.scene_renderer.scene_scale_factor = self.scene_scale_factor
                 x, y, width, height = self.scene_definition_windows.scene_rect

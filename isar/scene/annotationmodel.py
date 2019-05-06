@@ -429,6 +429,13 @@ class ImageAnnotation(Annotation):
         self.keep_aspect_ratio = BooleanAnnotationProperty("Keep Aspect Ratio", True, self)
         self.properties.append(self.keep_aspect_ratio)
 
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        width = self.width.get_value()
+        height = self.height.get_value()
+        return position[0] <= point[0] <= position[0] + width and \
+            position[1] <= point[1] <= position[1] + height
+
 
 class AudioAnnotation(Annotation):
     def __init__(self):
@@ -492,6 +499,7 @@ class VideoAnnotation(Annotation):
             self.playing = True
             self.paused = False
             self.stopped = False
+
 
 class RelationshipAnnotation(Annotation):
     def __init__(self):

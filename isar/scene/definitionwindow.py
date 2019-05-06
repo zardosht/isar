@@ -40,7 +40,7 @@ class SceneDefinitionWindow(QWidget):
         self.scene_size_initialized = False
         self.scene_rect = None
         self.scene_size = None
-        self.scene_scale_factor = None
+        self.scene_scale_factor_c = None
 
         self._object_detection_service = None
         self._selection_stick_service: SelectionStickService = None
@@ -316,11 +316,11 @@ class SceneDefinitionWindow(QWidget):
             elif scene_rect_c is not None:
                 self.scene_rect = scene_rect_c
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
-                self.scene_scale_factor = sceneutil.get_scene_scale_factor(camera_frame.raw_image.shape, scene_rect_c)
+                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor_c(camera_frame.raw_image.shape, scene_rect_c)
                 self.scene_size_initialized = True
 
                 sceneutil.scene_rect_c = scene_rect_c
-                sceneutil.scene_scale_factor_c = self.scene_scale_factor
+                sceneutil.scene_scale_factor_c = self.scene_scale_factor_c
 
                 if self.scenes_model is not None:
                     self.scenes_model.scene_size = self.scene_size

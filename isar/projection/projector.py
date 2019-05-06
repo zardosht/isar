@@ -15,7 +15,7 @@ from isar.projection import projectionutil
 from isar.scene import sceneutil
 from isar.scene.scenemodel import current_project
 from isar.scene.scenerenderer import SceneRenderer
-from isar.scene.sceneutil import get_scene_scale_factor
+from isar.scene.sceneutil import get_scene_scale_factor_c
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
 
@@ -38,6 +38,7 @@ class ProjectorView(QtWidgets.QWidget):
         self.scene_rect_p = None
         self.scene_homography = None
         self.scene_scale_factor_c = None
+        self.scene_scale_factor_p = None
         self.scene_size_p_initialized = False
 
         self.image = None
@@ -221,12 +222,15 @@ class ProjectorView(QtWidgets.QWidget):
                 self.scene_rect_p = scene_rect_p
                 self.scene_size_p = (self.scene_rect_p[2], self.scene_rect_p[3])
                 self.scene_homography = scene_homography
-                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor(camera_frame.raw_image.shape, self.scene_rect_c)
+                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor_c(camera_frame.raw_image.shape, self.scene_rect_c)
+                self.scene_scale_factor_p = sceneutil.get_scene_scale_factor_p([self.projector_height, self.projector_width], self.scene_rect_p)
                 self.scene_size_p_initialized = True
 
                 sceneutil.scene_rect_c = self.scene_rect_c
                 sceneutil.scene_rect_p = self.scene_rect_p
                 sceneutil.scene_scale_factor_c = self.scene_scale_factor_c
+                sceneutil.scene_scale_factor_p = self.scene_scale_factor_p
+                sceneutil.cam_proj_homography = self.homography_matrix
 
                 logger.info("Scene size initialized successfully!")
                 break
@@ -235,7 +239,7 @@ class ProjectorView(QtWidgets.QWidget):
                 break
 
     def update_projector_view(self, camera_frame):
-        # TODO: draw all the annotations on the scene_image
+        # draw all the annotations on the projector scene image
 
         # first of course we need to load the project (in domainlearning)
 
@@ -247,51 +251,59 @@ class ProjectorView(QtWidgets.QWidget):
             logger.warning("Projector scene size is not initialized. Return!")
             return
 
-        # camera_frame: CameraFrame = self.camera_service.get_frame()
         camera_img = camera_frame.raw_image
         if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
 
-        scene_image = projectionutil.create_dummy_scene_image(self.projector_width,
-                                                              self.projector_height,
-                                                              self.scene_rect_p)
+        projector_image = projectionutil.create_dummy_projector_image(self.projector_width,
+                                                                      self.projector_height,
+                                                                      self.scene_rect_p)
+
+        if debug:
+            marker_cornerss, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, sceneutil.aruco_dictionary)
+            for marker_corners in marker_cornerss:
+                marker_corners_p = cv2.perspectiveTransform(marker_corners, self.homography_matrix).squeeze()
+                cv2.line(projector_image, tuple(marker_corners_p[0]), tuple(marker_corners_p[1]), color=(255, 0, 255), thickness=5)
+                cv2.line(projector_image, tuple(marker_corners_p[1]), tuple(marker_corners_p[2]), color=(255, 0, 255), thickness=5)
+                cv2.line(projector_image, tuple(marker_corners_p[2]), tuple(marker_corners_p[3]), color=(255, 0, 255), thickness=5)
+                cv2.line(projector_image, tuple(marker_corners_p[3]), tuple(marker_corners_p[0]), color=(255, 0, 255), thickness=5)
 
         srect_x_p, srect_y_p, srect_width_p, srect_height_p = self.scene_rect_p
+        # scene_size_c = (self.projector_width, self.projector_height)
+        # current_project = isar.scene.scenemodel.current_project
+        # if current_project is not None:
+        #     scene_size_c = current_project.scene_size
 
-        scene_size_c = (self.projector_width, self.projector_height)
-        current_project = isar.scene.scenemodel.current_project
-        if current_project is not None:
-            scene_size_c = current_project.scene_size
+        # self.scene_renderer.scene_rect = self.scene_rect_c
+        self.scene_renderer.scene_rect = self.scene_rect_p
 
-        self.scene_renderer.scene_rect = self.scene_rect_c
-        self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
-        self.scene_renderer.opencv_img = sceneutil.create_empty_image(scene_size_c, (255, 255, 255))
+        # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
+        # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_p
+        self.scene_renderer.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])
+
+        # self.scene_renderer.opencv_img = sceneutil.create_empty_image(scene_size_c, (255, 255, 255))
+        scene_image = sceneutil.create_empty_image((srect_width_p, srect_height_p), (255, 255, 255))
+        self.scene_renderer.opencv_img = scene_image
 
         self.scene_renderer.draw_scene_physical_objects()
         self.scene_renderer.draw_scene_annotations()
 
+        end_index_y = min(srect_y_p + srect_height_p, projector_image.shape[0])
+        end_index_x = min(srect_x_p + srect_width_p, projector_image.shape[1])
+
+        if (end_index_y - srect_y_p) != srect_height_p:
+            scene_image = scene_image[0:(end_index_y - srect_y_p)]
+
+        projector_image[srect_y_p:end_index_y, srect_x_p:end_index_x] = scene_image
+        if debug: cv2.imwrite("tmp/tmp_files/projector_image.jpg", projector_image)
+
         # =========== experimental =============
         selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
-        selection_stick_service.draw_current_rect(self.scene_renderer.opencv_img, self.homography_matrix, self.scene_homography)
+        selection_stick_service.draw_current_rect(projector_image, self.homography_matrix, self.scene_homography)
         # ======================================
 
-        scene_renderer_opencv_img_warpped = cv2.resize(self.scene_renderer.opencv_img, (srect_width_p, srect_height_p))
+        if debug: cv2.imwrite("tmp/tmp_files/projector_image.jpg", projector_image)
+        self.set_scene_image(projector_image)
 
-        # scene_renderer_opencv_img_warpped = \
-        #     cv2.warpPerspective(self.scene_renderer.opencv_img, self.scene_homography, (srect_width_p, srect_height_p))
-
-        if debug: cv2.imwrite("tmp/tmp_files/scene_renderer_opencv_img_warpped.jpg", scene_renderer_opencv_img_warpped)
-
-        end_index_y = min(srect_y_p + srect_height_p, scene_image.shape[0])
-        end_index_x = min(srect_x_p + srect_width_p, scene_image.shape[1])
-
-        if (end_index_y - srect_y_p) != scene_renderer_opencv_img_warpped.shape[0]:
-            scene_renderer_opencv_img_warpped = scene_renderer_opencv_img_warpped[0:(end_index_y - srect_y_p)]
-
-        scene_image[srect_y_p:end_index_y,
-                    srect_x_p:end_index_x] = scene_renderer_opencv_img_warpped
-
-        if debug: cv2.imwrite("tmp/tmp_files/dummy_scene_image.jpg", scene_image)
-        self.set_scene_image(scene_image)
 
 
 

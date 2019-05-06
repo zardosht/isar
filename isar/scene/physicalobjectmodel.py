@@ -208,16 +208,16 @@ class PhysicalObject:
     @property
     def ref_frame(self):
         if self.__top_left is None:
-            x, y = self.__scene_position
+            tl = self.__scene_position
             width = self.template_image.shape[1]
             height = self.template_image.shape[0]
         else:
-            x, y = self.__top_left
-            br_x, br_y = self.bottom_right
-            width = math.fabs(br_x - x)
-            height = math.fabs(br_y - y)
+            tl = sceneutil.convert_camera_coord_to_porjector_coord(self.__top_left)
+            br = sceneutil.convert_camera_coord_to_porjector_coord(self.bottom_right)
+            width = int(math.fabs(br[0] - tl[0]))
+            height = int(math.fabs(br[1] - tl[1]))
 
-        return RefFrame(x, y, width, height)
+        return RefFrame(tl[0], tl[1], width, height)
 
     def get_annotations(self):
         return tuple(self.__annotations)
@@ -271,12 +271,12 @@ class PhysicalObject:
 
     def collides_with_point(self, point, scene_scale_factor=(1., 1.)):
         # Drawing tempalte image on the scene. The ref_frame is in scene_coordinates
-        obj_frame = list(self.ref_frame)
+        x, y, width, height = self.ref_frame
+        x, y = sceneutil.projector_coord_to_scene_coord_p((x, y))
         if self.is_tracking():
-            # Real object is on the table. The ref_frame is in image_coordinates
-            obj_frame[0], obj_frame[1] = sceneutil.camera_coord_to_scene_coord((self.ref_frame.x, self.ref_frame.y))
-
-        x, y, width, height = obj_frame
-        return x <= point[0] <= x + width * scene_scale_factor[0] and \
+            return x <= point[0] <= x + width and \
+                   y <= point[1] <= y + height
+        else:
+            return x <= point[0] <= x + width * scene_scale_factor[0] and \
                    y <= point[1] <= y + height * scene_scale_factor[1]
 

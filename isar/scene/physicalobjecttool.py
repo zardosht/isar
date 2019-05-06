@@ -19,12 +19,15 @@ def draw_physical_object_image(opencv_img, scene_scale_factor, phys_obj: Physica
     sceneutil.draw_image_on(opencv_img, template_image_scaled, phys_obj.scene_position, position_is_topleft=True)
 
 
-def draw_physical_object_bounding_box(opencv_img, scene_rect, phys_obj: PhysicalObject):
+def draw_physical_object_bounding_box(opencv_img, phys_obj: PhysicalObject, scene_rect):
     color = random.choice(colors)
     text = '{}: {:.0f}%'.format(phys_obj.name, phys_obj.detection_confidence * 100)
 
-    tl = (phys_obj.top_left[0] - scene_rect[0], phys_obj.top_left[1] - scene_rect[1])
-    br = (phys_obj.bottom_right[0] - scene_rect[0] , phys_obj.bottom_right[1] - scene_rect[1])
+    ref_frame = phys_obj.ref_frame
+    tl = (ref_frame.x - scene_rect[0], ref_frame.y - scene_rect[1])
+    br = ((ref_frame.x + ref_frame.width) - scene_rect[0], (ref_frame.y + ref_frame.height) - scene_rect[1])
     opencv_img = cv2.rectangle(opencv_img, tl, br, color, 2)
     cv2.putText(opencv_img, text, tl, cv2.FONT_HERSHEY_COMPLEX, .5, (0, 0, 0), 1)
+
+
 

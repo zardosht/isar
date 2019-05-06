@@ -45,6 +45,7 @@ class SelectionStickService(Service):
         self.drawing_color = (255, 0, 255)
         self.object_name = None
         self.annotation_name = None
+        self.annotation_position = ()
 
         self.event_timers_phys_obj = {}
         self.event_timers_annotation = {}
@@ -78,6 +79,11 @@ class SelectionStickService(Service):
                 self.__current_rect = None
 
     def _start_event_detection(self):
+        # get the center of marker rect
+        # check if the center collides with any annotation and physcical objects.
+        # put colliding objects/annotations with the timestamp in a dic
+        # check the colliding objects, if more that three seconds colliding, then fire event.
+
         while not self._stop_event.is_set():
             if self.__current_rect is None:
                 continue
@@ -115,6 +121,7 @@ class SelectionStickService(Service):
                     self.drawing_color = (0, 0, 255)
                     annotation_name = annotation.name
                     self.annotation_name = annotation_name
+                    self.annotation_position = annotation.position.get_value()
                     if annotation.name not in self.event_timers_annotation:
                         self.event_timers_annotation[annotation_name] = time.time()
                     else:
@@ -132,11 +139,6 @@ class SelectionStickService(Service):
                 self.event_timers_phys_obj.clear()
                 self.event_timers_annotation.clear()
 
-            # get the center of marker rect
-            # check if the center collides with any annotation and physcical objects.
-            # put colliding objects/annotations with the timestamp in a dic
-            # check the colliding objects, if more that three seconds colliding, then fire event.
-
     def stop(self):
         self._stop_event.set()
 
@@ -144,25 +146,14 @@ class SelectionStickService(Service):
         logger.info("Fire SelectionEvent on: " + str(target))
 
     def draw_current_rect(self, img, camera_projector_homography=None, scene_homography=None):
-        rect = self.__current_rect
-        if rect is not None:
+        current_rect = self.__current_rect
+        if current_rect is not None:
             if camera_projector_homography is not None:
-                projected_points = cv2.perspectiveTransform(np.array([[rect[0], rect[2]]]), camera_projector_homography).squeeze()
+                projected_points = cv2.perspectiveTransform(np.array([[current_rect[0], current_rect[2]]]), camera_projector_homography).squeeze()
                 v1 = projected_points[0]
                 v2 = projected_points[1]
-                v1 = sceneutil.projector_coord_to_scene_coord_p(v1)
-                v2 = sceneutil.projector_coord_to_scene_coord_p(v2)
-
-                # # rect_in_scene = sceneutil.camera_coords_to_scene_coord(rect)
-                # rect_in_scene = rect
-                # projected_points = cv2.perspectiveTransform(np.array([[rect_in_scene[0], rect_in_scene[2]]]), scene_homography).squeeze()
-                # v1 = projected_points[0]
-                # v2 = projected_points[1]
-                # v1 = sceneutil.projector_coord_to_scene_coord_p(v1)
-                # v2 = sceneutil.projector_coord_to_scene_coord_p(v2)
-
             else:
-                rect_in_scene = sceneutil.camera_coords_to_scene_coord(rect)
+                rect_in_scene = sceneutil.camera_coords_to_scene_coord(current_rect)
                 v1 = (rect_in_scene[0][0], rect_in_scene[0][1])
                 v2 = (rect_in_scene[2][0], rect_in_scene[2][1])
 
@@ -170,20 +161,35 @@ class SelectionStickService(Service):
             v2 = (int(v2[0]), int(v2[1]))
 
             cv2.rectangle(img, v1, v2, self.drawing_color, thickness=2)
+
+            camera_coord = current_rect[1]
+            scene_c_coord = sceneutil.camera_coord_to_scene_coord_c(camera_coord)
+            projector_coord = v1
+            scene_p_coord = sceneutil.projector_coord_to_scene_coord_p(projector_coord)
+            persisted_coord = ()
+            if self.annotation_name is not None:
+                persisted_coord = self.annotation_position
+
+            cv2.putText(img, "C: " + str(camera_coord), (v2[0], v2[1]), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+            cv2.putText(img, "per: " + str(persisted_coord), (v2[0], v2[1] + 15), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+            cv2.putText(img, "SC_C: " + str(scene_c_coord), (v2[0], v2[1] + 30), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+            cv2.putText(img, "P: " + str(projector_coord), (v2[0], v2[1] + 45), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+            cv2.putText(img, "SC_P: " + str(scene_p_coord), (v2[0], v2[1] + 60), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+
             if self.object_name is not None:
-                cv2.putText(img, self.object_name, v1, cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                cv2.putText(img, self.object_name, (v1[0], v1[1] - 10), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
 
             if self.annotation_name is not None:
-                cv2.putText(img, self.annotation_name, v1, cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                cv2.putText(img, self.annotation_name, (v1[0], v1[1] - 10), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
 
     def get_current_rect(self):
         return self.__current_rect
 
     def get_center_point(self, in_image_coordinates=True):
-        if self.__current_rect is None:
+        rect = self.__current_rect
+        if rect is None:
             return None
 
-        rect = self.__current_rect
         v1 = rect[0]
         v2 = rect[2]
 

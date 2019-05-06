@@ -43,7 +43,7 @@ class SceneRenderer:
 
         for phys_obj in scene_phys_objs:
             if phys_obj in present_phys_objs:
-                physicalobjecttool.draw_physical_object_bounding_box(self.opencv_img, self.scene_rect, phys_obj)
+                physicalobjecttool.draw_physical_object_bounding_box(self.opencv_img, phys_obj, self.scene_rect)
                 self.draw_physical_object_annotations(phys_obj, self.scene_rect, None)
             else:
                 physicalobjecttool.draw_physical_object_image(self.opencv_img, self.scene_scale_factor, phys_obj)

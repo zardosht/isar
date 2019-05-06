@@ -7,6 +7,9 @@ import numpy as np
 
 from PyQt5.QtGui import QImage, QPixmap
 
+import isar
+from isar import ApplicationMode
+
 logger = logging.getLogger("isar.scene.util")
 
 aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -14,6 +17,9 @@ aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
 scene_rect_c = None
 scene_rect_p = None
 scene_scale_factor_c = None
+scene_scale_factor_p = None
+cam_proj_homography = None
+
 
 class RefFrame(NamedTuple):
     x: float
@@ -250,7 +256,7 @@ def compute_scene_homography(v1_marker, v2_marker, cam_proj_homography, camera_i
     return scene_homography
 
 
-def get_scene_scale_factor(camera_img_shape, scene_rect_c):
+def get_scene_scale_factor_c(camera_img_shape, scene_rect_c):
     scene_width_c = scene_rect_c[2]
     scene_height_c = scene_rect_c[3]
     camera_img_width = camera_img_shape[1]
@@ -258,11 +264,33 @@ def get_scene_scale_factor(camera_img_shape, scene_rect_c):
     return scene_width_c / camera_img_width, scene_height_c / camera_img_height
 
 
+def get_scene_scale_factor_p(projector_img_shape, scene_rect_p):
+    scene_width_p = scene_rect_p[2]
+    scene_height_p = scene_rect_p[3]
+    projector_img_width = projector_img_shape
+    projector_img_height = projector_img_shape
+
+
 def camera_coord_to_scene_coord(cam_coord):
+    if isar.application_mode == ApplicationMode.AUTHORING:
+        return camera_coord_to_scene_coord_c(cam_coord)
+    elif isar.application_mode == ApplicationMode.EXECUTION:
+        return camera_coord_to_scene_coord_p(cam_coord)
+
+
+def camera_coord_to_scene_coord_c(cam_coord):
     if scene_rect_c is None:
         return cam_coord
 
     return cam_coord[0] - scene_rect_c[0], cam_coord[1] - scene_rect_c[1]
+
+
+def camera_coord_to_scene_coord_p(cam_coord):
+    if scene_rect_p is None:
+        return cam_coord
+
+    proj_coord = convert_camera_coord_to_porjector_coord(cam_coord)
+    return projector_coord_to_scene_coord_p(proj_coord)
 
 
 def projector_coord_to_scene_coord_p(proj_coord):
@@ -272,7 +300,7 @@ def projector_coord_to_scene_coord_p(proj_coord):
     return proj_coord[0] - scene_rect_p[0], proj_coord[1] - scene_rect_p[1]
 
 
-def camera_coords_to_scene_coord(cam_coords):
+def camera_coords_to_scene_coords(cam_coords):
     result = []
     for cam_coord in cam_coords:
         result.append(camera_coord_to_scene_coord(cam_coord))
@@ -283,5 +311,17 @@ def create_empty_image(size, color):
     empty_image = np.ones((size[1], size[0], 3), np.uint8)
     empty_image[:] = color
     return empty_image
+
+
+def convert_camera_coord_to_porjector_coord(p):
+    if p is None:
+        return p
+
+    if cam_proj_homography is None:
+        return p
+
+    else:
+        proj_point = cv2.perspectiveTransform(np.array([[(float(p[0]), float(p[1]))]]), cam_proj_homography).squeeze()
+        return int(proj_point[0]), int(proj_point[1])
 
 
