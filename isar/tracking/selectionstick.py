@@ -107,7 +107,7 @@ class SelectionStickService(Service):
                         self.event_timers_phys_obj[phys_obj_name] = time.time()
                     else:
                         first = self.event_timers_phys_obj[phys_obj_name]
-                        if time.time() - first > 3:
+                        if time.time() - first > SelectionEvent.trigger_interval:
                             self.fire_selection_event(phys_obj)
                             del self.event_timers_phys_obj[phys_obj_name]
 
