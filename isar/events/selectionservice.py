@@ -17,4 +17,9 @@ class SelectionService:
             t = threading.Thread(target=target.on_select)
             t.start()
 
+    def stop(self):
+        pass
+
+
+
 

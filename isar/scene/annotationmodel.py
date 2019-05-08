@@ -266,7 +266,7 @@ class Annotation:
 """
 Text
 Arrow
-SelectButton
+SelectBox
 Line
 Circle
 Rectangle
@@ -275,6 +275,7 @@ Image
 Video
 Audio
 Timer
+ActionButton
 """
 
 
@@ -445,12 +446,6 @@ class ImageAnnotation(Annotation):
             position[1] <= point[1] <= position[1] + height
 
 
-class AudioAnnotation(Annotation):
-    def __init__(self):
-        super(AudioAnnotation, self).__init__()
-        self.audio_path = ""
-
-
 class VideoAnnotation(Annotation):
     def __init__(self):
         super(VideoAnnotation, self).__init__()
@@ -509,6 +504,12 @@ class VideoAnnotation(Annotation):
             self.stopped = False
 
 
+class AudioAnnotation(Annotation):
+    def __init__(self):
+        super(AudioAnnotation, self).__init__()
+        self.audio_path = ""
+
+
 class RelationshipAnnotation(Annotation):
     def __init__(self):
         super().__init__()
@@ -528,6 +529,34 @@ class TimerAnnotation(Annotation):
         self.duration = 10
 
 
+class ActionButtonAnnotation(RectangleAnnotation):
+    DEFAULT_TEXT = "Action"
+
+    def __init__(self):
+        super().__init__()
+        self.text = StringAnnotationProperty("Text", ActionButtonAnnotation.DEFAULT_TEXT, self)
+        self.properties.append(self.text)
+
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 3, self)
+        self.properties.append(self.text_thickness)
+
+        self.font_scale = FloatAnnotationProperty("Font Scale", 1.0, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 255, 255), self)
+        self.properties.append(self.text_color)
+
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        width = self.width.get_value()
+        height = self.height.get_value()
+        return position[0] <= point[0] <= position[0] + width and \
+            position[1] <= point[1] <= position[1] + height
+
+    def on_select(self):
+        logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
+
+
 annotation_counters = {
     LineAnnotation.__name__: 0,
     RectangleAnnotation.__name__: 0,
@@ -539,7 +568,8 @@ annotation_counters = {
     TextAnnotation.__name__: 0,
     ArrowAnnotation.__name__: 0,
     RelationshipAnnotation.__name__: 0,
-    SelectBoxAnnotation.__name__: 0
+    SelectBoxAnnotation.__name__: 0,
+    ActionButtonAnnotation.__name__: 0
 }
 
 

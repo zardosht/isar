@@ -264,13 +264,47 @@ def f7():
     cv2.destroyAllWindows()
 
 
+def create_empty_image(size, color):
+    empty_image = np.ones((size[1], size[0], 3), np.uint8)
+    empty_image[:] = color
+    return empty_image
+
+
+def f8():
+    image = create_empty_image((500, 500), (255, 255, 255))
+    text = "Text"
+    font_scale = 0.5
+    text_color = (255, 0, 0)
+    text_thickness = 1
+
+    text_position = (50, 50)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    line_type = cv2.LINE_AA
+
+    cv2.putText(image,
+                text,
+                text_position,
+                font,
+                font_scale,
+                text_color,
+                text_thickness,
+                line_type)
+
+    cv2.line(image, (50, 50), (50, 100), (0, 255, 0))
+
+    cv2.imshow("text", image)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
+
 if __name__ == "__main__":
     # f2()
     # f3()
     # f4()
     # f5()
     # f6()
-    f7()
+    # f7()
+    f8()
 
     # img = cv2.imread("tmp_files/tmp_image.jpg")
     # cv2.imshow("aa", img)

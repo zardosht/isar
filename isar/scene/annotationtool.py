@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
-    SelectBoxAnnotation
+    SelectBoxAnnotation, ActionButtonAnnotation
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -59,7 +59,7 @@ def draw_annotation(opencv_img, annotation, phys_obj=None, scene_scale_factor=(1
 """
 Text
 Arrow
-SelectButton
+SelectBox
 Line
 Circle
 Rectangle
@@ -68,6 +68,7 @@ Image
 Video
 Audio
 Timer
+ActionButton
 """
 
 
@@ -611,6 +612,89 @@ class VideoAnnotationTool(ImageAnnotationTool):
         return annotation
 
 
+class ActionButtonAnnotationTool(RectangleAnnotationTool):
+    def __init__(self):
+        super(ActionButtonAnnotationTool, self).__init__()
+        self.text = None
+
+    def mouse_press_event(self, camera_view, event):
+        super().mouse_press_event(camera_view, event)
+        self.text = None
+
+    def mouse_release_event(self, camera_view, event):
+        if self.v2 is None or self.v1 is None:
+            self.set_drawing(False)
+            return
+
+        width = self.v2[0] - self.v1[0]
+        height = self.v2[1] - self.v1[1]
+        position = [self.v1[0] + int(width / 2), self.v1[1] + int(height / 2)]
+
+        if self.is_annotation_valid(width, height):
+            annotation = ActionButtonAnnotation()
+            annotation.set_position(position)
+            annotation.width.set_value(abs(width))
+            annotation.height.set_value(abs(height))
+            self.annotations_model.add_annotation(annotation)
+
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        color = self.color
+        thickness = self.thickness
+        if self.annotation:
+            position = self.annotation.position.get_value()
+            width = self.annotation.width.get_value()
+            height = self.annotation.height.get_value()
+            v1 = [0, 0]
+            v1[0] = position[0] - int(width / 2)
+            v1[1] = position[1] - int(height / 2)
+            self.v1 = sceneutil.convert_object_to_image(v1, self.phys_obj, self.scene_scale_factor)
+            v2 = [0, 0]
+            v2[0] = position[0] + int(width / 2)
+            v2[1] = position[1] + int(height / 2)
+            self.v2 = sceneutil.convert_object_to_image(v2, self.phys_obj, self.scene_scale_factor)
+            color = self.annotation.color.get_value()
+            thickness = self.annotation.thickness.get_value()
+
+            self.text = self.annotation.text.get_value()
+            font_scale = self.annotation.font_scale.get_value()
+            text_color = self.annotation.text_color.get_value()
+            text_thickness = self.annotation.text_thickness.get_value()
+
+            # TODO: add font property to TextAnnotation()
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            line_type = cv2.LINE_AA
+
+            text_size, _ = cv2.getTextSize(self.text, font, font_scale, text_thickness)
+            text_position_x = int(position[0] - (text_size[0] / 2))
+            text_position_y = int(position[1] + (text_size[1] / 2))
+
+        if self.v2 is None:
+            return
+
+        cv2.rectangle(self._img,
+                      tuple(self.v1),
+                      tuple(self.v2),
+                      color,
+                      thickness)
+
+        if self.text is None:
+            return
+
+        cv2.putText(self._img,
+                    self.text,
+                    (text_position_x, text_position_y),
+                    font,
+                    font_scale,
+                    text_color,
+                    text_thickness,
+                    line_type)
+
+
 class SelectionTool(AnnotationTool):
     def __init__(self):
         super(SelectionTool, self).__init__()
@@ -722,7 +806,8 @@ annotation_tools = {
     TextAnnotation.__name__: TextAnnotationTool(),
     ArrowAnnotation.__name__: ArrowAnnotationTool(),
     RelationshipAnnotation.__name__: RelationshipAnnotationTool(),
-    SelectBoxAnnotation.__name__: SelectBoxAnnotationTool()
+    SelectBoxAnnotation.__name__: SelectBoxAnnotationTool(),
+    ActionButtonAnnotation.__name__: ActionButtonAnnotationTool()
 }
 
 annotation_tool_btns = {
@@ -737,5 +822,6 @@ annotation_tool_btns = {
     "audio_btn": AudioAnnotationTool(),
     "relationship_btn": RelationshipAnnotationTool(),
     "arrow_btn": ArrowAnnotationTool(),
-    "image_btn": ImageAnnotationTool()
+    "image_btn": ImageAnnotationTool(),
+    "action_button_btn": ActionButtonAnnotationTool()
 }
