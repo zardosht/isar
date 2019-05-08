@@ -120,6 +120,9 @@ class DomainLearningWindow(QWidget):
         self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)
         self._selection_stick_service.set_annotations_model(self.annotations_model)
 
+        selection_service = servicemanager.get_service(ServiceNames.SELECTION_SERVICE)
+        selection_service.annotations_model = self.annotations_model
+
         # self.annotations_list.setModel(annotations_model)
 
     def sceneslist_current_changed(self):

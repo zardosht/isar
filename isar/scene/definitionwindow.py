@@ -264,6 +264,8 @@ class SceneDefinitionWindow(QWidget):
 
         self._selection_stick_service.set_physical_objects_model(physical_objects_model)
         self._selection_stick_service.set_annotations_model(annotations_model)
+        selection_service = servicemanager.get_service(ServiceNames.SELECTION_SERVICE)
+        selection_service.annotations_model = annotations_model
 
         properties_model = AnnotationPropertiesModel()
         self.properties_view.setModel(properties_model)

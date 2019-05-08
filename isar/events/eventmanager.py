@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger("isar.eventmanager")
 
+# event listener must have an on_event(e) method.
 event_listeners = {}
 
 

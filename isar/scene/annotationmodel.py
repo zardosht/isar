@@ -165,6 +165,11 @@ class AnnotationsModel(QAbstractListModel):
         else:
             return ()
 
+    def get_annotation_by_name(self, name):
+        for annotation in self.get_all_annotations():
+            if annotation.name == name:
+                return annotation
+
     def get_scene_annotations(self):
         if self.__scene:
             return self.__scene.get_scene_annotations()
@@ -195,6 +200,9 @@ class Annotation:
 
         self.update_orientation = BooleanAnnotationProperty("Update Orientation", False, self)
         self.properties.append(self.update_orientation)
+
+        self.show = BooleanAnnotationProperty("Show", True, self)
+        self.properties.append(self.show)
 
         # TODO: For later if we want to draw annotations based on their selection state.
         self.is_selected = False

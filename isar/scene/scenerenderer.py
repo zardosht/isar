@@ -26,7 +26,8 @@ class SceneRenderer:
             return
 
         for annotation in self.__annotations_model.get_scene_annotations():
-            annotationtool.draw_annotation(self.opencv_img, annotation)
+            if annotation.show.get_value():
+                annotationtool.draw_annotation(self.opencv_img, annotation)
 
     def draw_scene_physical_objects(self):
         if self.__physical_objects_model is None or \
@@ -53,7 +54,8 @@ class SceneRenderer:
             return
 
         for annotation in phys_obj.get_annotations():
-            annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj, scene_scale_factor)
+            if annotation.show.get_value():
+                annotationtool.draw_annotation(self.opencv_img, annotation, phys_obj, scene_scale_factor)
 
 
 

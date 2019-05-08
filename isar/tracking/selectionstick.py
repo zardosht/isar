@@ -52,7 +52,6 @@ class SelectionStickService(Service):
         self.event_timers_phys_obj = {}
         self.event_timers_annotation = {}
 
-
     def start(self):
         tracking_thread = threading.Thread(target=self._start_tracking)
         tracking_thread.start()

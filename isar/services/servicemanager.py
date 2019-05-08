@@ -21,6 +21,7 @@ class ServiceNames(Enum):
     OBJECT_DETECTION = 2
     PROJECTOR = 3
     SELECTION_STICK = 4
+    SELECTION_SERVICE = 5
 
 
 def start_services():
@@ -48,6 +49,7 @@ def start_services():
 
         selection_service = SelectionService()
         eventmanager.register_listener(SelectionEvent.__name__, selection_service)
+        __services[ServiceNames.SELECTION_SERVICE] = selection_service
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
