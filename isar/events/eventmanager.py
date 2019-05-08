@@ -32,6 +32,11 @@ class Event:
 
 
 class SelectionEvent(Event):
+    trigger_interval = 1
+    """
+    Defines the interval between firing selection events. 
+    """
+
     pass
 
 

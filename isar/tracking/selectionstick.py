@@ -12,14 +12,14 @@ from isar.scene import sceneutil
 from isar.services.service import Service
 
 
-'''
+"""
 — a thread for detecting the marker
 This thread continoisly detects the marker, and updates self.current_rect
 
 — a thread for firing selection events: 
 This thread continoisly queries scene physical objects and annotations for colliding with the center 
 point of self.current_rect. If a collision is detected, the timestamp is recorded. 
-If after 3 seconds the collision is still active, a SelectionEvent is fired, 
+If after "SelectionEvent.trigger_interval" seconds the collision is still active, a SelectionEvent is fired, 
 with list of annotations and physical objects that are selected. 
 
 — An event manager that registers listeners for different event types and fires the events. 
@@ -29,7 +29,7 @@ Firing an event means calling all listeners for that event with the given event 
 When event is called, the on_select() event of all parameter 
 annotations and physical objects is called (in a separate thread?)
 
-'''
+"""
 
 
 logger = logging.getLogger("isar.selectionstick")
@@ -107,7 +107,7 @@ class SelectionStickService(Service):
                         self.event_timers_phys_obj[phys_obj_name] = time.time()
                     else:
                         first = self.event_timers_phys_obj[phys_obj_name]
-                        if time.time() - first > 3:
+                        if time.time() - first > SelectionEvent.trigger_interval:
                             self.fire_selection_event(phys_obj)
                             del self.event_timers_phys_obj[phys_obj_name]
 
@@ -128,7 +128,7 @@ class SelectionStickService(Service):
                         self.event_timers_annotation[annotation_name] = time.time()
                     else:
                         first = self.event_timers_annotation[annotation_name]
-                        if time.time() - first > 3:
+                        if time.time() - first > SelectionEvent.trigger_interval:
                             self.fire_selection_event(annotation)
                             del self.event_timers_annotation[annotation_name]
 
