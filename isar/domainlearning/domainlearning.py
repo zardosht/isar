@@ -6,6 +6,7 @@ from PyQt5 import QtCore, uic
 from PyQt5.QtCore import QItemSelectionModel, QTimer, Qt
 from PyQt5.QtWidgets import QHBoxLayout, QFileDialog, QWidget, QMainWindow
 from isar.camera.camera import CameraService
+from isar.events import actionmanager
 from isar.projection.projector import ProjectorView
 from isar.scene.annotationmodel import AnnotationsModel
 from isar.scene.cameraview import CameraView
@@ -122,6 +123,8 @@ class DomainLearningWindow(QWidget):
 
         selection_service = servicemanager.get_service(ServiceNames.SELECTION_SERVICE)
         selection_service.annotations_model = self.annotations_model
+
+        actionmanager.annotations_model = self.annotations_model
 
         # self.annotations_list.setModel(annotations_model)
 

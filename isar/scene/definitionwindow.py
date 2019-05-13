@@ -11,6 +11,7 @@ from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag, QCl
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
 
 from isar.camera.camera import CameraService, CameraFrame
+from isar.events import actionmanager
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import AnnotationsModel, Annotation
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
@@ -259,19 +260,23 @@ class SceneDefinitionWindow(QWidget):
 
         annotations_model = AnnotationsModel()
         annotations_model.set_scene(current_scene)
+
         self.camera_view.set_annotations_model(annotations_model)
         self.annotations_list.setModel(annotations_model)
 
         self._selection_stick_service.set_physical_objects_model(physical_objects_model)
         self._selection_stick_service.set_annotations_model(annotations_model)
+
         selection_service = servicemanager.get_service(ServiceNames.SELECTION_SERVICE)
         selection_service.annotations_model = annotations_model
 
+        actionmanager.annotations_model = annotations_model
+
         properties_model = AnnotationPropertiesModel()
         self.properties_view.setModel(properties_model)
-        phys_obj_combo_delegate = AnnotationPropertyItemDelegate()
-        phys_obj_combo_delegate.phys_obj_model = physical_objects_model
-        self.properties_view.setItemDelegate(phys_obj_combo_delegate)
+        annotation_property_item_delegate = AnnotationPropertyItemDelegate()
+        annotation_property_item_delegate.phys_obj_model = physical_objects_model
+        self.properties_view.setItemDelegate(annotation_property_item_delegate)
 
     def update_camera_view(self):
         # camera_frame = self._camera_service.get_frame(flipped_y=True)

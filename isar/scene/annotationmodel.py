@@ -11,6 +11,7 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableMode
 from PyQt5.QtWidgets import QCheckBox, QComboBox, QItemDelegate, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel
 
+from isar.events import actionmanager
 from isar.scene import sceneutil, scenemodel
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -546,15 +547,24 @@ class ActionButtonAnnotation(RectangleAnnotation):
         self.text_color = ColorAnnotationProperty("Text Color", (0, 255, 255), self)
         self.properties.append(self.text_color)
 
+        # Actions must have been created up front in the action creator.
+        self.on_select_action = ActionAnnotationProperty("On Select", None, self)
+        self.properties.append(self.on_select_action)
+
     def intersects_with_point(self, point):
         position = self.position.get_value()
+        if position is None:
+            return False
+
         width = self.width.get_value()
         height = self.height.get_value()
-        return position[0] <= point[0] <= position[0] + width and \
-            position[1] <= point[1] <= position[1] + height
+        return (position[0] - int(width / 2)) <= point[0] <= (position[0] + int(width / 2)) and \
+            (position[1] - int(height / 2)) <= point[1] <= (position[1] + int(height / 2))
 
     def on_select(self):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
+        action = self.on_select_action.get_value()
+        actionmanager.perform_action(action)
 
 
 annotation_counters = {
@@ -668,6 +678,7 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
         super().__init__()
         self.phys_obj_model = None
         self.phys_obj_combo_items = []
+        self.actions_combo_items = []
 
         self.filename = None
 
@@ -720,6 +731,30 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
             boolean_combo.currentIndexChanged.connect(self.boolean_combo_index_changed)
             return boolean_combo
 
+        elif isinstance(annotation_property, ActionAnnotationProperty):
+            if len(self.actions_combo_items) == 0:
+                self.actions_combo_items = list(actionmanager.defined_actions)
+                self.actions_combo_items.append(None)
+
+            combo = QComboBox(parent)
+            combo.clear()
+            for action in self.actions_combo_items:
+                if action is not None:
+                    combo.addItem(action.name)
+                else:
+                    combo.addItem("None")
+
+            if annotation_property.get_value() is None:
+                combo.setCurrentIndex(0)
+            else:
+                index = -1
+                for action in self.actions_combo_items:
+                    index += 1
+                    if action is not None and action.name == annotation_property.get_value().name:
+                        combo.setCurrentIndex(index)
+
+            combo.currentIndexChanged.connect(self.on_select_actions_combo_index_changed)
+            return combo
         else:
             return super().createEditor(parent, option, index)
 
@@ -737,6 +772,9 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
                     model.setData(index, True, Qt.EditRole)
                 elif combo_index == 1:
                     model.setData(index, False, Qt.EditRole)
+            elif isinstance(annotation_property, ActionAnnotationProperty):
+                action = self.actions_combo_items[combo_index]
+                model.setData(index, action, Qt.EditRole)
 
         elif isinstance(editor, FilePathEditorWidget):
             annotation_property = index.model().get_annotation_property(index)
@@ -754,6 +792,9 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
         self.commitData.emit(self.sender())
 
     def boolean_combo_index_changed(self):
+        self.commitData.emit(self.sender())
+
+    def on_select_actions_combo_index_changed(self):
         self.commitData.emit(self.sender())
 
 
@@ -964,3 +1005,15 @@ class BooleanAnnotationProperty(AnnotationProperty):
                     return True
             else:
                 return False
+
+
+class ActionAnnotationProperty(AnnotationProperty):
+    def get_str_value(self):
+        if self._value is None:
+            return "None"
+        else:
+            return self._value.name
+
+    def set_value(self, value):
+        self._value = value
+        return True

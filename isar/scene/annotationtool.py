@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 
+from isar.events import eventmanager
+from isar.events.eventmanager import SelectionEvent
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
@@ -700,15 +702,18 @@ class SelectionTool(AnnotationTool):
         super(SelectionTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
+        self.annotation = None
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
         for annotation in self.annotations_model.get_all_annotations():
             if annotation.intersects_with_point((img_x, img_y)):
                 self.annotation = annotation
+                break
 
     def mouse_release_event(self, camera_view, event):
-        self.annotation.select()
+        if self.annotation is not None:
+            eventmanager.fire_event(SelectionEvent(self.annotation))
 
 
 class TimerAnnotationTool(AnnotationTool):
