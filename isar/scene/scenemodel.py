@@ -6,7 +6,7 @@ import jsonpickle
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
-from isar.events import actionmanager
+from isar.events.actionsservice import ActionsService
 from isar.scene import sceneutil
 
 
@@ -127,7 +127,8 @@ class ScenesModel(QAbstractListModel):
                 scene.reset_runtime_state()
 
             # TODO: should it be called here? or somewhere else?
-            actionmanager.init_defined_actions()
+
+            ActionsService.init_defined_actions()
 
             self.endResetModel()
             self.update_view(None)

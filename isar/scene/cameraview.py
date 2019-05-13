@@ -59,22 +59,22 @@ class CameraView(QLabel):
                 x, y, width, height = self.scene_definition_windows.scene_rect
                 self.opencv_img = camera_frame.scene_image[y:y + height, x:x + width].copy()
 
-            self.scene_renderer.opencv_img = self.opencv_img
-            self.image_frame = Frame(self.opencv_img.shape[1], self.opencv_img.shape[0])
+                self.scene_renderer.opencv_img = self.opencv_img
+                self.image_frame = Frame(self.opencv_img.shape[1], self.opencv_img.shape[0])
 
-            self.scene_renderer.draw_scene_physical_objects()
+                self.scene_renderer.draw_scene_physical_objects()
 
-            self.scene_renderer.draw_scene_annotations()
+                self.scene_renderer.draw_scene_annotations()
 
-            # =========== experimental =============
-            selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
-            selection_stick_service.draw_current_rect(self.opencv_img)
-            # ======================================
+                # =========== experimental =============
+                selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
+                selection_stick_service.draw_current_rect(self.opencv_img)
+                # ======================================
 
-            if self.active_annotation_tool:
-                self.active_annotation_tool.set_image(self.opencv_img)
-                self.active_annotation_tool.annotations_model = self.__annotations_model
-                self.active_annotation_tool.draw()
+                if self.active_annotation_tool:
+                    self.active_annotation_tool.set_image(self.opencv_img)
+                    self.active_annotation_tool.annotations_model = self.__annotations_model
+                    self.active_annotation_tool.draw()
 
             out_image = sceneutil.get_qimage_from_np_image(self.opencv_img)
             # out_image = out_image.mirrored(horizontal=True, vertical=False)

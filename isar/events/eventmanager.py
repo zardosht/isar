@@ -36,7 +36,25 @@ class SelectionEvent(Event):
     """
     Defines the interval between firing selection events. 
     """
-
     pass
 
 
+class PhysicalObjectAppearedEvent(Event):
+    pass
+
+
+class PhysicalObjectDisappearedEvent(Event):
+    pass
+
+
+class PhysicalObjectPickedEvent(Event):
+    pass
+
+
+class TimerFinishedEvent(Event):
+    pass
+
+
+class TimerTimeoutEvent(Event):
+    def __init__(self):
+        self.current_time = None

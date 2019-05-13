@@ -4,6 +4,7 @@ from enum import Enum
 
 from isar.camera.camera import CameraService
 from isar.events import eventmanager
+from isar.events.actionsservice import ActionsService
 from isar.events.eventmanager import SelectionEvent
 from isar.events.selectionservice import SelectionService
 from isar.tracking import objectdetection
@@ -22,6 +23,7 @@ class ServiceNames(Enum):
     PROJECTOR = 3
     SELECTION_STICK = 4
     SELECTION_SERVICE = 5
+    ACTIONS_SERVICE = 6
 
 
 def start_services():
@@ -43,13 +45,18 @@ def start_services():
         traceback.print_tb(exp.__traceback__)
 
     try:
+        actions_service = ActionsService(ServiceNames.ACTIONS_SERVICE)
+        __services[ServiceNames.ACTIONS_SERVICE] = actions_service
+
         selection_stick_service = SelectionStickService(ServiceNames.SELECTION_STICK)
         selection_stick_service.start()
         __services[ServiceNames.SELECTION_STICK] = selection_stick_service
 
-        selection_service = SelectionService()
+        selection_service = SelectionService(ServiceNames.SELECTION_SERVICE)
+        selection_service.actions_service = actions_service
         eventmanager.register_listener(SelectionEvent.__name__, selection_service)
         __services[ServiceNames.SELECTION_SERVICE] = selection_service
+
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)

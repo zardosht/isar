@@ -11,7 +11,6 @@ from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag, QCl
 from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
 
 from isar.camera.camera import CameraService, CameraFrame
-from isar.events import actionmanager
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import AnnotationsModel, Annotation
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
@@ -270,7 +269,8 @@ class SceneDefinitionWindow(QWidget):
         selection_service = servicemanager.get_service(ServiceNames.SELECTION_SERVICE)
         selection_service.annotations_model = annotations_model
 
-        actionmanager.annotations_model = annotations_model
+        actions_service = servicemanager.get_service(ServiceNames.ACTIONS_SERVICE)
+        actions_service.annotations_model = annotations_model
 
         properties_model = AnnotationPropertiesModel()
         self.properties_view.setModel(properties_model)

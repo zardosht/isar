@@ -11,10 +11,11 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableMode
 from PyQt5.QtWidgets import QCheckBox, QComboBox, QItemDelegate, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel
 
-from isar.events import actionmanager
+from isar.events import actionsservice
 from isar.scene import sceneutil, scenemodel
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
+
 
 logger = logging.getLogger("isar.scene.annotationmodel")
 
@@ -563,8 +564,6 @@ class ActionButtonAnnotation(RectangleAnnotation):
 
     def on_select(self):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
-        action = self.on_select_action.get_value()
-        actionmanager.perform_action(action)
 
 
 annotation_counters = {
@@ -732,9 +731,9 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
             return boolean_combo
 
         elif isinstance(annotation_property, ActionAnnotationProperty):
-            if len(self.actions_combo_items) == 0:
-                self.actions_combo_items = list(actionmanager.defined_actions)
-                self.actions_combo_items.append(None)
+            self.actions_combo_items = []
+            self.actions_combo_items.extend(actionsservice.defined_actions)
+            self.actions_combo_items.append(None)
 
             combo = QComboBox(parent)
             combo.clear()

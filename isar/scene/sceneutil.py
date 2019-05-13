@@ -191,6 +191,9 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
     # Detect the scene border markers and get the scene boudaries from them.
     # All scene images must be resized to scene boundaries and shown in the center of projector widget
     marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, aruco_dictionary)
+    if marker_corners is None or marker_ids is None:
+        logger.warning("marker_corners or marker_ids is None. Return.")
+        return
 
     # there are only two markers. So, one has index 0, the other has index 1,
     # however we don't know which one is marker 0 (the marker with id 0 must be placed physically at the top-left)
