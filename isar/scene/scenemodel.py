@@ -25,6 +25,7 @@ current_project: Project = None
 
 class ScenesModel(QAbstractListModel):
     editCompleted = QtCore.pyqtSignal(str)
+    scene_changed = QtCore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -54,6 +55,16 @@ class ScenesModel(QAbstractListModel):
             self.editCompleted.emit(new_name)
 
         return True  # edit was done correctly
+
+    def find_index(self, scn):
+        idx = -1
+        try:
+            idx = self.scenes.index(scn)
+        except ValueError:
+            logger.warning("Scene not found")
+
+        if idx != -1:
+            return self.createIndex(idx, 0)
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
@@ -110,6 +121,19 @@ class ScenesModel(QAbstractListModel):
 
         # in the new current scene, make all py
         self.current_scene.update_po_annotations()
+
+        self.scene_changed.emit()
+
+    def show_scene(self, scene_name):
+        for idx, scene in enumerate(self.scenes):
+            if scene.name == scene_name:
+                model_index = self.createIndex(idx, 0)
+                self.set_current_scene(model_index)
+                # update view causes the sceneslist_current_changed() method in
+                # SceneDefinitionWindow and DomainLearningWindow to be called, which in turn does
+                # other important things like setting the current_scene for AnnotationsModel and PhysicalObjectsModel
+                self.update_view(model_index)
+                break
 
     def save_project(self, parent_dir=None, project_name=None):
         new_project_created = False

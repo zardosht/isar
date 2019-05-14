@@ -124,7 +124,8 @@ class DomainLearningWindow(QWidget):
         selection_service.annotations_model = self.annotations_model
 
         actions_service = servicemanager.get_service(ServiceNames.ACTIONS_SERVICE)
-        actions_service.annotations_model = self.annotations_model
+        actions_service.set_annotations_model(self.annotations_model)
+        actions_service.set_scenes_model(self.scenes_model)
 
         # self.annotations_list.setModel(annotations_model)
 

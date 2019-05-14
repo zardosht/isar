@@ -26,7 +26,14 @@ when scene is changed to another scene. (We probably need a SceneChangedEvent)
 class ActionsService(Service):
     def __init__(self, service_name):
         super().__init__(service_name)
-        self.annotations_model = None
+        self.__annotations_model = None
+        self.__scenes_model = None
+
+    def set_annotations_model(self, annotations_model):
+        self.__annotations_model = annotations_model
+
+    def set_scenes_model(self, scenes_model):
+        self.__scenes_model = scenes_model
 
     @staticmethod
     def init_defined_actions():
@@ -56,13 +63,21 @@ class ActionsService(Service):
         hide_lenna.annotation_names = ["lenna"]
         defined_actions.append(hide_lenna)
 
+        show_scene1 = ShowSceneAction()
+        show_scene1.name = "Show Scene1"
+        show_scene1.scene_name = "Scene1"
+        defined_actions.append(show_scene1)
+
     def perform_action(self, action):
         if action is None:
             logger.warning("Action is None.")
             return
 
         if action.annotations_model is None:
-            action.annotations_model = self.annotations_model
+            action.annotations_model = self.__annotations_model
+
+        if action.scenes_model is None:
+            action.scenes_model = self.__scenes_model
 
         action.run()
 
@@ -77,6 +92,7 @@ class Action:
     def __init__(self):
         self.name = "action"
         self.annotations_model = None
+        self.scenes_model = None
 
     def run(self):
         # must be implemented by subclasses
@@ -84,10 +100,12 @@ class Action:
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        del state['annotations_model']
+        del state["annotations_model"]
+        del state["scenes_model"]
         return state
 
     def __setstate__(self, state):
+        self.__init__()
         self.__dict__.update(state)
 
 
@@ -153,9 +171,10 @@ class ShowSceneAction(Action):
     """
     def __init__(self):
         super().__init__()
+        self.scene_name = None
 
     def run(self):
-        pass
+        self.scenes_model.show_scene(self.scene_name)
 
 
 class NextSceneAction(Action):

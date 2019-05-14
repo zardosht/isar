@@ -107,6 +107,11 @@ class SceneDefinitionWindow(QWidget):
         scenes_model = self.scenes_list.model()
         scenes_model.set_current_scene(current_index)
 
+    def current_scene_changed(self):
+        scenes_model = self.scenes_list.model()
+        current_index = scenes_model.find_index(scenes_model.current_scene)
+        self.scenes_list.setCurrentIndex(current_index)
+
         self.annotations_list.model().set_scene(scenes_model.current_scene)
         self.camera_view.set_annotations_model(self.annotations_list.model())
 
@@ -247,6 +252,7 @@ class SceneDefinitionWindow(QWidget):
         self.scenes_model = ScenesModel()
         self.scenes_list.setModel(self.scenes_model)
         current_scene = self.scenes_list.model().current_scene
+        self.scenes_model.scene_changed.connect(self.current_scene_changed)
 
         physical_objects_model = PhysicalObjectsModel()
         physical_objects_model.set_scene(current_scene)
@@ -270,7 +276,8 @@ class SceneDefinitionWindow(QWidget):
         selection_service.annotations_model = annotations_model
 
         actions_service = servicemanager.get_service(ServiceNames.ACTIONS_SERVICE)
-        actions_service.annotations_model = annotations_model
+        actions_service.set_annotations_model(annotations_model)
+        actions_service.set_scenes_model(self.scenes_model)
 
         properties_model = AnnotationPropertiesModel()
         self.properties_view.setModel(properties_model)
