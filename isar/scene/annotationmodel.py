@@ -56,15 +56,18 @@ class AnnotationsModel(QAbstractListModel):
             return
 
         if role == Qt.EditRole:
-            new_name = self.__annotations[index.row()].name
+            annotation = self.__annotations[index.row()]
+            new_name = annotation.name
             try:
-                if sceneutil.is_valid_name(str(value)):
+                taken_names = [annot.name for annot in self.__annotations]
+                if sceneutil.is_valid_name(str(value), taken_names):
                     new_name = str(value)
             except Exception as e:
                 print("Error editing annotation name", e)
                 return False
 
-            self.__annotations[index.row()].name = new_name
+            annotation.name = new_name
+            annotation.id = self.__scene.name + sceneutil.ANNOTATION_ID_SEPARATOR + new_name
             self.editCompleted.emit(new_name)
 
         return True
@@ -81,7 +84,7 @@ class AnnotationsModel(QAbstractListModel):
         self.insertRow(at_row)
         class_name = new_annotation.__class__.__name__
         new_annotation.name = new_annotation.__class__.__name__ + str(annotation_counters[class_name])
-
+        new_annotation.id = self.__scene.name + sceneutil.ANNOTATION_ID_SEPARATOR + new_annotation.name
         new_annotation.scene = self.__scene
         self.__scene.add_annotation(new_annotation)
         self.__annotations = self.__scene.get_all_annotations()
@@ -172,6 +175,17 @@ class AnnotationsModel(QAbstractListModel):
             if annotation.name == name:
                 return annotation
 
+    def get_annotation_by_id(self, id):
+        if id is None:
+            return None
+        full_id = id
+        if not full_id.startswith(self.__scene.name):
+            full_id = self.__scene.name + sceneutil.ANNOTATION_ID_SEPARATOR + id
+
+        for annotation in self.get_all_annotations():
+            if annotation.id == id:
+                return annotation
+
     def get_scene_annotations(self):
         if self.__scene:
             return self.__scene.get_scene_annotations()
@@ -188,6 +202,7 @@ class AnnotationsModel(QAbstractListModel):
 class Annotation:
     def __init__(self):
         self.name = "Annotation"
+        self.id = "id"
         self.scene = None
         # Owner of  an annotation is either the scene or a physical object. An annotation can have only one owner.
         # self.owner = None
@@ -480,7 +495,13 @@ class VideoAnnotation(Annotation):
         self.current_frame = 0
 
     def intersects_with_point(self, point):
+        if point is None:
+            return False
+
         position = self.position.get_value()
+        if position is None:
+            return False
+
         width = self.width.get_value()
         height = self.height.get_value()
         return position[0] <= point[0] <= position[0] + width and \

@@ -7,6 +7,21 @@ logger = logging.getLogger("isar.actionsservice")
 
 defined_actions = []
 
+"""
+All the actions related to annotations, sound, video, timer, ... relate to the current scene. 
+Only scene actions (show scene, next scene, previous scene) deal with another scene. 
+
+The names of the annotations are unique inside the scene. 
+
+------------ nonesense... because the __scene attribute of the annotations_model is automatically changed ---------
+
+The annotations_model of the ActionsService (generally, whereever there is an annotations_model) should be updated
+when scene is changed to another scene. (We probably need a SceneChangedEvent)
+-------------------------------------------------------------------------------------------------------------------
+
+
+"""
+
 
 class ActionsService(Service):
     def __init__(self, service_name):
@@ -66,6 +81,14 @@ class Action:
     def run(self):
         # must be implemented by subclasses
         pass
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['annotations_model']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
 
 class ToggleAnnotationVisibilityAction(Action):

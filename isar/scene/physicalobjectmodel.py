@@ -222,6 +222,9 @@ class PhysicalObject:
     def get_annotations(self):
         return tuple(self.__annotations)
 
+    def clear_annotations(self):
+        self.__annotations.clear()
+
     def remove_annotation(self, annotation):
         self.__annotations.remove(annotation)
 

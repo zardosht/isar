@@ -58,3 +58,9 @@ class TimerFinishedEvent(Event):
 class TimerTimeoutEvent(Event):
     def __init__(self):
         self.current_time = None
+
+
+class SceneChangedEvent(Event):
+    pass
+
+

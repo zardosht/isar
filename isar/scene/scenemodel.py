@@ -9,7 +9,6 @@ from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 from isar.events.actionsservice import ActionsService
 from isar.scene import sceneutil
 
-
 logger = logging.getLogger("isar.scene.scenemodel")
 
 
@@ -29,7 +28,7 @@ class ScenesModel(QAbstractListModel):
 
     def __init__(self):
         super().__init__()
-        self.scenes = [Scene("New Scene")]
+        self.scenes = [Scene("Scene1")]
         self.current_scene = self.scenes[0]
         self.scene_size = None
 
@@ -44,7 +43,8 @@ class ScenesModel(QAbstractListModel):
         if role == Qt.EditRole:
             new_name = self.scenes[index.row()].name
             try:
-                if sceneutil.is_valid_name(str(value)):
+                taken_names = [scene.name for scene in self.scenes]
+                if sceneutil.is_valid_name(str(value), taken_names):
                     new_name = str(value)
             except Exception as e:
                 print("Error editing scene name", e)
@@ -61,7 +61,8 @@ class ScenesModel(QAbstractListModel):
     def new_scene(self, at_index):
         self.beginInsertRows(QModelIndex(), at_index.row(), at_index.row())
         self.insertRow(at_index.row())
-        new_scene = Scene("New Scene")
+        scene_name = "Scene" + str(len(self.scenes) + 1)
+        new_scene = Scene(scene_name)
         self.scenes.append(new_scene)
         self.current_scene = new_scene
         self.endInsertRows()
@@ -72,8 +73,9 @@ class ScenesModel(QAbstractListModel):
 
         self.beginInsertRows(QModelIndex(), selected_index.row(), selected_index.row())
         self.insertRow(selected_index.row())
-        cloned_scene = copy.deepcopy(self.current_scene)
-        cloned_scene.name = "Cloned - " + self.current_scene.name
+
+        cloned_scene = self.current_scene.clone()
+
         self.scenes.insert(selected_index.row() + 1, cloned_scene)
         self.endInsertRows()
 
@@ -99,7 +101,15 @@ class ScenesModel(QAbstractListModel):
             self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
     def set_current_scene(self, selected_index):
+
+        # first tell the current scene to update its phys_obj_annotations_dict
+        self.current_scene.update_po_annotations_dict()
+
+        # then change the current scene to new index
         self.current_scene = self.scenes[selected_index.row()]
+
+        # in the new current scene, make all py
+        self.current_scene.update_po_annotations()
 
     def save_project(self, parent_dir=None, project_name=None):
         new_project_created = False
@@ -109,7 +119,12 @@ class ScenesModel(QAbstractListModel):
             new_project_created = True
 
         save_path = os.path.join(current_project.base_path, current_project.name + ".json")
+
+        for scene in self.scenes:
+            scene.update_po_annotations_dict()
+
         current_project.scenes = self.scenes
+
         frozen = jsonpickle.encode(current_project)
         with open(str(save_path), "w") as f:
              f.write(frozen)
@@ -139,6 +154,18 @@ class Scene:
         self.name = name
         self.__physical_objects = []
         self.__annotations = []
+        self.__po_annotations = {}
+
+    def update_po_annotations_dict(self):
+        self.__po_annotations.clear()
+        for phys_obj in self.__physical_objects:
+            self.__po_annotations[phys_obj] = phys_obj.get_annotations()
+
+    def update_po_annotations(self):
+        for physical_object in self.__po_annotations.keys():
+            physical_object.clear_annotations()
+            for annotation in self.__po_annotations[physical_object]:
+                physical_object.add_annotation(annotation)
 
     def add_physical_object(self, physical_obj):
         if not physical_obj in self.__physical_objects:
@@ -174,8 +201,10 @@ class Scene:
         return self.__annotations
 
     def get_physical_object_annotations(self, phys_obj):
-        logger.warning("TODO: not implemetned yet")
-        pass
+        if not phys_obj in self.__po_annotations:
+            return None
+
+        return tuple(self.__po_annotations[phys_obj])
 
     def get_all_annotations(self):
         all_annotations = []
@@ -188,6 +217,25 @@ class Scene:
     def reset_runtime_state(self):
         for annotation in self.get_all_annotations():
             annotation.reset_runtime_state()
+
+    def clone(self):
+        cloned_scene = Scene("Cloned-" + self.name)
+        cloned_scene.__annotations = []
+        cloned_scene.__physical_objects = []
+        for annotation in self.__annotations:
+            cloned_annotation = copy.deepcopy(annotation)
+            cloned_annotation.id = self.name + sceneutil.ANNOTATION_ID_SEPARATOR + cloned_annotation.name
+            cloned_scene.add_annotation(annotation)
+
+        for physical_object in self.__physical_objects:
+            physical_object.clear_annotations()
+            for annotation in physical_object.get_annotations():
+                cloned_annotation = copy.deepcopy(annotation)
+                cloned_annotation.id = self.name + sceneutil.ANNOTATION_ID_SEPARATOR + cloned_annotation.name
+                physical_object.add_annotation(cloned_annotation)
+            cloned_scene.add_physical_object(physical_object)
+
+        return cloned_scene
 
 
 def create_project(parent_dir, project_name):

@@ -21,6 +21,9 @@ scene_scale_factor_p = None
 cam_proj_homography = None
 
 
+ANNOTATION_ID_SEPARATOR = "."
+
+
 class RefFrame(NamedTuple):
     x: float
     y: float
@@ -33,7 +36,7 @@ class Frame(NamedTuple):
     height: int
 
 
-def is_valid_name(name):
+def is_valid_name(name, taken_names=None):
     if len(name) == 0:
         return False
     is_valid = False
@@ -42,6 +45,9 @@ def is_valid_name(name):
                    c == "-" or
                    c == "_"
                    for c in name)
+    if name in taken_names:
+        is_valid = False
+
     return is_valid
 
 
