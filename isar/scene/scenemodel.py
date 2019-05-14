@@ -154,21 +154,21 @@ class Scene:
         self.name = name
         self.__physical_objects = []
         self.__annotations = []
-        self.__po_annotations = {}
+        self.__po_annotations_dict = {}
 
     def update_po_annotations_dict(self):
-        self.__po_annotations.clear()
+        self.__po_annotations_dict.clear()
         for phys_obj in self.__physical_objects:
-            self.__po_annotations[phys_obj] = phys_obj.get_annotations()
+            self.__po_annotations_dict[phys_obj.name] = phys_obj.get_annotations()
 
     def update_po_annotations(self):
-        for physical_object in self.__po_annotations.keys():
+        for physical_object in self.__physical_objects:
             physical_object.clear_annotations()
-            for annotation in self.__po_annotations[physical_object]:
+            for annotation in self.__po_annotations_dict[physical_object.name]:
                 physical_object.add_annotation(annotation)
 
     def add_physical_object(self, physical_obj):
-        if not physical_obj in self.__physical_objects:
+        if physical_obj not in self.__physical_objects:
             self.__physical_objects.append(physical_obj)
 
     def delete_physical_object(self, phy_obj):
@@ -201,10 +201,10 @@ class Scene:
         return self.__annotations
 
     def get_physical_object_annotations(self, phys_obj):
-        if not phys_obj in self.__po_annotations:
+        if not phys_obj in self.__po_annotations_dict:
             return None
 
-        return tuple(self.__po_annotations[phys_obj])
+        return tuple(self.__po_annotations_dict[phys_obj])
 
     def get_all_annotations(self):
         all_annotations = []
