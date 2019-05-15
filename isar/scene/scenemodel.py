@@ -30,8 +30,9 @@ class ScenesModel(QAbstractListModel):
     def __init__(self):
         super().__init__()
         self.scenes = [Scene("Scene1")]
-        self.current_scene = self.scenes[0]
+        self.__current_scene = self.scenes[0]
         self.scene_size = None
+        self.scene_navigation = [self.scenes[0].name]
 
     def rowCount(self, parent):
         return len(self.scenes)
@@ -74,8 +75,14 @@ class ScenesModel(QAbstractListModel):
         self.insertRow(at_index.row())
         scene_name = "Scene" + str(len(self.scenes) + 1)
         new_scene = Scene(scene_name)
-        self.scenes.append(new_scene)
-        self.current_scene = new_scene
+
+        index = at_index.row() + 1
+        if index <= len(self.scenes):
+            self.scenes.insert(index, new_scene)
+
+        qmodel_index = self.createIndex(index, index)
+        self.set_current_scene(qmodel_index)
+        self.scene_navigation.append(self.__current_scene.name)
         self.endInsertRows()
 
     def clone_scene(self, selected_index):
@@ -85,28 +92,39 @@ class ScenesModel(QAbstractListModel):
         self.beginInsertRows(QModelIndex(), selected_index.row(), selected_index.row())
         self.insertRow(selected_index.row())
 
-        cloned_scene = self.current_scene.clone()
+        cloned_scene = self.__current_scene.clone()
 
         self.scenes.insert(selected_index.row() + 1, cloned_scene)
         self.endInsertRows()
 
     def delete_scene(self, selected_index):
-        # TODO: remove properly using remove rows (see insert rows)
-
         if len(self.scenes) == 1:    # keep at least one scene
             return
 
-        if len(self.scenes) <= selected_index.row():
+        index = selected_index.row()
+        if len(self.scenes) <= index:
             return
 
-        del self.scenes[selected_index.row()]
-        self.removeRow(selected_index.row())
+        scene_to_delete = self.scenes[index]
+        self.scene_navigation = [scene_name
+                                 for scene_name in self.scene_navigation
+                                 if scene_name != scene_to_delete.name]
+
+        del self.scenes[index]
+        self.removeRow(index)
+
+        if index == 0:
+            self.set_current_scene(self.createIndex(index, index))
+        else:
+            self.set_current_scene(self.createIndex(index - 1, index - 1))
+
         self.update_view(selected_index)
 
     def update_view(self, index):
         if index is None:
             if self.scenes is not None:
-                self.current_scene = self.scenes[0]
+                index = self.createIndex(0, 0)
+                self.set_current_scene(index)
             self.endResetModel()
         else:
             self.dataChanged.emit(index, index, [Qt.DisplayRole])
@@ -114,25 +132,31 @@ class ScenesModel(QAbstractListModel):
     def set_current_scene(self, selected_index):
 
         # first tell the current scene to update its phys_obj_annotations_dict
-        self.current_scene.update_po_annotations_dict()
+        self.__current_scene.update_po_annotations_dict()
 
         # then change the current scene to new index
-        self.current_scene = self.scenes[selected_index.row()]
+        self.__current_scene = self.scenes[selected_index.row()]
 
         # in the new current scene, make all py
-        self.current_scene.update_po_annotations()
+        self.__current_scene.update_po_annotations()
+
+        if len(self.scene_navigation) == 0:
+            self.scene_navigation.append(self.__current_scene.name)
+        elif self.scene_navigation[-1] != self.__current_scene.name:
+            self.scene_navigation.append(self.__current_scene.name)
+
+        print("scene navigation: " + str(self.scene_navigation))
 
         self.scene_changed.emit()
+
+    def get_current_scene(self):
+        return self.__current_scene
 
     def show_scene(self, scene_name):
         for idx, scene in enumerate(self.scenes):
             if scene.name == scene_name:
-                model_index = self.createIndex(idx, 0)
-                self.set_current_scene(model_index)
-                # update view causes the sceneslist_current_changed() method in
-                # SceneDefinitionWindow and DomainLearningWindow to be called, which in turn does
-                # other important things like setting the current_scene for AnnotationsModel and PhysicalObjectsModel
-                self.update_view(model_index)
+                index = self.createIndex(idx, 0)
+                self.set_current_scene(index)
                 break
 
     def save_project(self, parent_dir=None, project_name=None):
@@ -169,8 +193,12 @@ class ScenesModel(QAbstractListModel):
 
             ActionsService.init_defined_actions()
 
+            self.scene_navigation.clear()
+            # for scene in self.scenes:
+            #     self.scene_navigation.append(scene.name)
+            self.show_scene(self.scenes[0].name)
+
             self.endResetModel()
-            self.update_view(None)
 
 
 class Scene:
@@ -259,6 +287,7 @@ class Scene:
                 physical_object.add_annotation(cloned_annotation)
             cloned_scene.add_physical_object(physical_object)
 
+        cloned_scene.update_po_annotations_dict()
         return cloned_scene
 
 

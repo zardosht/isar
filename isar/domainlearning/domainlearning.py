@@ -67,7 +67,6 @@ class DomainLearningWindow(QWidget):
         self.init_scene_size_btn.clicked.connect(self.init_scene_size)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
-        self.scenes_list.selectionModel().selectionChanged.connect(self.sceneslist_current_changed)
 
     def calibrate_projector(self):
         self.projector_view.calibrating = True
@@ -87,7 +86,7 @@ class DomainLearningWindow(QWidget):
         scenes_model = self.scenes_list.model()
         scenes_model.load_project(project_dir, project_name)
         index = self.scenes_list.model().index(0, 0)
-        self.scenes_list.selectionModel().select(index, QItemSelectionModel.Select)
+        self.scenes_list.setCurrentIndex(index)
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
@@ -100,7 +99,7 @@ class DomainLearningWindow(QWidget):
     def setup_models(self):
         self.scenes_model = ScenesModel()
         self.scenes_list.setModel(self.scenes_model)
-        current_scene = self.scenes_list.model().current_scene
+        current_scene = self.scenes_list.model().get_current_scene()
 
         self.physical_objects_model = PhysicalObjectsModel()
         self.physical_objects_model.set_scene(current_scene)
@@ -136,8 +135,8 @@ class DomainLearningWindow(QWidget):
         scenes_model = self.scenes_list.model()
         scenes_model.set_current_scene(current_index)
 
-        self.annotations_model.set_scene(scenes_model.current_scene)
-        self.physical_objects_model.set_scene(scenes_model.current_scene)
+        self.annotations_model.set_scene(scenes_model.get_current_scene())
+        self.physical_objects_model.set_scene(scenes_model.get_current_scene())
         self.camera_view.set_annotations_model(self.annotations_model)
         self.projector_view.set_annotations_model(self.annotations_model)
 

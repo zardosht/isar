@@ -1,19 +1,16 @@
-import os
-from threading import Thread
-
-import cv2
 import functools
 import logging
+import os
 
 from PyQt5 import uic, QtCore
-from PyQt5.QtCore import QTimer, QItemSelectionModel, QEvent, QObject, Qt, QItemSelection
-from PyQt5.QtGui import QImage, QPixmap, QDragMoveEvent, QMouseEvent, QDrag, QCloseEvent
-from PyQt5.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QToolButton, QListView, QFileDialog, QMessageBox
+from PyQt5.QtCore import QTimer, QItemSelectionModel, Qt, QItemSelection
+from PyQt5.QtGui import QPixmap, QMouseEvent, QDrag
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox
 
-from isar.camera.camera import CameraService, CameraFrame
+from isar.camera.camera import CameraService
 from isar.scene import sceneutil, scenemodel
-from isar.scene.annotationmodel import AnnotationsModel, Annotation
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
+from isar.scene.annotationmodel import AnnotationsModel
 from isar.scene.cameraview import CameraView
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel, PhysicalObject
 from isar.scene.scenemodel import ScenesModel
@@ -82,7 +79,6 @@ class SceneDefinitionWindow(QWidget):
         self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
-        self.scenes_list.selectionModel().selectionChanged.connect(self.sceneslist_current_changed)
 
         self.delete_btn.clicked.connect(self.delete_btn_clicked)
 
@@ -109,13 +105,13 @@ class SceneDefinitionWindow(QWidget):
 
     def current_scene_changed(self):
         scenes_model = self.scenes_list.model()
-        current_index = scenes_model.find_index(scenes_model.current_scene)
+        current_index = scenes_model.find_index(scenes_model.get_current_scene())
         self.scenes_list.setCurrentIndex(current_index)
 
-        self.annotations_list.model().set_scene(scenes_model.current_scene)
+        self.annotations_list.model().set_scene(scenes_model.get_current_scene())
         self.camera_view.set_annotations_model(self.annotations_list.model())
 
-        self.objects_view.model().set_scene(scenes_model.current_scene)
+        self.objects_view.model().set_scene(scenes_model.get_current_scene())
         self.camera_view.set_physical_objects_model(self.objects_view.model())
 
         self.camera_view.set_active_annotation_tool(None)
@@ -203,7 +199,7 @@ class SceneDefinitionWindow(QWidget):
         scenes_model = self.scenes_list.model()
         scenes_model.load_project(project_dir, project_name)
         index = self.scenes_list.model().index(0, 0)
-        self.scenes_list.selectionModel().select(index, QItemSelectionModel.Select)
+        self.scenes_list.setCurrentIndex(index)
 
     def annotation_btn_clicked(self, btn):
         if btn.isChecked():
@@ -216,12 +212,10 @@ class SceneDefinitionWindow(QWidget):
     def new_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.model().new_scene(selected_index)
-        self.sceneslist_current_changed()
 
     def clone_scene_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.model().clone_scene(selected_index)
-        self.sceneslist_current_changed()
 
     def delete_scene_btn_clicked(self):
         # TODO: show confirm dialog. cannot be undone. then call delete scene on scene model
@@ -233,7 +227,6 @@ class SceneDefinitionWindow(QWidget):
             self.scenes_list.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
 
         self.scenes_list.model().delete_scene(selected_index)
-        self.sceneslist_current_changed()
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
@@ -251,7 +244,7 @@ class SceneDefinitionWindow(QWidget):
     def setup_models(self):
         self.scenes_model = ScenesModel()
         self.scenes_list.setModel(self.scenes_model)
-        current_scene = self.scenes_list.model().current_scene
+        current_scene = self.scenes_list.model().get_current_scene()
         self.scenes_model.scene_changed.connect(self.current_scene_changed)
 
         physical_objects_model = PhysicalObjectsModel()
@@ -330,7 +323,8 @@ class SceneDefinitionWindow(QWidget):
             elif scene_rect_c is not None:
                 self.scene_rect = scene_rect_c
                 self.scene_size = (self.scene_rect[2], self.scene_rect[3])
-                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor_c(camera_frame.raw_image.shape, scene_rect_c)
+                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor_c(
+                    camera_frame.raw_image.shape, scene_rect_c)
                 self.scene_size_initialized = True
 
                 sceneutil.scene_rect_c = scene_rect_c

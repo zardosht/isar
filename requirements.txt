@@ -1,3 +1,4 @@
+jsonpickle
 numpy
 screeninfo
 cv2
