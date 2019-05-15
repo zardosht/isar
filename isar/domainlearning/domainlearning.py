@@ -100,6 +100,7 @@ class DomainLearningWindow(QWidget):
         self.scenes_model = ScenesModel()
         self.scenes_list.setModel(self.scenes_model)
         current_scene = self.scenes_list.model().get_current_scene()
+        self.scenes_model.scene_changed.connect(self.current_scene_changed)
 
         self.physical_objects_model = PhysicalObjectsModel()
         self.physical_objects_model.set_scene(current_scene)
@@ -135,13 +136,14 @@ class DomainLearningWindow(QWidget):
         scenes_model = self.scenes_list.model()
         scenes_model.set_current_scene(current_index)
 
-        self.annotations_model.set_scene(scenes_model.get_current_scene())
-        self.physical_objects_model.set_scene(scenes_model.get_current_scene())
+    def current_scene_changed(self):
+        current_index = self.scenes_model.find_index(self.scenes_model.get_current_scene())
+        self.scenes_list.setCurrentIndex(current_index)
+
+        self.annotations_model.set_scene(self.scenes_model.get_current_scene())
+        self.physical_objects_model.set_scene(self.scenes_model.get_current_scene())
         self.camera_view.set_annotations_model(self.annotations_model)
         self.projector_view.set_annotations_model(self.annotations_model)
-
-        # self.objects_view.model().set_scene(scenes_model.current_scene)
-        # self.camera_view.set_physical_objects_model(self.objects_view.model())
 
     def setup_timers(self):
         self._cam_view_update_thread = CameraViewUpdateThread(self._camera_service)
