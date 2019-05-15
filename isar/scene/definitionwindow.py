@@ -5,7 +5,7 @@ import os
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QTimer, QItemSelectionModel, Qt, QItemSelection
 from PyQt5.QtGui import QPixmap, QMouseEvent, QDrag
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox, QInputDialog
 
 from isar.camera.camera import CameraService
 from isar.scene import sceneutil, scenemodel
@@ -75,15 +75,18 @@ class SceneDefinitionWindow(QWidget):
 
     def setup_signals(self):
         # scenes list
+        self.scene_up_btn.clicked.connect(self.scene_up_btn_clicked)
+        self.scene_down_btn.clicked.connect(self.scene_down_btn_clicked)
+
         self.new_scene_btn.clicked.connect(self.new_scene_btn_clicked)
         self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
+        self.define_navigation_flow_btn.clicked.connect(self.define_navigation_btn_clicked)
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
 
         self.delete_btn.clicked.connect(self.delete_btn_clicked)
 
         self.init_scene_size_btn.clicked.connect(self.initialize_scene_size)
-        self.reset_scene_size_btn.clicked.connect(self.reset_scene_size)
 
         self.save_proj_btn.clicked.connect(self.save_project_btn_clicked)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
@@ -227,6 +230,36 @@ class SceneDefinitionWindow(QWidget):
             self.scenes_list.selectionModel().setCurrentIndex(new_selection, QItemSelectionModel.Current)
 
         self.scenes_list.model().delete_scene(selected_index)
+
+    def define_navigation_btn_clicked(self):
+        scenes_model = self.scenes_list.model()
+        ordered_scene_ids = scenes_model.get_ordered_scene_ids()
+        input_text = ""
+        for scene_id in ordered_scene_ids:
+            input_text = input_text + scene_id + "\n"
+
+        navigation_text, ok_pressed = QInputDialog.getMultiLineText(None,
+                                                            "Define scene navigation flow",
+                                                            "Scene navigation flow:",
+                                                            input_text)
+        if ok_pressed:
+            scene_ids = navigation_text.strip().split("\n")
+            for scene_id in scene_ids:
+                if scene_id not in ordered_scene_ids:
+                    QMessageBox.warning(None, "Error", "One or more of the scene ids is incorrect. \n" +
+                                        "Maybe you changed the id when changing the order or ids. \n" +
+                                        "Try again.")
+                return
+
+            scenes_model.set_navigation_flow(scene_ids)
+
+    def scene_up_btn_clicked(self):
+        selected_index = self.scenes_list.selectionModel().currentIndex()
+        self.scenes_list.model().move_scene_up(selected_index)
+
+    def scene_down_btn_clicked(self):
+        selected_index = self.scenes_list.selectionModel().currentIndex()
+        self.scenes_list.model().move_scene_down(selected_index)
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)

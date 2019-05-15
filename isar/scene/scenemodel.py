@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import time
 
 import jsonpickle
 from PyQt5 import QtCore
@@ -32,7 +33,9 @@ class ScenesModel(QAbstractListModel):
         self.scenes = [Scene("Scene1")]
         self.__current_scene = self.scenes[0]
         self.scene_size = None
-        self.scene_navigation = [self.scenes[0].name]
+        self.back_scene_nav_stack = [self.scenes[0].name]
+        self.default_scene_navigation_flow = None
+        self.scene_navigation_flow = None
 
     def rowCount(self, parent):
         return len(self.scenes)
@@ -53,6 +56,7 @@ class ScenesModel(QAbstractListModel):
                 return False
 
             self.scenes[index.row()].name = new_name
+            self.default_scene_navigation_flow = self.get_ordered_scene_ids()
             self.editCompleted.emit(new_name)
 
         return True  # edit was done correctly
@@ -82,7 +86,7 @@ class ScenesModel(QAbstractListModel):
 
         qmodel_index = self.createIndex(index, index)
         self.set_current_scene(qmodel_index)
-        self.scene_navigation.append(self.__current_scene.name)
+        self.back_scene_nav_stack.append(self.__current_scene.name)
         self.endInsertRows()
 
     def clone_scene(self, selected_index):
@@ -95,6 +99,7 @@ class ScenesModel(QAbstractListModel):
         cloned_scene = self.__current_scene.clone()
 
         self.scenes.insert(selected_index.row() + 1, cloned_scene)
+        self.default_scene_navigation_flow = self.get_ordered_scene_ids()
         self.endInsertRows()
 
     def delete_scene(self, selected_index):
@@ -106,9 +111,9 @@ class ScenesModel(QAbstractListModel):
             return
 
         scene_to_delete = self.scenes[index]
-        self.scene_navigation = [scene_name
-                                 for scene_name in self.scene_navigation
-                                 if scene_name != scene_to_delete.name]
+        self.back_scene_nav_stack = [scene_name
+                                     for scene_name in self.back_scene_nav_stack
+                                     if scene_name != scene_to_delete.name]
 
         del self.scenes[index]
         self.removeRow(index)
@@ -140,14 +145,33 @@ class ScenesModel(QAbstractListModel):
         # in the new current scene, make all py
         self.__current_scene.update_po_annotations()
 
-        if len(self.scene_navigation) == 0:
-            self.scene_navigation.append(self.__current_scene.name)
-        elif self.scene_navigation[-1] != self.__current_scene.name:
-            self.scene_navigation.append(self.__current_scene.name)
+        if len(self.back_scene_nav_stack) == 0:
+            self.back_scene_nav_stack.append(self.__current_scene.name)
+        elif self.back_scene_nav_stack[-1] != self.__current_scene.name:
+            self.back_scene_nav_stack.append(self.__current_scene.name)
 
-        print("scene navigation: " + str(self.scene_navigation))
+        self.default_scene_navigation_flow = self.get_ordered_scene_ids()
+
+        print("scene navigation: " + str(self.back_scene_nav_stack))
 
         self.scene_changed.emit()
+
+    def move_scene_down(self, selected_index):
+        self.default_scene_navigation_flow = self.get_ordered_scene_ids()
+        pass
+
+    def move_scene_up(self, selected_index):
+        self.default_scene_navigation_flow = self.get_ordered_scene_ids()
+        pass
+
+    def set_scene_navigation_flow(self, navigation_flow):
+        self.scene_navigation_flow = navigation_flow
+
+    def get_ordered_scene_ids(self):
+        result = []
+        for scene in self.scenes:
+            result.append(scene.name)
+        return result
 
     def get_current_scene(self):
         return self.__current_scene
@@ -193,7 +217,7 @@ class ScenesModel(QAbstractListModel):
 
             ActionsService.init_defined_actions()
 
-            self.scene_navigation.clear()
+            self.back_scene_nav_stack.clear()
             # for scene in self.scenes:
             #     self.scene_navigation.append(scene.name)
             self.show_scene(self.scenes[0].name)
@@ -271,23 +295,31 @@ class Scene:
             annotation.reset_runtime_state()
 
     def clone(self):
-        cloned_scene = Scene("Cloned-" + self.name)
+        cloned_scene = Scene("Cloned-" + self.name + str(time.time()))
         cloned_scene.__annotations = []
         cloned_scene.__physical_objects = []
+        cloned_scene.__po_annotations_dict = {}
+
         for annotation in self.__annotations:
             cloned_annotation = copy.deepcopy(annotation)
-            cloned_annotation.id = self.name + sceneutil.ANNOTATION_ID_SEPARATOR + cloned_annotation.name
-            cloned_scene.add_annotation(annotation)
+            cloned_annotation.id = cloned_scene.name + sceneutil.ANNOTATION_ID_SEPARATOR + cloned_annotation.name
+            cloned_scene.add_annotation(cloned_annotation)
 
-        for physical_object in self.__physical_objects:
-            physical_object.clear_annotations()
-            for annotation in physical_object.get_annotations():
+        for po in self.__physical_objects:
+            po_annotations = []
+            if po.name in self.__po_annotations_dict:
+                po_annotations = self.__po_annotations_dict[po.name]
+
+            cloned_po_annotations = []
+            for annotation in po_annotations:
                 cloned_annotation = copy.deepcopy(annotation)
-                cloned_annotation.id = self.name + sceneutil.ANNOTATION_ID_SEPARATOR + cloned_annotation.name
-                physical_object.add_annotation(cloned_annotation)
-            cloned_scene.add_physical_object(physical_object)
+                cloned_annotation.scene = cloned_scene
+                cloned_annotation.id = cloned_scene.name + sceneutil.ANNOTATION_ID_SEPARATOR + cloned_annotation.name
+                cloned_po_annotations.append(cloned_annotation)
 
-        cloned_scene.update_po_annotations_dict()
+            cloned_scene.__po_annotations_dict[po.name] = cloned_po_annotations
+            cloned_scene.add_physical_object(po)
+
         return cloned_scene
 
 
