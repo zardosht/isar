@@ -157,12 +157,31 @@ class ScenesModel(QAbstractListModel):
         self.scene_changed.emit()
 
     def move_scene_down(self, selected_index):
+        index = selected_index.row()
+        if index >= len(self.scenes) - 1:
+            return
+
+        if index + 1 >= len(self.scenes):
+            return
+
+        self.scenes[index + 1], self.scenes[index] = self.scenes[index], self.scenes[index + 1]
         self.default_scene_navigation_flow = self.get_ordered_scene_ids()
-        pass
+
+        self.set_current_scene(self.createIndex(index + 1, index + 1))
+
+        self.update_view(selected_index)
 
     def move_scene_up(self, selected_index):
+        index = selected_index.row()
+        if index == 0:
+            return
+
+        self.scenes[index - 1], self.scenes[index] = self.scenes[index], self.scenes[index - 1]
         self.default_scene_navigation_flow = self.get_ordered_scene_ids()
-        pass
+
+        self.set_current_scene(self.createIndex(index - 1, index - 1))
+
+        self.update_view(selected_index)
 
     def set_scene_navigation_flow(self, navigation_flow):
         self.scene_navigation_flow = navigation_flow
