@@ -29,6 +29,11 @@ class ActionsService(Service):
         self.__annotations_model = None
         self.__scenes_model = None
 
+        # TODO: Just for testing now. The actions are defined inside a project and must be loaded when project is loaded.
+        #  Also, some of the actions are bound to a scene and must be only evailable on that scene,
+        #  for example ShowAnnotations
+        # self.init_defined_actions()
+
     def set_annotations_model(self, annotations_model):
         self.__annotations_model = annotations_model
 
@@ -67,6 +72,18 @@ class ActionsService(Service):
         show_scene1.name = "Show Scene1"
         show_scene1.scene_name = "Scene1"
         defined_actions.append(show_scene1)
+
+        next_scene = NextSceneAction()
+        next_scene.name = "Next Scene"
+        defined_actions.append(next_scene)
+
+        prev_scene = PreviousSceneAction()
+        prev_scene.name = "Previous Scene"
+        defined_actions.append(prev_scene)
+
+        back_scene = BackSceneAction()
+        back_scene.name = "Back Scene"
+        defined_actions.append(back_scene)
 
     def perform_action(self, action):
         if action is None:
@@ -180,13 +197,12 @@ class ShowSceneAction(Action):
 class NextSceneAction(Action):
     """
     Next scene in scene navigation sequence
-    TODO: We need a scene service that keeps track of scene navigation.
     """
     def __init__(self):
         super().__init__()
 
     def run(self):
-        pass
+        self.scenes_model.show_next_scene()
 
 
 class PreviousSceneAction(Action):
@@ -197,7 +213,22 @@ class PreviousSceneAction(Action):
         super().__init__()
 
     def run(self):
-        pass
+        self.scenes_model.show_previous_scene()
+
+
+class BackSceneAction(Action):
+    """
+    Back scene. This is added for the cases where user views a scene that is not part of the
+    defined navigation. Imagine for example a navigation flow consists of [S1, S2, S3]
+    for S2 we have a scene H1 that shows help, and is shown using an action button. On the help scene (H1),
+    an action button calls the back action to return to S2. This is different from previous scene action, that
+    refers to the previous scene in navigation flow, i.e. S1
+    """
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        self.scenes_model.show_back_scene()
 
 
 class PlaySoundAction(Action):

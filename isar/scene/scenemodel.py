@@ -19,6 +19,7 @@ class Project:
         self.base_path = None
         self.scenes = None
         self.scene_size = None
+        self.scene_navigation = None
 
 
 current_project: Project = None
@@ -35,7 +36,7 @@ class ScenesModel(QAbstractListModel):
         self.scene_size = None
         self.back_scene_nav_stack = [self.scenes[0].name]
         self.default_scene_navigation_flow = None
-        self.scene_navigation_flow = None
+        self.defined_scene_navigation_flow = None
 
     def rowCount(self, parent):
         return len(self.scenes)
@@ -184,7 +185,7 @@ class ScenesModel(QAbstractListModel):
         self.update_view(selected_index)
 
     def set_scene_navigation_flow(self, navigation_flow):
-        self.scene_navigation_flow = navigation_flow
+        self.defined_scene_navigation_flow = navigation_flow
 
     def get_ordered_scene_ids(self):
         result = []
@@ -202,6 +203,48 @@ class ScenesModel(QAbstractListModel):
                 self.set_current_scene(index)
                 break
 
+    def show_next_scene(self):
+        current_scene = self.get_current_scene()
+        navigation = self.default_scene_navigation_flow
+        if self.defined_scene_navigation_flow is not None:
+            navigation = self.defined_scene_navigation_flow
+
+        if current_scene.name not in navigation:
+            logger.warning("Current scene is not part of the navigation. Return.")
+            return
+
+        index = navigation.index(current_scene.name)
+        if index == len(navigation) - 1:
+            logger.info("Reached end of navigation. Current scene is last scene. Return.")
+            return
+
+        next_scene = navigation[index + 1]
+        self.show_scene(next_scene)
+
+    def show_previous_scene(self):
+        current_scene = self.get_current_scene()
+        navigation = self.default_scene_navigation_flow
+        if self.defined_scene_navigation_flow is not None:
+            navigation = self.defined_scene_navigation_flow
+
+        if current_scene.name not in navigation:
+            logger.warning("Current scene is not part of the navigation. Return.")
+            return
+
+        index = navigation.index(current_scene.name)
+        if index == 0:
+            logger.info("Reached beginning of navigation. Current scene is first scene. Return.")
+            return
+
+        prev_scene = navigation[index - 1]
+        self.show_scene(prev_scene)
+
+    def show_back_scene(self):
+        if len(self.back_scene_nav_stack) >= 2:
+            # current scene is at the end of back stack
+            back_scene = self.back_scene_nav_stack[-2]
+            self.show_scene(back_scene)
+
     def save_project(self, parent_dir=None, project_name=None):
         new_project_created = False
         if current_project is None:
@@ -215,6 +258,8 @@ class ScenesModel(QAbstractListModel):
             scene.update_po_annotations_dict()
 
         current_project.scenes = self.scenes
+        if self.defined_scene_navigation_flow is not None:
+            current_project.scene_navigation = self.defined_scene_navigation_flow
 
         frozen = jsonpickle.encode(current_project)
         with open(str(save_path), "w") as f:
@@ -231,9 +276,10 @@ class ScenesModel(QAbstractListModel):
             self.scenes = current_project.scenes
             for scene in self.scenes:
                 scene.reset_runtime_state()
+            self.defined_scene_navigation_flow = current_project.scene_navigation
+            self.default_scene_navigation_flow = self.get_ordered_scene_ids()
 
             # TODO: should it be called here? or somewhere else?
-
             ActionsService.init_defined_actions()
 
             self.back_scene_nav_stack.clear()

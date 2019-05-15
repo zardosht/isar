@@ -251,7 +251,7 @@ class SceneDefinitionWindow(QWidget):
                                         "Try again.")
                 return
 
-            scenes_model.set_navigation_flow(scene_ids)
+            scenes_model.set_scene_navigation_flow(scene_ids)
 
     def scene_up_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
