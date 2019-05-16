@@ -21,9 +21,16 @@ def draw_physical_object_image(opencv_img, scene_scale_factor, phys_obj: Physica
 
 def draw_physical_object_bounding_box(opencv_img, phys_obj: PhysicalObject):
     color = random.choice(colors)
-    text = '{}: {:.0f}%'.format(phys_obj.name, phys_obj.detection_confidence * 100)
+    if phys_obj.detection_confidence is not None:
+        text = '{}: {:.0f}%'.format(phys_obj.name, phys_obj.detection_confidence * 100)
+    else:
+        text = '{}'.format(phys_obj.name)
 
     ref_frame = phys_obj.ref_frame
+    if ref_frame is None:
+        logger.warning("phy_obj.ref_frame is None. Return.")
+        return
+
     tl = (ref_frame.x, ref_frame.y)
     br = ((ref_frame.x + ref_frame.width), (ref_frame.y + ref_frame.height))
     opencv_img = cv2.rectangle(opencv_img, tl, br, color, 2)

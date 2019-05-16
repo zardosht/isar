@@ -298,12 +298,18 @@ def camera_coord_to_scene_coord_p(cam_coord):
     if scene_rect_p is None:
         return cam_coord
 
+    if cam_coord is None:
+        return cam_coord
+
     proj_coord = convert_camera_coord_to_porjector_coord(cam_coord)
     return projector_coord_to_scene_coord_p(proj_coord)
 
 
 def projector_coord_to_scene_coord_p(proj_coord):
     if scene_rect_p is None:
+        return proj_coord
+
+    if proj_coord is None:
         return proj_coord
 
     return proj_coord[0] - scene_rect_p[0], proj_coord[1] - scene_rect_p[1]

@@ -213,6 +213,10 @@ class PhysicalObject:
             height = self.template_image.shape[0]
         else:
             tl = sceneutil.camera_coord_to_scene_coord(self.__top_left)
+            if self.bottom_right is None:
+                logger.warning("self.bottom_right is None! setting to a default value.")
+                self.bottom_right = (tl[0] + 100, tl[1] + 100)
+
             br = sceneutil.camera_coord_to_scene_coord(self.bottom_right)
             width = int(math.fabs(br[0] - tl[0]))
             height = int(math.fabs(br[1] - tl[1]))

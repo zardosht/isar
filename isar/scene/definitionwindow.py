@@ -249,7 +249,8 @@ class SceneDefinitionWindow(QWidget):
                     QMessageBox.warning(None, "Error", "One or more of the scene ids is incorrect. \n" +
                                         "Maybe you changed the id when changing the order or ids. \n" +
                                         "Try again.")
-                return
+                    
+                    return
 
             scenes_model.set_scene_navigation_flow(scene_ids)
 

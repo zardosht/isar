@@ -73,6 +73,16 @@ class ActionsService(Service):
         show_scene1.scene_name = "Scene1"
         defined_actions.append(show_scene1)
 
+        show_help_scene = ShowSceneAction()
+        show_help_scene.name = "Show Help Scene"
+        show_help_scene.scene_name = "help"
+        defined_actions.append(show_help_scene)
+
+        show_joke_scene = ShowSceneAction()
+        show_joke_scene.name = "Show Joke Scene"
+        show_joke_scene.scene_name = "joke"
+        defined_actions.append(show_joke_scene)
+
         next_scene = NextSceneAction()
         next_scene.name = "Next Scene"
         defined_actions.append(next_scene)
