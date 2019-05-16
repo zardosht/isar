@@ -214,9 +214,6 @@ class ProjectorView(QtWidgets.QWidget):
                 continue
 
             # compute scene rect in projector-space
-
-            # TODO: fix me. the sceneutil.compute_scene_rect(camera_frame, self.homography_matrix) can return None!!!
-
             scene_rect_c, scene_rect_p, scene_homography = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
             if scene_rect_p is None and num_iter < max_iter:
                 continue
