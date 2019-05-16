@@ -1,12 +1,15 @@
 import logging
 import sys
 import time
+
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
 import isar
 from isar import ApplicationMode
 from isar.domainlearning.domainlearning import DomainLearningWindow, DomainLearningMainWindow
+from isar.handskilllearning.handskill_definition import HandskillDefinition
+from isar.handskilllearning.handskill_execution import HandskillExecution
 from isar.scene.definitionwindow import SceneDefinitionWindow
 from isar.services import servicemanager
 
@@ -41,21 +44,36 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     scene_defintion = input("Scene Definition (y/n)? ")
+    handskill_defintion = input("Follow The Path Definition (y/n)? ")
     servicemanager.start_services()
     if scene_defintion == "y":
-        isar.application_mode = ApplicationMode.AUTHORING
-        scene_def_window = QMainWindow(None)
-        scene_def_window.setCentralWidget(SceneDefinitionWindow())
-        scene_def_window.show()
-        app.exec()
+        if handskill_defintion == "n":
+            isar.application_mode = ApplicationMode.AUTHORING
+            scene_def_window = QMainWindow(None)
+            scene_def_window.setCentralWidget(SceneDefinitionWindow())
+            scene_def_window.show()
+            app.exec()
+        elif handskill_defintion == "y":
+            isar.application_mode = ApplicationMode.AUTHORING
+            scene_def_window = QMainWindow(None)
+            scene_def_window.setCentralWidget(HandskillDefinition())
+            scene_def_window.show()
+            app.exec()
 
     elif scene_defintion == "n":
-        isar.application_mode = ApplicationMode.EXECUTION
-        domain_learning_window = DomainLearningMainWindow()
-        domain_learning_window.setCentralWidget(DomainLearningWindow(screen_id=2))
-        domain_learning_window.move(100, 100)
-        domain_learning_window.show()
-        app.exec()
+        if handskill_defintion == "n":
+            isar.application_mode = ApplicationMode.EXECUTION
+            domain_learning_window = DomainLearningMainWindow()
+            domain_learning_window.setCentralWidget(DomainLearningWindow(screen_id=2))
+            domain_learning_window.move(100, 100)
+            domain_learning_window.show()
+            app.exec()
+        elif handskill_defintion == "y":
+            isar.application_mode = ApplicationMode.EXECUTION
+            scene_def_window = QMainWindow(None)
+            scene_def_window.setCentralWidget(HandskillExecution())
+            scene_def_window.show()
+            app.exec()
 
     time.sleep(0.5)
     servicemanager.stop_services()
