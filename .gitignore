@@ -5,3 +5,5 @@ objectdetectors/yolo_tool_detector/tmp
 objectdetectors/dummy_detector/tmp
 
 tmp/tmp_files
+
+.idea
