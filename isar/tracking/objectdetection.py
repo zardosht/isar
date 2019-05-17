@@ -6,7 +6,7 @@ import os
 import threading
 import time
 import traceback
-from queue import Queue, Full
+from queue import Queue
 from typing import List
 
 from isar.services.service import Service
@@ -52,6 +52,7 @@ def init():
         if not os.path.isdir(path) or not OBJECT_DETECTOR_MODULE_FILENAME in os.listdir(path):
             continue
         try:
+            # TODO: ERROR - can't pickle module objects
             module_path = os.path.join(path, OBJECT_DETECTOR_MODULE_FILENAME)
             spec = importlib.util.spec_from_file_location(OBJECT_DETECTOR_MODULE_NAME, module_path)
             obj_detector = importlib.util.module_from_spec(spec)
@@ -212,6 +213,7 @@ class ObjectDetectionResponse:
 class ObjectDetectorWorker(mp.Process):
     def __init__(self, object_detector, request_queue, response_queue):
         mp.Process.__init__(self)
+        # TODO: ERROR - can't pickle module objects
         self.object_detector = object_detector
         self.request_queue = request_queue
         self.response_queue = response_queue

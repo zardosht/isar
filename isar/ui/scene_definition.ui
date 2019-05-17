@@ -641,274 +641,320 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>965</width>
-              <height>58</height>
+                 <width>993</width>
+                 <height>49</height>
              </rect>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <property name="leftMargin">
-              <number>0</number>
+               <widget class="QWidget" name="layoutWidget">
+                   <property name="geometry">
+                       <rect>
+                           <x>0</x>
+                           <y>14</y>
+                           <width>976</width>
+                           <height>21</height>
+                       </rect>
              </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QToolButton" name="text_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/text.png</normaloff>images/text.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <property name="autoRaise">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="audio_btn">
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/audio.png</normaloff>images/audio.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="arrow_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/arrow.png</normaloff>images/arrow.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="select_box_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/select_box.png</normaloff>images/select_box.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="video_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/video.png</normaloff>images/video.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="relationship_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/relationship.png</normaloff>images/relationship.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="timer_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/timer.png</normaloff>images/timer.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="image_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/image.png</normaloff>images/image.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="rectangle_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/rectangle.png</normaloff>images/rectangle.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="line_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/line.png</normaloff>images/line.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="circle_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/circle.png</normaloff>images/circle.png</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="autoExclusive">
-                <bool>false</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="action_button_btn">
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>images/action_button.jpg</normaloff>images/action_button.jpg</iconset>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <attribute name="buttonGroup">
-                <string notr="true">annotation_buttons</string>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+                   <layout class="QHBoxLayout" name="horizontalLayout_3">
+                       <item>
+                           <widget class="QToolButton" name="text_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/text.png</normaloff>images/text.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <property name="autoRaise">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="audio_btn">
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/audio.png</normaloff>images/audio.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="arrow_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/arrow.png</normaloff>images/arrow.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="select_box_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/select_box.png</normaloff>images/select_box.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="video_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/video.png</normaloff>images/video.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="relationship_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/relationship.png</normaloff>images/relationship.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="timer_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/timer.png</normaloff>images/timer.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="image_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/image.png</normaloff>images/image.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="rectangle_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/rectangle.png</normaloff>images/rectangle.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="line_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/line.png</normaloff>images/line.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="circle_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/circle.png</normaloff>images/circle.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <property name="autoExclusive">
+                                   <bool>false</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="action_button_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/action_button.jpg</normaloff>images/action_button.jpg
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="curve_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/curve_line.png</normaloff>images/curve_line.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <widget class="QToolButton" name="animation_btn">
+                               <property name="text">
+                                   <string>...</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset>
+                                       <normaloff>images/animation_button.png</normaloff>images/animation_button.png
+                                   </iconset>
+                               </property>
+                               <property name="checkable">
+                                   <bool>true</bool>
+                               </property>
+                               <attribute name="buttonGroup">
+                                   <string notr="true">annotation_buttons</string>
+                               </attribute>
+                           </widget>
+                       </item>
+                       <item>
+                           <spacer name="horizontalSpacer_2">
+                               <property name="orientation">
+                                   <enum>Qt::Horizontal</enum>
+                               </property>
+                               <property name="sizeHint" stdset="0">
+                                   <size>
+                                       <width>638</width>
+                                       <height>17</height>
+                                   </size>
+                               </property>
+                           </spacer>
+                       </item>
+                   </layout>
+               </widget>
            </widget>
           </widget>
          </item>
