@@ -527,31 +527,6 @@ class VideoAnnotation(Annotation):
             self.stopped = False
 
 
-class AudioAnnotation(Annotation):
-    def __init__(self):
-        super(AudioAnnotation, self).__init__()
-        self.audio_path = ""
-
-
-class RelationshipAnnotation(Annotation):
-    def __init__(self):
-        super().__init__()
-        self.text = ""
-        self.to_object: PhysicalObject = None
-
-
-class SelectBoxAnnotation(Annotation):
-    def __init__(self):
-        super().__init__()
-        self.text = ""
-
-
-class TimerAnnotation(Annotation):
-    def __init__(self):
-        super(TimerAnnotation, self).__init__()
-        self.duration = 10
-
-
 class ActionButtonAnnotation(RectangleAnnotation):
     DEFAULT_TEXT = "Action"
 
@@ -585,6 +560,31 @@ class ActionButtonAnnotation(RectangleAnnotation):
 
     def on_select(self):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
+
+
+class AudioAnnotation(Annotation):
+    def __init__(self):
+        super(AudioAnnotation, self).__init__()
+        self.audio_path = ""
+
+
+class RelationshipAnnotation(Annotation):
+    def __init__(self):
+        super().__init__()
+        self.text = ""
+        self.to_object: PhysicalObject = None
+
+
+class SelectBoxAnnotation(Annotation):
+    def __init__(self):
+        super().__init__()
+        self.text = ""
+
+
+class TimerAnnotation(Annotation):
+    def __init__(self):
+        super(TimerAnnotation, self).__init__()
+        self.duration = 10
 
 
 annotation_counters = {
