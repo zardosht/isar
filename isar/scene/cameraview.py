@@ -14,6 +14,7 @@ from isar.scene.sceneutil import Frame
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
 
+
 logger = logging.getLogger("isar.scene.cameraview")
 
 

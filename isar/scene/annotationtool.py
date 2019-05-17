@@ -799,7 +799,6 @@ class SelectBoxAnnotationTool(AnnotationTool):
 
 
 class CurveAnnotationTool(AnnotationTool):
-
     def __init__(self):
         super(CurveAnnotationTool, self).__init__()
 

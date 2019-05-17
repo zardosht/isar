@@ -56,6 +56,9 @@ class SceneDefinitionWindow(QWidget):
         self.mouse_object_position_label.setText("")
         self.mouse_image_position_label.setText("")
 
+        self.properties_view.horizontalHeader().setStretchLastSection(True)
+        self.properties_view.resizeRowsToContents()
+
         self.camera_view_container.setLayout(QHBoxLayout())
         self.camera_view = CameraView(self.camera_view_container, self)
         self.camera_view_container.layout().setContentsMargins(0, 0, 0, 0)

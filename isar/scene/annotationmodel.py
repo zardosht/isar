@@ -6,12 +6,12 @@ from ast import literal_eval
 from typing import List
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, pyqtSignal
+from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, pyqtSignal, QSize
 from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
-    QPushButton, QLabel
+    QPushButton, QLabel, QToolButton, QVBoxLayout, QSizePolicy
 
 from isar.events import actionsservice
-from isar.scene import sceneutil, scenemodel
+from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
@@ -458,7 +458,7 @@ class ImageAnnotation(Annotation):
         width = self.width.get_value()
         height = self.height.get_value()
         return position[0] <= point[0] <= position[0] + width and \
-            position[1] <= point[1] <= position[1] + height
+               position[1] <= point[1] <= position[1] + height
 
 
 class VideoAnnotation(Annotation):
@@ -503,7 +503,7 @@ class VideoAnnotation(Annotation):
         width = self.width.get_value()
         height = self.height.get_value()
         return position[0] <= point[0] <= position[0] + width and \
-            position[1] <= point[1] <= position[1] + height
+               position[1] <= point[1] <= position[1] + height
 
     def on_select(self):
         # TODO: Actually the toggling of play mode upon selection should happen
@@ -554,7 +554,7 @@ class ActionButtonAnnotation(RectangleAnnotation):
         width = self.width.get_value()
         height = self.height.get_value()
         return (position[0] - int(width / 2)) <= point[0] <= (position[0] + int(width / 2)) and \
-            (position[1] - int(height / 2)) <= point[1] <= (position[1] + int(height / 2))
+               (position[1] - int(height / 2)) <= point[1] <= (position[1] + int(height / 2))
 
     def on_select(self):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
@@ -615,8 +615,51 @@ class AnimationAnnotation(Annotation):
 
 class AudioAnnotation(Annotation):
     def __init__(self):
-        super(AudioAnnotation, self).__init__()
-        self.audio_path = ""
+        super().__init__()
+
+        self.audio_path = FilePathAnnotationProperty("Audio Filename", None, self)
+        self.properties.append(self.audio_path)
+
+        self.width = IntAnnotationProperty("Size", 5, self)
+        self.properties.append(self.width)
+
+        self.loop_playback = BooleanAnnotationProperty("Loop Playback", False, self)
+        self.properties.append(self.loop_playback)
+
+        self.stopped = False
+        self.playing = True
+
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        width = self.width.get_value()
+        height = self.height.get_value()
+        return position[0] <= point[0] <= position[0] + width and \
+            position[1] <= point[1] <= position[1] + height
+
+    def reset_runtime_state(self):
+        super().reset_runtime_state()
+        self.stopped = True
+        self.playing = False
+
+    def on_select(self):
+        # TODO: Actually the toggling of play mode upon selection should happen
+        #  when we are in ApplicationMode.EXECUTION
+        #  Generally, the bahavior of annotations upon selection, should be defined
+        #  depending on if we are in AUTHORING or EXECUTION mode.
+        if self.playing:
+            self.playing = False
+            self.stopped = True
+            self.stop()
+        elif self.stopped:
+            self.playing = True
+            self.stopped = False
+            self.play()
+
+    def play(self, start_time=0):
+        audioutil.play(self.audio_path)
+
+    def stop(self):
+        audioutil.stop(self.audio_path)
 
 
 class RelationshipAnnotation(Annotation):
@@ -755,6 +798,7 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
         self.actions_combo_items = []
 
         self.filename = None
+        self.editor = None
 
     def createEditor(self, parent, option, index: QModelIndex):
         if not self.phys_obj_model:
@@ -786,12 +830,14 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
                         combo.setCurrentIndex(index)
 
             combo.currentIndexChanged.connect(self.physical_object_combo_index_changed)
+            self.editor = combo
             return combo
 
         elif isinstance(annotation_property, FilePathAnnotationProperty):
-            editor = FilePathEditorWidget(parent)
-            editor.filename_selected.connect(self.file_dialog_file_selected)
-            return editor
+            file_path_editor = FilePathEditorWidget(parent)
+            file_path_editor.filename_selected.connect(self.file_dialog_file_selected)
+            self.editor = file_path_editor
+            return file_path_editor
 
         elif isinstance(annotation_property, BooleanAnnotationProperty):
             boolean_combo = QComboBox(parent)
@@ -803,6 +849,7 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
             else:
                 boolean_combo.setCurrentIndex(1)
             boolean_combo.currentIndexChanged.connect(self.boolean_combo_index_changed)
+            self.editor = boolean_combo
             return boolean_combo
 
         elif isinstance(annotation_property, ActionAnnotationProperty):
@@ -828,9 +875,17 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
                         combo.setCurrentIndex(index)
 
             combo.currentIndexChanged.connect(self.on_select_actions_combo_index_changed)
+            self.editor = combo
             return combo
         else:
-            return super().createEditor(parent, option, index)
+            self.editor = super().createEditor(parent, option, index)
+            return self.editor
+
+    def sizeHint(self, qstyle_option_view_item, qmodel_index):
+        if self.editor is not None:
+            return self.editor.sizeHint()
+        else:
+            return super().sizeHint(qstyle_option_view_item, qmodel_index)
 
     def setModelData(self, editor, model, index):
         if isinstance(editor, QComboBox):
@@ -880,19 +935,36 @@ class FilePathEditorWidget(QWidget):
 
         self.filename = None
 
-        layout = QHBoxLayout(self)
+        self.widget = QWidget(self)
+        self.widget.setAutoFillBackground(True)
+        # widget.setMinimumHeight(80)
+        # widget.setMinimumWidth(100)
         self.label = QLabel()
-        self.label.sizePolicy().setHorizontalStretch(80)
-        layout.addWidget(self.label)
+        self.label.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
 
         self.button = QPushButton("...")
+        self.label.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
         self.button.clicked.connect(self.btn_clicked)
-        layout.addWidget(self.button)
+
+        hbox = QHBoxLayout(self.widget)
+        hbox.setContentsMargins(0, 0, 0, 0)
+        hbox.setSpacing(3)
+        hbox.addWidget(self.label)
+        hbox.addWidget(self.button)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(2, 2, 2, 2)
+        self.layout.addWidget(self.widget)
+
+        self.size_hint = QSize(100, 50)
 
     def btn_clicked(self):
         self.filename, _ = QFileDialog.getOpenFileName()
         if self.filename is not None:
             self.filename_selected.emit(self.filename)
+
+    def sizeHint(self):
+        return self.size_hint
 
 
 class AnnotationProperty:
