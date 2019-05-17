@@ -1,10 +1,8 @@
 import logging
-import math
 import os
 from threading import Thread
 
 import cv2
-import numpy as np
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 
 from isar.events import eventmanager
@@ -12,7 +10,7 @@ from isar.events.eventmanager import SelectionEvent
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
-    SelectBoxAnnotation, ActionButtonAnnotation
+    SelectBoxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -800,6 +798,84 @@ class SelectBoxAnnotationTool(AnnotationTool):
         pass
 
 
+class CurveAnnotationTool(AnnotationTool):
+
+    def __init__(self):
+        super(CurveAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        self.set_drawing(True)
+        self.annotation = CurveAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+
+        self.annotation.line_positions.append((img_x, img_y))
+        self.annotation.start.set_value((img_x, img_y))
+        self.annotation.set_position((img_x, img_y))
+
+    def mouse_move_event(self, camera_view, event):
+        if self._drawing:
+            camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+            img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+                event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+
+            self.annotation.line_positions.append((img_x, img_y))
+
+            start = self.annotation.line_positions[len(self.annotation.line_positions) - 1]
+            end = self.annotation.line_positions[len(self.annotation.line_positions) - 2]
+            cv2.line(self._img, start, end, self.annotation.color.get_value(),
+                     self.annotation.thickness.get_value())
+
+    def mouse_release_event(self, camera_view, event):
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+
+        self.annotation.line_positions.append((img_x, img_y))
+        self.annotation.end.set_value((img_x, img_y))
+
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
+            self.annotation.drawing_finished = True
+
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if not self.annotation:
+            return
+
+        if self.is_annotation_valid():
+            if self.annotation.drawing_finished:
+                self.annotation.line_positions[0] = self.annotation.start.get_value()
+                self.annotation.line_positions[
+                    len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
+
+            for i in range(len(self.annotation.line_positions) - 1):
+                start = sceneutil.convert_object_to_image(self.annotation.line_positions[i], self.phys_obj,
+                                                          self.scene_scale_factor)
+                end = sceneutil.convert_object_to_image(self.annotation.line_positions[i + 1], self.phys_obj,
+                                                        self.scene_scale_factor)
+
+                cv2.line(self._img, start, end, self.annotation.color.get_value(),
+                         self.annotation.thickness.get_value())
+
+    def is_annotation_valid(self):
+        # Are there any coordinates saved?
+        if len(self.annotation.line_positions) < CurveAnnotation.MINIMUM_NUMBER_POSITIONS:
+            return False
+        return True
+
+
+class AnimationAnnotationTool(AnnotationTool):
+    pass
+
+
 annotation_tools = {
     LineAnnotation.__name__: LineAnnotationTool(),
     RectangleAnnotation.__name__: RectangleAnnotationTool(),
@@ -812,7 +888,9 @@ annotation_tools = {
     ArrowAnnotation.__name__: ArrowAnnotationTool(),
     RelationshipAnnotation.__name__: RelationshipAnnotationTool(),
     SelectBoxAnnotation.__name__: SelectBoxAnnotationTool(),
-    ActionButtonAnnotation.__name__: ActionButtonAnnotationTool()
+    ActionButtonAnnotation.__name__: ActionButtonAnnotationTool(),
+    CurveAnnotation.__name__: CurveAnnotationTool(),
+    AnimationAnnotation.__name__: AnimationAnnotationTool()
 }
 
 annotation_tool_btns = {
@@ -828,5 +906,7 @@ annotation_tool_btns = {
     "relationship_btn": RelationshipAnnotationTool(),
     "arrow_btn": ArrowAnnotationTool(),
     "image_btn": ImageAnnotationTool(),
-    "action_button_btn": ActionButtonAnnotationTool()
+    "action_button_btn": ActionButtonAnnotationTool(),
+    "curve_btn": CurveAnnotationTool(),
+    "animation_btn": AnimationAnnotationTool()
 }

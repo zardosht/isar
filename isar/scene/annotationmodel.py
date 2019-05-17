@@ -1,5 +1,4 @@
 import logging
-import math
 import os
 import shutil
 import traceback
@@ -8,14 +7,13 @@ from typing import List
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, pyqtSignal
-from PyQt5.QtWidgets import QCheckBox, QComboBox, QItemDelegate, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
+from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel
 
 from isar.events import actionsservice
 from isar.scene import sceneutil, scenemodel
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
-
 
 logger = logging.getLogger("isar.scene.annotationmodel")
 
@@ -562,6 +560,59 @@ class ActionButtonAnnotation(RectangleAnnotation):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
 
 
+class CurveAnnotation(Annotation):
+    MINIMUM_NUMBER_POSITIONS = 5
+
+    def __init__(self):
+        super(CurveAnnotation, self).__init__()
+
+        self.start = IntTupleAnnotationProperty("Start", [0, 0], self)
+        self.properties.append(self.start)
+
+        self.end = IntTupleAnnotationProperty("End", None, self)
+        self.properties.append(self.end)
+
+        self.color = ColorAnnotationProperty("Color", (0, 0, 0), self)
+        self.properties.append(self.color)
+
+        self.thickness = IntAnnotationProperty("Thickness", 2, self)
+        self.properties.append(self.thickness)
+
+        self.line_positions = []
+        self.drawing_finished = False
+
+
+class AnimationAnnotation(Annotation):
+    MINIMUM_NUMBER_POSITIONS = 5
+
+    def __init__(self):
+        super(AnimationAnnotation, self).__init__()
+
+        self.start = IntTupleAnnotationProperty("Start", [0, 0], self)
+        self.properties.append(self.start)
+
+        self.end = IntTupleAnnotationProperty("End", None, self)
+        self.properties.append(self.end)
+
+        self.color = ColorAnnotationProperty("Color", (0, 0, 0), self)
+        self.properties.append(self.color)
+
+        self.thickness = IntAnnotationProperty("Thickness", 3, self)
+        self.properties.append(self.thickness)
+
+        self.image_path = FilePathAnnotationProperty("ImageFilename", None, self)
+        self.properties.append(self.image_path)
+
+        self.width = IntAnnotationProperty("Width", 5, self)
+        self.properties.append(self.width)
+
+        self.height = IntAnnotationProperty("Height", 5, self)
+        self.properties.append(self.height)
+
+        self.line_positions = []
+        self.drawing_finished = False
+
+
 class AudioAnnotation(Annotation):
     def __init__(self):
         super(AudioAnnotation, self).__init__()
@@ -599,7 +650,10 @@ annotation_counters = {
     ArrowAnnotation.__name__: 0,
     RelationshipAnnotation.__name__: 0,
     SelectBoxAnnotation.__name__: 0,
-    ActionButtonAnnotation.__name__: 0
+    ActionButtonAnnotation.__name__: 0,
+    CurveAnnotation.__name__: 0,
+    AnimationAnnotation.__name__: 0
+
 }
 
 
