@@ -3,6 +3,7 @@ import os
 from threading import Thread
 
 import cv2
+import numpy
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 
 from isar.events import eventmanager
@@ -893,10 +894,11 @@ class AnimationAnnotationTool(AnnotationTool):
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-        self.annotation.line_positions.append((img_x, img_y))
-        self.annotation.line_start = (img_x, img_y)
-        # TODO position
         self.annotation.set_position((img_x, img_y))
+
+        # compute the difference between position and the mouse coordinates for moving the animation
+        diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
+        self.annotation.line_positions.append(diff)
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
@@ -904,10 +906,14 @@ class AnimationAnnotationTool(AnnotationTool):
             img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-            self.annotation.line_positions.append((img_x, img_y))
+            # compute the difference for moving the animation
+            diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
+            self.annotation.line_positions.append(diff)
 
-            start = self.annotation.line_positions[len(self.annotation.line_positions) - 1]
-            end = self.annotation.line_positions[len(self.annotation.line_positions) - 2]
+            start = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions) - 1],
+                                    self.annotation.position.get_value()))
+            end = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions) - 2],
+                                  self.annotation.position.get_value()))
             cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
                      self.annotation.line_thickness.get_value())
 
@@ -916,7 +922,8 @@ class AnimationAnnotationTool(AnnotationTool):
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-        self.annotation.line_positions.append((img_x, img_y))
+        diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
+        self.annotation.line_positions.append(diff)
 
         file_path, _ = QFileDialog.getOpenFileName()
         if file_path is None or file_path == "":
@@ -940,10 +947,11 @@ class AnimationAnnotationTool(AnnotationTool):
         if self.is_annotation_valid():
 
             for i in range(len(self.annotation.line_positions) - 1):
-                start = sceneutil.convert_object_to_image(self.annotation.line_positions[i], self.phys_obj,
-                                                          self.scene_scale_factor)
-                end = sceneutil.convert_object_to_image(self.annotation.line_positions[i + 1], self.phys_obj,
-                                                        self.scene_scale_factor)
+                start_add = tuple(numpy.add(self.annotation.line_positions[i], self.annotation.position.get_value()))
+                start = sceneutil.convert_object_to_image(start_add, self.phys_obj, self.scene_scale_factor)
+
+                end_add = tuple(numpy.add(self.annotation.line_positions[i + 1], self.annotation.position.get_value()))
+                end = sceneutil.convert_object_to_image(end_add, self.phys_obj, self.scene_scale_factor)
 
                 cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
                          self.annotation.line_thickness.get_value())
@@ -952,11 +960,12 @@ class AnimationAnnotationTool(AnnotationTool):
             self.draw_image()
 
     def draw_image(self):
-        img_position = sceneutil.convert_object_to_image(self.annotation.line_start,
+        img_position = sceneutil.convert_object_to_image(self.annotation.position,
                                                          self.phys_obj, self.scene_scale_factor)
         width = self.annotation.image_width.get_value()
         height = self.annotation.image_height.get_value()
-        img_position = [self.annotation.line_start[0] - int(width / 2), self.annotation.line_start[1] - int(height / 2)]
+        img_position = [self.annotation.position.get_value()[0] - int(width / 2),
+                        self.annotation.position.get_value()[1] - int(height / 2)]
 
         img_path = os.path.join(
             scenemodel.current_project.base_path, self.annotation.image_path.get_value())

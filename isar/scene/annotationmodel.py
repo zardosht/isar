@@ -640,7 +640,6 @@ class AnimationAnnotation(Annotation):
         self.properties.append(self.closed_curve)
 
         self.line_positions = []
-        self.line_start = (0, 0)
         self.mouse_released = False
 
     def intersects_with_point(self, point):
