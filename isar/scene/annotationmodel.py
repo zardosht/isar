@@ -609,33 +609,46 @@ class CurveAnnotation(Annotation):
 
 class AnimationAnnotation(Annotation):
     MINIMUM_NUMBER_POSITIONS = 5
+    MINIMUM_WIDTH = 20
+    MINIMUM_HEIGHT = 20
 
     def __init__(self):
         super(AnimationAnnotation, self).__init__()
 
-        self.start = IntTupleAnnotationProperty("Start", [0, 0], self)
-        self.properties.append(self.start)
+        self.line_color = ColorAnnotationProperty("Line Color", (0, 0, 0), self)
+        self.properties.append(self.line_color)
 
-        self.end = IntTupleAnnotationProperty("End", None, self)
-        self.properties.append(self.end)
+        self.line_thickness = IntAnnotationProperty("Line Thickness", 2, self)
+        self.properties.append(self.line_thickness)
 
-        self.color = ColorAnnotationProperty("Color", (0, 0, 0), self)
-        self.properties.append(self.color)
-
-        self.thickness = IntAnnotationProperty("Thickness", 3, self)
-        self.properties.append(self.thickness)
-
-        self.image_path = FilePathAnnotationProperty("ImageFilename", None, self)
+        self.image_path = FilePathAnnotationProperty("Image Filename", None, self)
         self.properties.append(self.image_path)
 
-        self.width = IntAnnotationProperty("Width", 5, self)
-        self.properties.append(self.width)
+        self.image_width = IntAnnotationProperty("Image Width", 20, self)
+        self.properties.append(self.image_width)
 
-        self.height = IntAnnotationProperty("Height", 5, self)
-        self.properties.append(self.height)
+        self.image_height = IntAnnotationProperty("Image Height", 20, self)
+        self.properties.append(self.image_height)
+
+        self.animation_speed = IntAnnotationProperty("Animation Speed", 2, self)
+        self.properties.append(self.animation_speed)
+
+        self.loop = BooleanAnnotationProperty("Loop", False, self)
+        self.properties.append(self.loop)
+
+        self.closed_curve = BooleanAnnotationProperty("Closed Curve", False, self)
+        self.properties.append(self.closed_curve)
 
         self.line_positions = []
-        self.drawing_finished = False
+        self.line_start = (0, 0)
+        self.mouse_released = False
+
+    def intersects_with_point(self, point):
+        position = self.line_start
+        width = self.image_width.get_value()
+        height = self.image_height.get_value()
+        return position[0] <= point[0] <= position[0] + width and \
+               position[1] <= point[1] <= position[1] + height
 
 
 annotation_counters = {
