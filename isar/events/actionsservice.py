@@ -1,5 +1,6 @@
 import logging
 
+from isar.scene import audioutil
 from isar.services.service import Service
 
 logger = logging.getLogger("isar.actionsservice")
@@ -23,14 +24,21 @@ when scene is changed to another scene. (We probably need a SceneChangedEvent)
 """
 
 
+def get_action_by_name(name):
+    for action in defined_actions:
+        if action.name == name:
+            return action
+
+
 class ActionsService(Service):
     def __init__(self, service_name):
         super().__init__(service_name)
         self.__annotations_model = None
         self.__scenes_model = None
 
-        # TODO: Just for testing now. The actions are defined inside a project and must be loaded when project is loaded.
-        #  Also, some of the actions are bound to a scene and must be only evailable on that scene,
+        # TODO: Just for testing now. The actions are defined inside a project
+        #  and must be loaded when project is loaded.
+        #  Also, some of the actions are bound to a scene and must be only available on that scene,
         #  for example ShowAnnotations
         # self.init_defined_actions()
 
@@ -95,6 +103,11 @@ class ActionsService(Service):
         back_scene.name = "Back Scene"
         defined_actions.append(back_scene)
 
+        play_pincers_audio = PlaySoundAction()
+        play_pincers_audio.name = "Play Pincers Audio"
+        play_pincers_audio.annotation_name = "pincers_audio"
+        defined_actions.append(play_pincers_audio)
+
     def perform_action(self, action):
         if action is None:
             logger.warning("Action is None.")
@@ -146,14 +159,14 @@ class ToggleAnnotationVisibilityAction(Action):
         self.annotation_names = None
 
     def run(self):
-        annotations = self.find_annotation()
+        annotations = self.find_annotations()
         for annotation in annotations:
             is_visible = annotation.show.get_value()
             annotation.show.set_value(not is_visible)
 
-    def find_annotation(self):
+    def find_annotations(self):
         if self.annotation_names is None:
-            logger.error("annotation_name is none!")
+            logger.error("annotation_names is none!")
             return []
 
         if self.annotations_model is None:
@@ -177,7 +190,7 @@ class ShowAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__()
 
     def run(self):
-        annotations = self.find_annotation()
+        annotations = self.find_annotations()
         for annotation in annotations:
             annotation.show.set_value(True)
 
@@ -187,7 +200,7 @@ class HideAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__()
 
     def run(self):
-        annotations = self.find_annotation()
+        annotations = self.find_annotations()
         for annotation in annotations:
             annotation.show.set_value(False)
 
@@ -247,9 +260,31 @@ class PlaySoundAction(Action):
     """
     def __init__(self):
         super().__init__()
+        self.annotation_name = None
 
     def run(self):
-        pass
+        annotation = self.find_annotation()
+        if annotation is None:
+            logger.error("Target annotation is None")
+            return
+
+        audio_file_path = annotation.audio_path.get_value()
+        loop = annotation.loop_playback.get_value()
+        audioutil.play(audio_file_path, loop)
+
+    def find_annotation(self):
+        if self.annotation_name is None:
+            logger.error("annotation_name is none!")
+            return None
+
+        if self.annotations_model is None:
+            logger.error("AnnotationsModel is none!")
+            return None
+
+        annotation = self.annotations_model.get_annotation_by_name(self.annotation_name)
+        if annotation is None:
+            logger.error("Could not find an annotation with name: {}".format(self.annotation_name))
+        return annotation
 
 
 class PlayVideoAction(Action):

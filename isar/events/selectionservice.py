@@ -3,6 +3,7 @@ import logging
 
 from isar.events import actionsservice
 from isar.scene.annotationmodel import Annotation, ActionButtonAnnotation
+from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.services.service import Service
 
 logger = logging.getLogger("isar.selectionservice")
@@ -22,6 +23,12 @@ class SelectionService(Service):
             if target.name == "lenna":
                 toggle_red_box_action = actionsservice.defined_actions[0]
                 self.actions_service.perform_action(toggle_red_box_action)
+
+        if isinstance(target, PhysicalObject):
+            if target.name == "Pincers":
+                action = actionsservice.get_action_by_name("Play Pincers Audio")
+                self.actions_service.perform_action(action)
+
         # --------------------------------------
 
         on_select = getattr(target, "on_select", None)

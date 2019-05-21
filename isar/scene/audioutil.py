@@ -32,20 +32,10 @@ class AudioPlayer:
         self.player.set_media_list(self.mediaList)
 
     def play(self):
-        if not self.playing:
-            self.playing = True
-            self.player.play()
+        self.player.play()
 
     def stop(self):
-        if self.playing:
-            self.player.stop()
-            self.playing = False
-
-    def toggle_play_stop(self):
-        if self.playing:
-            self.stop()
-        else:
-            self.play()
+        self.player.stop()
 
     def set_loop(self, loop):
         if loop:
