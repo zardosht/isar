@@ -1,6 +1,9 @@
 import logging
+import os
+
 import vlc
 
+from isar.scene import sceneutil, scenemodel
 
 logger = logging.getLogger("isar.scene.audioutil")
 
@@ -12,7 +15,12 @@ class AudioPlayer:
     def __init__(self, filename):
         self.filename = filename
         self.playing = False
-        self.player = vlc.MediaPlayer(self.filename)
+        current_project = scenemodel.current_project
+        if current_project is None:
+            logger.warning("Current Project is None!")
+
+        file_path = str(os.path.join(current_project.base_path, self.filename))
+        self.player = vlc.MediaPlayer(file_path)
 
     def play(self):
         if not self.playing:
@@ -32,10 +40,20 @@ class AudioPlayer:
 
 
 def play(audio_file):
-    pass
+    if audio_file in audio_players_dict:
+        audio_players_dict[audio_file].play()
+    else:
+        audio_player = AudioPlayer(audio_file)
+        audio_players_dict[audio_file] = audio_player
+        audio_player.play()
 
 
 def stop(audio_file):
-    pass
+    if audio_file in audio_players_dict:
+        audio_players_dict[audio_file].stop()
+    else:
+        audio_player = AudioPlayer(audio_file)
+        audio_players_dict[audio_file] = audio_player
+        audio_player.stop()
 
 

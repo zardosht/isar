@@ -714,30 +714,73 @@ class SelectionTool(AnnotationTool):
             eventmanager.fire_event(SelectionEvent(self.annotation))
 
 
-class TimerAnnotationTool(AnnotationTool):
-    def __init__(self):
-        super(TimerAnnotationTool, self).__init__()
-
-    def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
-
-    def draw(self):
-        logger.info("Not implemented.")
-        pass
-
-
 class AudioAnnotationTool(AnnotationTool):
     def __init__(self):
         super(AudioAnnotationTool, self).__init__()
+        self.position = None
+        self.audio_icon = cv2.imread("isar/ui/images/audio_icon.png")
+
+    def mouse_press_event(self, camera_view, event):
+        self.position = None
+        if scenemodel.current_project is None:
+            QMessageBox.warning(None,
+                                "Error",
+                                "You first need to create a proejct to add Image, Audio, and Video annotations.")
+            return
+
+        self.set_drawing(True)
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.position = (img_x, img_y)
+
+    def mouse_move_event(self, camera_view, event):
+        # do nothing
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        if self.position is None:
+            self.set_drawing(False)
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName()
+        if file_path is None or file_path == "":
+            return
+
+        self.annotation = AudioAnnotation()
+        self.annotation.position.set_value(self.position)
+        self.annotation.audio_path.set_value(file_path)
+        self.annotations_model.add_annotation(self.annotation)
+
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if not self.annotation:
+            return
+
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                     self.phys_obj, self.scene_scale_factor)
+        width = self.annotation.size.get_value()
+        height = self.annotation.size.get_value()
+        audio_icon = self.audio_icon
+        if audio_icon is None:
+            logger.error("Audio icon is not loaded!")
+            return
+
+        if self.audio_icon.shape[0] != height or self.audio_icon.shape[1] != width:
+            audio_icon = cv2.resize(self.audio_icon, (width, height))
+
+        sceneutil.draw_image_on(self._img, audio_icon, position)
+
+
+class TimerAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(TimerAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
         logger.info("Not implemented.")

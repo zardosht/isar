@@ -620,8 +620,8 @@ class AudioAnnotation(Annotation):
         self.audio_path = FilePathAnnotationProperty("Audio Filename", None, self)
         self.properties.append(self.audio_path)
 
-        self.width = IntAnnotationProperty("Size", 5, self)
-        self.properties.append(self.width)
+        self.size = IntAnnotationProperty("Size", 20, self)
+        self.properties.append(self.size)
 
         self.loop_playback = BooleanAnnotationProperty("Loop Playback", False, self)
         self.properties.append(self.loop_playback)
@@ -631,8 +631,8 @@ class AudioAnnotation(Annotation):
 
     def intersects_with_point(self, point):
         position = self.position.get_value()
-        width = self.width.get_value()
-        height = self.height.get_value()
+        width = self.size.get_value()
+        height = self.size.get_value()
         return position[0] <= point[0] <= position[0] + width and \
             position[1] <= point[1] <= position[1] + height
 
@@ -655,11 +655,11 @@ class AudioAnnotation(Annotation):
             self.stopped = False
             self.play()
 
-    def play(self, start_time=0):
-        audioutil.play(self.audio_path)
+    def play(self):
+        audioutil.play(self.audio_path.get_value())
 
     def stop(self):
-        audioutil.stop(self.audio_path)
+        audioutil.stop(self.audio_path.get_value())
 
 
 class RelationshipAnnotation(Annotation):
