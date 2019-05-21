@@ -626,14 +626,28 @@ class AnimationAnnotation(Annotation):
 
 
 class AudioAnnotation(Annotation):
+    DEFAULT_TEXT = "--"
+
     def __init__(self):
         super().__init__()
 
-        self.audio_path = FilePathAnnotationProperty("Audio Filename", None, self)
+        self.audio_path = FilePathAnnotationProperty("Audio Filename", None, self, self.set_audio_path.__name__)
         self.properties.append(self.audio_path)
 
-        self.size = IntAnnotationProperty("Size", 20, self)
-        self.properties.append(self.size)
+        self.icon_size = IntAnnotationProperty("Icon Size", 30, self)
+        self.properties.append(self.icon_size)
+
+        self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
+        self.properties.append(self.text)
+
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 1, self)
+        self.properties.append(self.text_thickness)
+
+        self.font_scale = FloatAnnotationProperty("Font Scale", .3, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 0, 0), self)
+        self.properties.append(self.text_color)
 
         self.loop_playback = BooleanAnnotationProperty("Loop Playback", False, self)
         self.properties.append(self.loop_playback)
@@ -641,10 +655,14 @@ class AudioAnnotation(Annotation):
         self.stopped = False
         self.playing = True
 
+    def set_audio_path(self, value):
+        self.audio_path._value = value
+        self.text._value = value
+
     def intersects_with_point(self, point):
         position = self.position.get_value()
-        width = self.size.get_value()
-        height = self.size.get_value()
+        width = self.icon_size.get_value()
+        height = self.icon_size.get_value()
         return position[0] <= point[0] <= position[0] + width and \
             position[1] <= point[1] <= position[1] + height
 
@@ -668,7 +686,7 @@ class AudioAnnotation(Annotation):
             self.play()
 
     def play(self):
-        audioutil.play(self.audio_path.get_value())
+        audioutil.play(self.audio_path.get_value(), self.loop_playback.get_value())
 
     def stop(self):
         audioutil.stop(self.audio_path.get_value())
@@ -893,12 +911,6 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
             self.editor = super().createEditor(parent, option, index)
             return self.editor
 
-    def sizeHint(self, qstyle_option_view_item, qmodel_index):
-        if self.editor is not None:
-            return self.editor.sizeHint()
-        else:
-            return super().sizeHint(qstyle_option_view_item, qmodel_index)
-
     def setModelData(self, editor, model, index):
         if isinstance(editor, QComboBox):
             annotation_property = index.model().get_annotation_property(index)
@@ -968,15 +980,10 @@ class FilePathEditorWidget(QWidget):
         self.layout.setContentsMargins(2, 2, 2, 2)
         self.layout.addWidget(self.widget)
 
-        self.size_hint = QSize(100, 50)
-
     def btn_clicked(self):
         self.filename, _ = QFileDialog.getOpenFileName()
         if self.filename is not None:
             self.filename_selected.emit(self.filename)
-
-    def sizeHint(self):
-        return self.size_hint
 
 
 class AnnotationProperty:
@@ -1040,8 +1047,12 @@ class FilePathAnnotationProperty(AnnotationProperty):
         # set the _value to only the file name
         if os.path.exists(value):
             shutil.copy(value, scenemodel.current_project.base_path)
-            self._value = os.path.basename(value)
-            return True
+            value = os.path.basename(value)
+            if self.setter_name is not None:
+                return getattr(self.annotation, self.setter_name)(value)
+            else:
+                self._value = value
+                return True
         else:
             return False
 

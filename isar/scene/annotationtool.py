@@ -766,8 +766,8 @@ class AudioAnnotationTool(AnnotationTool):
 
         position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
                                                      self.phys_obj, self.scene_scale_factor)
-        width = self.annotation.size.get_value()
-        height = self.annotation.size.get_value()
+        width = self.annotation.icon_size.get_value()
+        height = self.annotation.icon_size.get_value()
         audio_icon = self.audio_icon
         if audio_icon is None:
             logger.error("Audio icon is not loaded!")
@@ -776,7 +776,24 @@ class AudioAnnotationTool(AnnotationTool):
         if self.audio_icon.shape[0] != height or self.audio_icon.shape[1] != width:
             audio_icon = cv2.resize(self.audio_icon, (width, height))
 
+        text = self.annotation.text.get_value()
+        font_scale = self.annotation.font_scale.get_value()
+        text_color = self.annotation.text_color.get_value()
+        text_thickness = self.annotation.text_thickness.get_value()
+
+        # TODO: add font property to TextAnnotation()
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        line_type = cv2.LINE_AA
+
         sceneutil.draw_image_on(self._img, audio_icon, position)
+        cv2.putText(self._img,
+                    text,
+                    position,
+                    font,
+                    font_scale,
+                    text_color,
+                    text_thickness,
+                    line_type)
 
 
 class TimerAnnotationTool(AnnotationTool):
