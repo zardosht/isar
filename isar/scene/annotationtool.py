@@ -3,6 +3,7 @@ import os
 from threading import Thread
 
 import cv2
+import numpy
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 
 from isar.events import eventmanager
@@ -915,7 +916,125 @@ class CurveAnnotationTool(AnnotationTool):
 
 
 class AnimationAnnotationTool(AnnotationTool):
-    pass
+    image_cache = {}
+
+    def __init__(self):
+        super(AnimationAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        if scenemodel.current_project is None:
+            QMessageBox.warning(None,
+                                "Error",
+                                "You first need to create a project to add Image, Audio, Video and Animation "
+                                "annotations.")
+            return
+
+        self.set_drawing(True)
+        self.annotation = AnimationAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+
+        self.annotation.set_position((img_x, img_y))
+
+        # compute the difference between position and the mouse coordinates for moving the animation
+        diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
+        self.annotation.line_positions.append(diff)
+
+    def mouse_move_event(self, camera_view, event):
+        if self._drawing:
+            camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+            img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+                event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+
+            # compute the difference for moving the animation
+            diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
+            self.annotation.line_positions.append(diff)
+
+            start = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions) - 1],
+                                    self.annotation.position.get_value()))
+            end = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions) - 2],
+                                  self.annotation.position.get_value()))
+            cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
+                     self.annotation.line_thickness.get_value())
+
+    def mouse_release_event(self, camera_view, event):
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+
+        diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
+        self.annotation.line_positions.append(diff)
+
+        file_path, _ = QFileDialog.getOpenFileName()
+        if file_path is None or file_path == "":
+            return
+
+        self.annotation.image_path.set_value(file_path)
+
+        if self.is_annotation_valid():
+            self.annotations_model.add_annotation(self.annotation)
+
+        self.annotation.mouse_released = True
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if not self.annotation:
+            return
+
+        if self.is_annotation_valid():
+
+            for i in range(len(self.annotation.line_positions) - 1):
+                start_add = tuple(numpy.add(self.annotation.line_positions[i], self.annotation.position.get_value()))
+                start = sceneutil.convert_object_to_image(start_add, self.phys_obj, self.scene_scale_factor)
+
+                end_add = tuple(numpy.add(self.annotation.line_positions[i + 1], self.annotation.position.get_value()))
+                end = sceneutil.convert_object_to_image(end_add, self.phys_obj, self.scene_scale_factor)
+
+                cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
+                         self.annotation.line_thickness.get_value())
+
+        if self.annotation.mouse_released:
+            self.draw_image()
+
+    def draw_image(self):
+        img_position = sceneutil.convert_object_to_image(self.annotation.position,
+                                                         self.phys_obj, self.scene_scale_factor)
+        width = self.annotation.image_width.get_value()
+        height = self.annotation.image_height.get_value()
+        img_position = [self.annotation.position.get_value()[0] - int(width / 2),
+                        self.annotation.position.get_value()[1] - int(height / 2)]
+
+        img_path = os.path.join(
+            scenemodel.current_project.base_path, self.annotation.image_path.get_value())
+        image = None
+        if img_path in AnimationAnnotationTool.image_cache:
+            image = AnimationAnnotationTool.image_cache[img_path]
+        else:
+            image = cv2.imread(str(img_path))
+            AnimationAnnotationTool.image_cache[img_path] = image
+
+        if image is None:
+            logger.warning("Image is None")
+            return
+
+        if image.shape[0] != height or image.shape[1] != width:
+            image = cv2.resize(image, (width, height))
+
+        sceneutil.draw_image_on(self._img, image, img_position)
+
+    def is_annotation_valid(self):
+        if len(self.annotation.line_positions) < AnimationAnnotation.MINIMUM_NUMBER_POSITIONS:
+            return False
+        if self.annotation.image_height.get_value() < AnimationAnnotation.MINIMUM_HEIGHT \
+                or self.annotation.image_width.get_value() < AnimationAnnotation.MINIMUM_WIDTH:
+            return False
+        return True
 
 
 annotation_tools = {
