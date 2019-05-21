@@ -508,7 +508,7 @@ class VideoAnnotation(Annotation):
     def on_select(self):
         # TODO: Actually the toggling of play mode upon selection should happen
         #  when we are in ApplicationMode.EXECUTION
-        #  Generally, the bahavior of annotations upon selection, should be defined
+        #  Generally, the behavior of annotations upon selection, should be defined
         #  depending on if we are in AUTHORING or EXECUTION mode.
         if self.playing:
             self.paused = True
@@ -791,6 +791,7 @@ class AnnotationPropertiesModel(QAbstractTableModel):
 
         result = False
         if role == Qt.EditRole:
+            prop = None
             try:
                 prop: AnnotationProperty = self.__properties[index.row()]
                 result = prop.set_value(value)
