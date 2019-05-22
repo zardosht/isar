@@ -48,66 +48,6 @@ class ActionsService(Service):
     def set_scenes_model(self, scenes_model):
         self.__scenes_model = scenes_model
 
-    @staticmethod
-    def init_defined_actions():
-        # TODO: This will be read from the prorject. During the scene definition, the user defines actions.
-        #  They are persisted with project.
-
-        global defined_actions
-        defined_actions.clear()
-
-        toggle_red_box = ToggleAnnotationVisibilityAction()
-        toggle_red_box.name = "Toggle Red Box"
-        toggle_red_box.annotation_names = ["red_box"]
-        defined_actions.append(toggle_red_box)
-
-        toggle_help = ToggleAnnotationVisibilityAction()
-        toggle_help.name = "Toggle Help"
-        toggle_help.annotation_names = ["help_text1", "help_text2"]
-        defined_actions.append(toggle_help)
-
-        show_lenna = ShowAnnotationAction()
-        show_lenna.name = "Show Lenna"
-        show_lenna.annotation_names = ["lenna"]
-        defined_actions.append(show_lenna)
-
-        hide_lenna = HideAnnotationAction()
-        hide_lenna.name = "Hide Lenna"
-        hide_lenna.annotation_names = ["lenna"]
-        defined_actions.append(hide_lenna)
-
-        show_scene1 = ShowSceneAction()
-        show_scene1.name = "Show Scene1"
-        show_scene1.scene_name = "Scene1"
-        defined_actions.append(show_scene1)
-
-        show_help_scene = ShowSceneAction()
-        show_help_scene.name = "Show Help Scene"
-        show_help_scene.scene_name = "help"
-        defined_actions.append(show_help_scene)
-
-        show_joke_scene = ShowSceneAction()
-        show_joke_scene.name = "Show Joke Scene"
-        show_joke_scene.scene_name = "joke"
-        defined_actions.append(show_joke_scene)
-
-        next_scene = NextSceneAction()
-        next_scene.name = "Next Scene"
-        defined_actions.append(next_scene)
-
-        prev_scene = PreviousSceneAction()
-        prev_scene.name = "Previous Scene"
-        defined_actions.append(prev_scene)
-
-        back_scene = BackSceneAction()
-        back_scene.name = "Back Scene"
-        defined_actions.append(back_scene)
-
-        play_pincers_audio = PlaySoundAction()
-        play_pincers_audio.name = "Play Pincers Audio"
-        play_pincers_audio.annotation_name = "pincers_audio"
-        defined_actions.append(play_pincers_audio)
-
     def perform_action(self, action):
         if action is None:
             logger.warning("Action is None.")
@@ -148,6 +88,40 @@ class Action:
         self.__init__()
         self.__dict__.update(state)
 
+    def find_annotations(self, annotation_names):
+        if annotation_names is None:
+            logger.error("annotation_names is none!")
+            return []
+
+        if self.annotations_model is None:
+            logger.error("AnnotationsModel is none!")
+            return []
+
+        annotations = []
+        for annotation_name in annotation_names:
+            annotation = self.annotations_model.get_annotation_by_name(annotation_name)
+            if annotation is None:
+                logger.error("Could not find an annotation with name: {}".format(annotation_name))
+                continue
+            else:
+                annotations.append(annotation)
+
+        return annotations
+
+    def find_annotation(self, annotation_name):
+        if annotation_name is None:
+            logger.error("annotation_name is none!")
+            return None
+
+        if self.annotations_model is None:
+            logger.error("AnnotationsModel is none!")
+            return None
+
+        annotation = self.annotations_model.get_annotation_by_name(annotation_name)
+        if annotation is None:
+            logger.error("Could not find an annotation with name: {}".format(annotation_name))
+        return annotation
+
 
 class ToggleAnnotationVisibilityAction(Action):
     """
@@ -159,30 +133,10 @@ class ToggleAnnotationVisibilityAction(Action):
         self.annotation_names = None
 
     def run(self):
-        annotations = self.find_annotations()
+        annotations = self.find_annotations(self.annotation_names)
         for annotation in annotations:
             is_visible = annotation.show.get_value()
             annotation.show.set_value(not is_visible)
-
-    def find_annotations(self):
-        if self.annotation_names is None:
-            logger.error("annotation_names is none!")
-            return []
-
-        if self.annotations_model is None:
-            logger.error("AnnotationsModel is none!")
-            return []
-
-        annotations = []
-        for annotation_name in self.annotation_names:
-            annotation = self.annotations_model.get_annotation_by_name(annotation_name)
-            if annotation is None:
-                logger.error("Could not find an annotation with name: {}".format(annotation_name))
-                continue
-            else:
-                annotations.append(annotation)
-
-        return annotations
 
 
 class ShowAnnotationAction(ToggleAnnotationVisibilityAction):
@@ -190,7 +144,7 @@ class ShowAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__()
 
     def run(self):
-        annotations = self.find_annotations()
+        annotations = self.find_annotations(self.annotation_names)
         for annotation in annotations:
             annotation.show.set_value(True)
 
@@ -200,7 +154,7 @@ class HideAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__()
 
     def run(self):
-        annotations = self.find_annotations()
+        annotations = self.find_annotations(self.annotation_names)
         for annotation in annotations:
             annotation.show.set_value(False)
 
@@ -254,6 +208,48 @@ class BackSceneAction(Action):
         self.scenes_model.show_back_scene()
 
 
+class StartTimerAction(Action):
+    """
+    Must have a timer annotation as its target.
+    """
+    def __init__(self):
+        super().__init__()
+        self.timer_name = None
+
+    def run(self):
+        timer = self.find_annotation(self.timer_name)
+        if timer is not None:
+            timer.start()
+
+
+class StopTimerAction(Action):
+    """
+    Must have a timer annotation as its target.
+    """
+    def __init__(self):
+        super().__init__()
+        self.timer_name = None
+
+    def run(self):
+        timer = self.find_annotation(self.timer_name)
+        if timer is not None:
+            timer.stop()
+
+
+class ResetTimerAction(Action):
+    """
+    Must have a timer annotation as its target.
+    """
+    def __init__(self):
+        super().__init__()
+        self.timer_name = None
+
+    def run(self):
+        timer = self.find_annotation(self.timer_name)
+        if timer is not None:
+            timer.reset()
+
+
 class PlaySoundAction(Action):
     """
     Must have a sound annotation as its target.
@@ -263,7 +259,7 @@ class PlaySoundAction(Action):
         self.annotation_name = None
 
     def run(self):
-        annotation = self.find_annotation()
+        annotation = self.find_annotation(self.annotation_name)
         if annotation is None:
             logger.error("Target annotation is None")
             return
@@ -271,20 +267,6 @@ class PlaySoundAction(Action):
         audio_file_path = annotation.audio_path.get_value()
         loop = annotation.loop_playback.get_value()
         audioutil.play(audio_file_path, loop)
-
-    def find_annotation(self):
-        if self.annotation_name is None:
-            logger.error("annotation_name is none!")
-            return None
-
-        if self.annotations_model is None:
-            logger.error("AnnotationsModel is none!")
-            return None
-
-        annotation = self.annotations_model.get_annotation_by_name(self.annotation_name)
-        if annotation is None:
-            logger.error("Could not find an annotation with name: {}".format(self.annotation_name))
-        return annotation
 
 
 class PlayVideoAction(Action):
@@ -298,37 +280,86 @@ class PlayVideoAction(Action):
         pass
 
 
-class StartTimerAction(Action):
-    """
-    Must have a timer annotation as its target.
-    """
-    def __init__(self):
-        super().__init__()
 
-    def run(self):
-        pass
+# ====================================================
+# ========= initializint defined actions   ===========
+# ========= This must be read from project ===========
+# ====================================================
 
+def init_defined_actions():
+    # TODO: This will be read from the prorject. During the scene definition, the user defines actions.
+    #  They are persisted with project.
 
-class PauseTimerAction(Action):
-    """
-    Must have a timer annotation as its target.
-    """
-    def __init__(self):
-        super().__init__()
+    global defined_actions
+    defined_actions.clear()
 
-    def run(self):
-        pass
+    toggle_red_box = ToggleAnnotationVisibilityAction()
+    toggle_red_box.name = "Toggle Red Box"
+    toggle_red_box.annotation_names = ["red_box"]
+    defined_actions.append(toggle_red_box)
 
+    toggle_help = ToggleAnnotationVisibilityAction()
+    toggle_help.name = "Toggle Help"
+    toggle_help.annotation_names = ["help_text1", "help_text2"]
+    defined_actions.append(toggle_help)
 
-class ResetTimerAction(Action):
-    """
-    Must have a timer annotation as its target.
-    """
-    def __init__(self):
-        super().__init__()
+    show_lenna = ShowAnnotationAction()
+    show_lenna.name = "Show Lenna"
+    show_lenna.annotation_names = ["lenna"]
+    defined_actions.append(show_lenna)
 
-    def run(self):
-        pass
+    hide_lenna = HideAnnotationAction()
+    hide_lenna.name = "Hide Lenna"
+    hide_lenna.annotation_names = ["lenna"]
+    defined_actions.append(hide_lenna)
+
+    show_scene1 = ShowSceneAction()
+    show_scene1.name = "Show Scene1"
+    show_scene1.scene_name = "Scene1"
+    defined_actions.append(show_scene1)
+
+    show_help_scene = ShowSceneAction()
+    show_help_scene.name = "Show Help Scene"
+    show_help_scene.scene_name = "help"
+    defined_actions.append(show_help_scene)
+
+    show_joke_scene = ShowSceneAction()
+    show_joke_scene.name = "Show Joke Scene"
+    show_joke_scene.scene_name = "joke"
+    defined_actions.append(show_joke_scene)
+
+    next_scene = NextSceneAction()
+    next_scene.name = "Next Scene"
+    defined_actions.append(next_scene)
+
+    prev_scene = PreviousSceneAction()
+    prev_scene.name = "Previous Scene"
+    defined_actions.append(prev_scene)
+
+    back_scene = BackSceneAction()
+    back_scene.name = "Back Scene"
+    defined_actions.append(back_scene)
+
+    play_pincers_audio = PlaySoundAction()
+    play_pincers_audio.name = "Play Pincers Audio"
+    play_pincers_audio.annotation_name = "pincers_audio"
+    defined_actions.append(play_pincers_audio)
+
+    start_timer1 = StartTimerAction()
+    start_timer1.name = "Start Timer 1"
+    start_timer1.timer_name = "timer1"
+    defined_actions.append(start_timer1)
+
+    stop_timer1 = StopTimerAction()
+    stop_timer1.name = "Stop Timer 1"
+    stop_timer1.timer_name = "timer1"
+    defined_actions.append(stop_timer1)
+
+    reset_timer1 = ResetTimerAction()
+    reset_timer1.name = "Reset Timer 1"
+    reset_timer1.timer_name = "timer1"
+    defined_actions.append(reset_timer1)
+
 
 
 

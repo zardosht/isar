@@ -7,6 +7,7 @@ import jsonpickle
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
+from isar.events import actionsservice
 from isar.events.actionsservice import ActionsService
 from isar.scene import sceneutil
 
@@ -280,7 +281,7 @@ class ScenesModel(QAbstractListModel):
             self.default_scene_navigation_flow = self.get_ordered_scene_ids()
 
             # TODO: should it be called here? or somewhere else?
-            ActionsService.init_defined_actions()
+            actionsservice.init_defined_actions()
 
             self.back_scene_nav_stack.clear()
             # for scene in self.scenes:

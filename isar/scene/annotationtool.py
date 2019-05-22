@@ -859,7 +859,7 @@ class TimerAnnotationTool(AnnotationTool):
             text_size, _ = cv2.getTextSize(str(duration), font, font_scale, text_thickness)
             width = text_size[0] + 2 * text_thickness
             height = 2 * text_size[1] + 10 * text_thickness
-            fraction_image = np.zeros((height, width, 3), np.uint8)
+            fraction_image = numpy.zeros((height, width, 3), numpy.uint8)
             fraction_image[:] = (128, 128, 128)
 
             cv2.putText(fraction_image, str(current_time).zfill(len(str(duration))),

@@ -13,7 +13,8 @@ from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget
     QPushButton, QLabel, QToolButton, QVBoxLayout, QSizePolicy
 
 from isar.events import actionsservice, eventmanager
-from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event
+from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
+    TimerFinishedEvent
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -700,10 +701,10 @@ class TimerAnnotation(Annotation):
     MAX_TIMER_DURATION = 3600
 
     def __init__(self):
-        super(TimerAnnotation, self).__init__()
+        super().__init__()
 
         # duration in seconds
-        self.duration = IntAnnotationProperty("Duration", 60, self. self.set_duration.__name__)
+        self.duration = IntAnnotationProperty("Duration", 60, self, self.set_duration.__name__)
         self.properties.append(self.duration)
 
         # if True will show as HH:MM:SS, otherwise simply the duration tick
@@ -715,7 +716,7 @@ class TimerAnnotation(Annotation):
         self.properties.append(self.show_as_chart)
 
         # if True will show as HH:MM:SS, otherwise simply the duration tick
-        self.show_as_fraction = BooleanAnnotationProperty("Show as Fraction", False, self, self.set_show_as_fraction.__name__)
+        self.show_as_fraction = BooleanAnnotationProperty("Show as Fraction", True, self, self.set_show_as_fraction.__name__)
         self.properties.append(self.show_as_fraction)
 
         self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
@@ -747,8 +748,7 @@ class TimerAnnotation(Annotation):
         self.properties.append(self.timeout_3)
 
         self.current_time = 0
-        self.timer_thread = Thread(target=self.tick())
-        self.thread_stop_event = Event()
+        self.timer_thread = None
 
     def set_show_as_chart(self, value):
         self.show_as_chart._value = value
@@ -772,7 +772,7 @@ class TimerAnnotation(Annotation):
 
     def set_show_as_fraction(self, value):
         if value:
-            self.show_as_chart._value = value
+            self.show_as_fraction._value = value
             self.show_as_time._value = False
             self.show_as_chart._value = False
             return True
@@ -823,36 +823,64 @@ class TimerAnnotation(Annotation):
         self.__dict__.update(state)
 
     def start(self):
-        self.timer_thread.start()
+        if self.timer_thread is not None:
+            if not self.timer_thread.is_alive():
+                self.timer_thread.start()
+        else:
+            self.timer_thread = TimerThread(self)
+            self.timer_thread.start()
 
     def stop(self):
-        self.thread_stop_event.set()
+        if self.timer_thread is not None:
+            self.timer_thread.stop()
+            self.timer_thread = None
 
     def reset(self):
+        self.stop()
         self.current_time = 0
-        self.thread_stop_event.clear()
 
-    def tick(self):
-        while not self.thread_stop_event.is_set() and \
-                self.current_time < self.duration.get_value():
-            self.current_time += 1
-            if (self.current_time % self.tick_interval.get_value()) == 0:
-                timer_tick_event = TimerTickEvent(self, self.current_time)
+
+class TimerThread(Thread):
+    # I had to add this class because of the weired Lock exception I got,
+    # when the timer thread was inside the TimerAnnotation class
+    def __init__(self, timer_annotation):
+        super().__init__()
+        self.timer_annotation = timer_annotation
+        self.stop_event = Event()
+
+    def run(self):
+        stopped_before_finish = False
+        while self.timer_annotation.current_time < self.timer_annotation.duration.get_value():
+            if self.stop_event.is_set():
+                stopped_before_finish = True
+                break
+
+            self.timer_annotation.current_time += 1
+            if (self.timer_annotation.current_time % self.timer_annotation.tick_interval.get_value()) == 0:
+                timer_tick_event = TimerTickEvent(self.timer_annotation, self.timer_annotation.current_time)
                 eventmanager.fire_event(timer_tick_event)
 
-            if self.current_time == self.timeout_1.get_value():
-                timer_timeout1_event = TimerTimeout1Event(self, self.current_time)
+            if self.timer_annotation.current_time == self.timer_annotation.timeout_1.get_value():
+                timer_timeout1_event = TimerTimeout1Event(self.timer_annotation, self.timer_annotation.current_time)
                 eventmanager.fire_event(timer_timeout1_event)
 
-            if self.current_time == self.timeout_2.get_value():
-                timer_timeout2_event = TimerTimeout2Event(self, self.current_time)
+            if self.timer_annotation.current_time == self.timer_annotation.timeout_2.get_value():
+                timer_timeout2_event = TimerTimeout2Event(self.timer_annotation, self.timer_annotation.current_time)
                 eventmanager.fire_event(timer_timeout2_event)
 
-            if self.current_time == self.timeout_3.get_value():
-                timer_timeout3_event = TimerTimeout3Event(self, self.current_time)
+            if self.timer_annotation.current_time == self.timer_annotation.timeout_3.get_value():
+                timer_timeout3_event = TimerTimeout3Event(self.timer_annotation, self.timer_annotation.current_time)
                 eventmanager.fire_event(timer_timeout3_event)
 
             time.sleep(1)
+
+        if not stopped_before_finish:
+            timer_finished_event = TimerFinishedEvent(self.timer_annotation)
+            eventmanager.fire_event(timer_finished_event)
+
+    def stop(self):
+        self.stop_event.set()
+
 
 
 class RelationshipAnnotation(Annotation):

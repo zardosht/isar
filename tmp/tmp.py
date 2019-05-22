@@ -1,7 +1,158 @@
+import threading
+import time
+
+
+class TimerAnnotation:
+    def __init__(self):
+        self.current_time = 0
+        self.duration = 60
+        self.tick_interval = 1
+        self.timer_thread = None
+        self.thread_stop_event = threading.Event()
+
+    def start(self):
+        print("TimerAnnotation: start called")
+        if self.timer_thread is not None:
+            if not self.timer_thread.is_alive():
+                self.timer_thread.start()
+        else:
+            self.timer_thread = threading.Thread(target=self.tick)
+            self.timer_thread.start()
+
+    def stop(self):
+        print("TimerAnnotation: stop called")
+        self.thread_stop_event.set()
+
+    def reset(self):
+        print("TimerAnnotation: reset called")
+        self.current_time = 0
+        self.thread_stop_event.clear()
+
+    def tick(self):
+        while not self.thread_stop_event.is_set() and \
+                self.current_time < self.duration:
+            self.current_time += 1
+            if (self.current_time % self.tick_interval) == 0:
+                print("timer tick")
+
+            time.sleep(1)
+
+        self.timer_thread = None
+        self.thread_stop_event.clear()
+
+
+def stop_timer_annotation(ta):
+    print("Stopping timer annotation")
+    ta.stop()
+
+
+timer_annotation = TimerAnnotation()
+timer_annotation.start()
+
+# threading.Timer(10, stop_timer_annotation, args=(timer_annotation, )).start()
+
+print("waiting for 10 secs, then stopping the timer annotation")
+time.sleep(10)
+stop_timer_annotation(timer_annotation)
+
+print("waiting for 5 secs, then resetting the timer annotation, then restarting timer annotation")
+time.sleep(5)
+timer_annotation.reset()
+timer_annotation.start()
 
 
 
 
+
+# ============================================================
+#
+# import sys
+# from PyQt5 import QtCore, QtWidgets
+#
+#
+# class MyWindow(QtWidgets.QMainWindow):
+#     def __init__(self):
+#         super().__init__()
+#         self.setWindowTitle('MyWindow')
+#         self._main = QtWidgets.QWidget()
+#         self.setCentralWidget(self._main)
+#         self.button = QtWidgets.QPushButton('Do it')
+#         self.button.clicked.connect(self.do)
+#
+#         self.contincheck = QtWidgets.QCheckBox("Continuous")
+#         self.contincheck.clicked.connect(self.continuous_doing)
+#         self.continuous = False
+#         layout = QtWidgets.QGridLayout(self._main)
+#         layout.addWidget(self.button, 0, 0)
+#         layout.addWidget(self.contincheck, 1, 0)
+#
+#         self.mythread = MyThread(self.continuous, self)
+#         self.mythread.finished.connect(self.thread_finished)
+#         self.button.clicked.connect(self.mythread.stop)
+#         self.mythread.signal.connect(self.done)
+#
+#     def continuous_doing(self):
+#         self.button.setCheckable(self.contincheck.isChecked())
+#         self.continuous = self.contincheck.isChecked()
+#
+#     def do(self):
+#         if self.button.isCheckable() and not self.button.isChecked():
+#             self.button.setText('Do it')
+#             self.contincheck.setEnabled(True)
+#         else:
+#             self.mythread.continuous = self.continuous
+#             if self.button.isCheckable() and self.button.isChecked():
+#                 self.button.setText('Stop doing that')
+#                 self.contincheck.setDisabled(True)
+#
+#             self.mythread.start()
+#
+#     @QtCore.pyqtSlot(int)
+#     def done(self, i):
+#         print('done it', i)
+#
+#     @QtCore.pyqtSlot()
+#     def thread_finished(self):
+#         print('thread finished')
+#
+#
+# class MyThread(QtCore.QThread):
+#     signal = QtCore.pyqtSignal(int)
+#
+#     def __init__(self, continuous=False, parent=None):
+#         super(MyThread, self).__init__(parent)
+#         self._stopped = True
+#         self.continuous = continuous
+#         self.i = 0
+#
+#     def __del__(self):
+#         self.wait()
+#
+#     def stop(self):
+#         self._stopped = True
+#
+#     def run(self):
+#         self._stopped = False
+#         while True:
+#             self.signal.emit(self.i)
+#             if self._stopped:
+#                 break
+#             if self.continuous:
+#                 QtCore.QThread.sleep(2)
+#             else:
+#                 break
+#
+#
+# if __name__ == '__main__':
+#     app = QtCore.QCoreApplication.instance()
+#     if app is None:
+#         app = QtWidgets.QApplication(sys.argv)
+#     mainGui = MyWindow()
+#     mainGui.show()
+#     app.aboutToQuit.connect(app.deleteLater)
+#     app.exec_()
+#
+#
 # # ============================================================================
 #
 # a = True
