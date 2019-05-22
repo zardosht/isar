@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from isar.scene import audioutil
 from isar.services.service import Service
@@ -59,7 +60,12 @@ class ActionsService(Service):
         if action.scenes_model is None:
             action.scenes_model = self.__scenes_model
 
-        action.run()
+        try:
+            action.run()
+        except Exception as exp:
+            logger.error("Exception thrown on performing the action: {}".format(str(action)))
+            logger.error(exp)
+            traceback.print_tb(exp.__traceback__)
 
     def start(self):
         pass

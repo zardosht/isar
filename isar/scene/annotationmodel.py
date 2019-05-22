@@ -823,12 +823,13 @@ class TimerAnnotation(Annotation):
         self.__dict__.update(state)
 
     def start(self):
-        if self.timer_thread is not None:
-            if not self.timer_thread.is_alive():
-                self.timer_thread.start()
-        else:
-            self.timer_thread = TimerThread(self)
-            self.timer_thread.start()
+        if self.timer_thread is not None \
+                and self.timer_thread.is_alive():
+            return
+
+        self.current_time = 0
+        self.timer_thread = TimerThread(self)
+        self.timer_thread.start()
 
     def stop(self):
         if self.timer_thread is not None:
