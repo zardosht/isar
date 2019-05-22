@@ -1,8 +1,10 @@
 import logging
 import os
 import shutil
+import time
 import traceback
 from ast import literal_eval
+from threading import Thread, Event
 from typing import List
 
 from PyQt5 import QtCore
@@ -10,7 +12,8 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableMode
 from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel, QToolButton, QVBoxLayout, QSizePolicy
 
-from isar.events import actionsservice
+from isar.events import actionsservice, eventmanager
+from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -658,6 +661,7 @@ class AudioAnnotation(Annotation):
     def set_audio_path(self, value):
         self.audio_path._value = value
         self.text._value = value
+        return True
 
     def intersects_with_point(self, point):
         position = self.position.get_value()
@@ -692,6 +696,165 @@ class AudioAnnotation(Annotation):
         audioutil.stop(self.audio_path.get_value())
 
 
+class TimerAnnotation(Annotation):
+    MAX_TIMER_DURATION = 3600
+
+    def __init__(self):
+        super(TimerAnnotation, self).__init__()
+
+        # duration in seconds
+        self.duration = IntAnnotationProperty("Duration", 60, self. self.set_duration.__name__)
+        self.properties.append(self.duration)
+
+        # if True will show as HH:MM:SS, otherwise simply the duration tick
+        self.show_as_time = BooleanAnnotationProperty("Show as Time", False, self, self.set_show_as_time.__name__)
+        self.properties.append(self.show_as_time)
+
+        # if True will show as a pie chart, otherwise simply the duration tick
+        self.show_as_chart = BooleanAnnotationProperty("Show as Chart", False, self, self.set_show_as_chart.__name__)
+        self.properties.append(self.show_as_chart)
+
+        # if True will show as HH:MM:SS, otherwise simply the duration tick
+        self.show_as_fraction = BooleanAnnotationProperty("Show as Fraction", False, self, self.set_show_as_fraction.__name__)
+        self.properties.append(self.show_as_fraction)
+
+        self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
+        self.properties.append(self.text)
+
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 1, self)
+        self.properties.append(self.text_thickness)
+
+        self.font_scale = FloatAnnotationProperty("Font Scale", .5, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 0, 0), self)
+        self.properties.append(self.text_color)
+
+        # sends timer tick events every X seconds. If set to -1 does not send timer tick events.
+        self.tick_interval = IntAnnotationProperty("Tick Interval", 1, self, self.set_tick_interval.__name__)
+        self.properties.append(self.tick_interval)
+
+        # a timer can also have up to three timeout events at specific given times.
+        # If set to -1, this timeout is igonred. If set to a value, the timer sends a TimerTimeoutEvent at
+        # the given time.
+        self.timeout_1 = IntAnnotationProperty("Timeout 1", -1, self, self.set_timeout_1.__name__)
+        self.properties.append(self.timeout_1)
+
+        self.timeout_2 = IntAnnotationProperty("Timeout 2", -1, self, self.set_timeout_2.__name__)
+        self.properties.append(self.timeout_2)
+
+        self.timeout_3 = IntAnnotationProperty("Timeout 3", -1, self, self.set_timeout_3.__name__)
+        self.properties.append(self.timeout_3)
+
+        self.current_time = 0
+        self.timer_thread = Thread(target=self.tick())
+        self.thread_stop_event = Event()
+
+    def set_show_as_chart(self, value):
+        self.show_as_chart._value = value
+        if value:
+            self.show_as_time._value = False
+            self.show_as_fraction._value = False
+        else:
+            self.show_as_time._value = False
+            self.show_as_fraction._value = True
+        return True
+
+    def set_show_as_time(self, value):
+        self.show_as_time._value = value
+        if value:
+            self.show_as_chart._value = False
+            self.show_as_fraction._value = False
+        else:
+            self.show_as_chart._value = False
+            self.show_as_fraction._value = True
+        return True
+
+    def set_show_as_fraction(self, value):
+        if value:
+            self.show_as_chart._value = value
+            self.show_as_time._value = False
+            self.show_as_chart._value = False
+            return True
+        else:
+            # we must have at least a representation equal true
+            return False
+
+    def set_duration(self, value):
+        if value <= TimerAnnotation.MAX_TIMER_DURATION:
+            self.duration._value = value
+            return True
+        return False
+
+    def set_tick_interval(self, value):
+        if value <= self.duration.get_value():
+            self.tick_interval._value = value
+            return True
+        return False
+
+    def set_timeout_1(self, value):
+        if value <= self.duration.get_value():
+            self.timeout_1._value = value
+            return True
+        return False
+
+    def set_timeout_2(self, value):
+        if value <= self.duration.get_value():
+            self.timeout_2._value = value
+            return True
+        return False
+
+    def set_timeout_3(self, value):
+        if value <= self.duration.get_value():
+            self.timeout_3._value = value
+            return True
+        return False
+
+    def reset_runtime_state(self):
+        self.current_time = 0
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["timer_thread"]
+        return state
+
+    def __setstate__(self, state):
+        self.__init__()
+        self.__dict__.update(state)
+
+    def start(self):
+        self.timer_thread.start()
+
+    def stop(self):
+        self.thread_stop_event.set()
+
+    def reset(self):
+        self.current_time = 0
+        self.thread_stop_event.clear()
+
+    def tick(self):
+        while not self.thread_stop_event.is_set() and \
+                self.current_time < self.duration.get_value():
+            self.current_time += 1
+            if (self.current_time % self.tick_interval.get_value()) == 0:
+                timer_tick_event = TimerTickEvent(self, self.current_time)
+                eventmanager.fire_event(timer_tick_event)
+
+            if self.current_time == self.timeout_1.get_value():
+                timer_timeout1_event = TimerTimeout1Event(self, self.current_time)
+                eventmanager.fire_event(timer_timeout1_event)
+
+            if self.current_time == self.timeout_2.get_value():
+                timer_timeout2_event = TimerTimeout2Event(self, self.current_time)
+                eventmanager.fire_event(timer_timeout2_event)
+
+            if self.current_time == self.timeout_3.get_value():
+                timer_timeout3_event = TimerTimeout3Event(self, self.current_time)
+                eventmanager.fire_event(timer_timeout3_event)
+
+            time.sleep(1)
+
+
 class RelationshipAnnotation(Annotation):
     def __init__(self):
         super().__init__()
@@ -703,12 +866,6 @@ class SelectBoxAnnotation(Annotation):
     def __init__(self):
         super().__init__()
         self.text = ""
-
-
-class TimerAnnotation(Annotation):
-    def __init__(self):
-        super(TimerAnnotation, self).__init__()
-        self.duration = 10
 
 
 annotation_counters = {

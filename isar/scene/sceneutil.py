@@ -160,18 +160,21 @@ def flip_image(img, flip_x=False, flip_y=False, copy=False):
     return result
 
 
-def draw_image_on(opencv_img, image, position, position_is_topleft=True):
+def draw_image_on(opencv_img, overlay_img, position, position_is_topleft=True, position_is_bottom_left=False):
     try:
-        img_height, img_width, _ = image.shape
+        overlay_img_height, overlay_img_width, _ = overlay_img.shape
         scene_height, scene_width, _ = opencv_img.shape
 
         # TODO: check that the position is not out of opencv_img bounds
         if position_is_topleft:
             x, y = position
+        elif position_is_bottom_left:
+            x = position[0]
+            y = position[1] - overlay_img_height
         else:
             # position is center
-            x = position[0] - math.floor(img_width / 2)
-            y = position[1] - math.floor(img_height / 2)
+            x = position[0] - math.floor(overlay_img_width / 2)
+            y = position[1] - math.floor(overlay_img_height / 2)
 
         # check that the position is not out of opencv_img bounds
         if x > scene_width or x < 0:
@@ -179,15 +182,15 @@ def draw_image_on(opencv_img, image, position, position_is_topleft=True):
         if y > scene_height or y < 0:
             return
 
-        end_height_index = min(y + img_height, scene_height)
-        end_width_index = min(x + img_width, scene_width)
+        end_height_index = min(y + overlay_img_height, scene_height)
+        end_width_index = min(x + overlay_img_width, scene_width)
 
-        cropped_height = min(img_height, scene_height - y)
-        cropped_width = min(img_width, scene_width - x)
+        cropped_height = min(overlay_img_height, scene_height - y)
+        cropped_width = min(overlay_img_width, scene_width - x)
 
-        opencv_img[y:end_height_index, x:end_width_index] = image[0:cropped_height, 0:cropped_width]
+        opencv_img[y:end_height_index, x:end_width_index] = overlay_img[0:cropped_height, 0:cropped_width]
     except Exception as exp:
-        logger.error("Could not load object detector module.")
+        logger.error("Could not draw overlay image.")
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
 

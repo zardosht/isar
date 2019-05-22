@@ -52,12 +52,32 @@ class PhysicalObjectPickedEvent(Event):
 
 
 class TimerFinishedEvent(Event):
-    pass
+    def __init__(self, target):
+        super().__init__(target)
 
 
-class TimerTimeoutEvent(Event):
-    def __init__(self):
-        self.current_time = None
+class TimerTimeout1Event(Event):
+    def __init__(self, target, current_time):
+        super().__init__(target)
+        self.current_time = current_time
+
+
+class TimerTimeout2Event(Event):
+    def __init__(self, target, current_time):
+        super().__init__(target)
+        self.current_time = current_time
+
+
+class TimerTimeout3Event(Event):
+    def __init__(self, target, current_time):
+        super().__init__(target)
+        self.current_time = current_time
+
+
+class TimerTickEvent(Event):
+    def __init__(self, target, current_time):
+        super().__init__(target)
+        self.current_time = current_time
 
 
 class SceneChangedEvent(Event):

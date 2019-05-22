@@ -801,20 +801,129 @@ class TimerAnnotationTool(AnnotationTool):
         super(TimerAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
+        self.set_drawing(True)
+        self.annotation = TimerAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.annotation.position.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
+        # do nothing
         pass
 
     def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
+        self.annotations_model.add_annotation(self.annotation)
+        self.set_drawing(False)
 
     def draw(self):
-        logger.info("Not implemented.")
-        pass
+        if not self._drawing:
+            return
+
+        if not self.annotation:
+            return
+
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                     self.phys_obj, self.scene_scale_factor)
+        text = self.annotation.text.get_value()
+        font_scale = self.annotation.font_scale.get_value()
+        text_color = self.annotation.text_color.get_value()
+        text_thickness = self.annotation.text_thickness.get_value()
+
+        # TODO: add font property to TextAnnotation()
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        line_type = cv2.LINE_AA
+
+        show_as_fraction = self.annotation.show_as_fraction.get_value()
+        show_as_chart = self.annotation.show_as_chart.get_value()
+        show_as_time = self.annotation.show_as_time.get_value()
+
+        current_time = self.annotation.current_time
+        duration = self.annotation.duration.get_value()
+
+        remaining_time = duration - current_time
+        minutes = remaining_time // 60
+        seconds = remaining_time % 60
+        remaining_time_text = str(minutes).zfill(2) + ":" + str(seconds).zfill(2)
+        text_size, _ = cv2.getTextSize(remaining_time_text, font, font_scale, text_thickness)
+
+        if show_as_fraction:
+            text_size, _ = cv2.getTextSize(str(duration), font, font_scale, text_thickness)
+            width = text_size[0] + 2 * text_thickness
+            height = 2 * text_size[1] + 5 * text_thickness
+            fraction_image = numpy.zeros((height, width, 3), numpy.uint8)
+            fraction_image[:] = (255, 255, 255)
+
+            text_size, _ = cv2.getTextSize(str(duration), font, font_scale, text_thickness)
+            width = text_size[0] + 2 * text_thickness
+            height = 2 * text_size[1] + 10 * text_thickness
+            fraction_image = np.zeros((height, width, 3), np.uint8)
+            fraction_image[:] = (128, 128, 128)
+
+            cv2.putText(fraction_image, str(current_time).zfill(len(str(duration))),
+                        (text_thickness, text_thickness + text_size[1]),
+                        font, font_scale, text_color, text_thickness, line_type)
+            cv2.line(fraction_image,
+                     (text_thickness, 4 * text_thickness + text_size[1]),
+                     (2 * text_thickness + text_size[0], 4 * text_thickness + text_size[1]),
+                     text_color, text_thickness)
+            cv2.putText(fraction_image, str(duration),
+                        (text_thickness, 6 * text_thickness + 2 * text_size[1]),
+                        font, font_scale, text_color, text_thickness, line_type)
+
+            sceneutil.draw_image_on(self._img, fraction_image, position,
+                                    position_is_topleft=False,
+                                    position_is_bottom_left=True)
+            cv2.putText(self._img, text,
+                        (position[0], position[1] + text_thickness + text_size[1]),
+                        font, font_scale, text_color, text_thickness, line_type)
+
+        elif show_as_chart:
+            text_size, _ = cv2.getTextSize(str(duration), font, font_scale, text_thickness)
+            radius = int(3 * text_size[1])
+
+            width = 2 * radius + 2 * text_thickness
+            height = 2 * radius + 2 * text_thickness
+            chart_image = numpy.zeros((height, width, 3), numpy.uint8)
+            chart_image[:] = (255, 255, 255)
+
+            center = (int(width / 2), int(height / 2))
+            # a circle for total duration
+            cv2.ellipse(chart_image, center, (radius, radius), -90, 0, 360, (255, 0, 0), -1)
+            # a circle segment on top of that for current time
+            end_angle = int(current_time * (360 / duration))
+            cv2.ellipse(chart_image, center, (radius, radius), -90, 0, end_angle, (0, 0, 255), -1)
+
+            sceneutil.draw_image_on(self._img, chart_image, position,
+                                    position_is_topleft=False,
+                                    position_is_bottom_left=True)
+            cv2.putText(self._img, text,
+                        (position[0], position[1] + text_thickness + text_size[1]),
+                        font, font_scale, text_color, text_thickness, line_type)
+
+        elif show_as_time:
+            remaining_time = duration - current_time
+            minutes = remaining_time // 60
+            seconds = remaining_time % 60
+            remaining_time_text = str(minutes).zfill(2) + ":" + str(seconds).zfill(2)
+
+            width = text_size[0] + 2 * text_thickness
+            height = text_size[1] + 4 * text_thickness
+            time_image = numpy.zeros((height, width, 3), numpy.uint8)
+            time_image[:] = (255, 255, 255)
+
+            cv2.putText(time_image, remaining_time_text,
+                        (text_thickness, text_thickness + text_size[1]),
+                        font, font_scale, text_color, text_thickness, line_type)
+
+            sceneutil.draw_image_on(self._img, time_image, position,
+                                    position_is_topleft=False,
+                                    position_is_bottom_left=True)
+            cv2.putText(self._img, text,
+                        (position[0], position[1] + text_thickness + text_size[1]),
+                        font, font_scale, text_color, text_thickness, line_type)
 
 
 class RelationshipAnnotationTool(AnnotationTool):

@@ -1,5 +1,41 @@
 
 
+* when defining an action, the user first selects the scene. If the action is ShowScene  then that scene is the target scene. If the action is an annotation related action, then only annotations on the selected scene can be selected as target of the action. The name of the scene (which is unique) is also saved in the action for sanity check. 
+
+* The SelectButtonAnnotation’s OnSelect combobox also shows only actions defined for the current scene + actions related to scene transition (show scene, next scene, previous scene)
+
+* Similar case for events. When defining an event (like SelectionEvent or ObjectAppeared, ...) the user must first select the scene. And the user can only select targets from this scene. 
+
+* Actually, defining actions and events is only a function for the current scene. The dialogs for defining actions, events, and EventActionRules are opened from UI and initialized with the current scene. Except scene related actions and events, the user can only select the  objects an annotations of the current scene as the target. 
+
+* The user first defines Events. Then he defines actions. Then he defines EventActionRules. 
+
+
+=====================
+
+* Compare Scene Action: has the current scene, and another selected scene as argument. Has two action attributes for both cases “identical” and “different”. Compares both scenes, and performs the identical action in case both scenes are equal, or different action, if the scenes are different. For example the identical action could be “show positive feedback annotation”, or the different action could be “show negative feedback scene” or “highlight the differences action”
+
+* we definitely need the composite action for composition of actions: two sequence operators AND and THEN. The AND operator performs the actions in parallel. The THEN operator performs them in after one another. (Performing sequentially: a for loop on the actions with time.sleep(1) in between; Performing parallel, a for loop that starts a thread for each action)
+
+* Wait Action (waits for the given time) 
+
+* Hight Scene Differences Action: takes scenes, and highlights their differences. 
+
+
+=====================
+ALL DONE
+
+* I make a fixed sequential order of scenes [1, 2, 3]
+
+* I add a BackSceneAction, that simply shows whatever scene that was showing before current_scene. The ScenesModel, keeps a pointer to previous scene, and whenever its back() method is called it shows that scene and clears the pointer (if current_scene == back_scene: back_scene = None)
+
+* The next scene action and previous scene action go back and forth in the fixed sequential scene navigation
+
+* if we are at the first scene, the previous scene action does not do anything
+* If we are at the last scene, the next scene action does not do anything. 
+
+
+=========================================================
 
 
 — a thread for detecting the marker
