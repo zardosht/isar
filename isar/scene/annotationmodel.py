@@ -622,7 +622,7 @@ class AnimationAnnotation(Annotation):
         self.mouse_released = False
 
     def intersects_with_point(self, point):
-        position = self.line_start
+        position = self.position.get_value()
         width = self.image_width.get_value()
         height = self.image_height.get_value()
         return position[0] <= point[0] <= position[0] + width and \
