@@ -11,7 +11,7 @@ from isar.events.eventmanager import SelectionEvent
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
-    SelectBoxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation
+    CheckBoxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -926,30 +926,36 @@ class TimerAnnotationTool(AnnotationTool):
                         font, font_scale, text_color, text_thickness, line_type)
 
 
-class RelationshipAnnotationTool(AnnotationTool):
+class CheckBoxAnnotationTool(AnnotationTool):
     def __init__(self):
-        super(RelationshipAnnotationTool, self).__init__()
+        super(CheckBoxAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
+        self.set_drawing(True)
+        self.annotation = CheckBoxAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.annotation.position.set_value((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
-        logger.info("Not implemented.")
+        # do nothing
         pass
 
     def mouse_release_event(self, camera_view, event):
-        logger.info("Not implemented.")
-        pass
+        self.annotations_model.add_annotation(self.annotation)
+        self.set_drawing(False)
 
     def draw(self):
         logger.info("Not implemented.")
         pass
 
 
-class SelectBoxAnnotationTool(AnnotationTool):
+class RelationshipAnnotationTool(AnnotationTool):
     def __init__(self):
-        super(SelectBoxAnnotationTool, self).__init__()
+        super(RelationshipAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
         logger.info("Not implemented.")
@@ -1174,7 +1180,7 @@ annotation_tools = {
     TextAnnotation.__name__: TextAnnotationTool(),
     ArrowAnnotation.__name__: ArrowAnnotationTool(),
     RelationshipAnnotation.__name__: RelationshipAnnotationTool(),
-    SelectBoxAnnotation.__name__: SelectBoxAnnotationTool(),
+    CheckBoxAnnotation.__name__: CheckBoxAnnotationTool(),
     ActionButtonAnnotation.__name__: ActionButtonAnnotationTool(),
     CurveAnnotation.__name__: CurveAnnotationTool(),
     AnimationAnnotation.__name__: AnimationAnnotationTool()
@@ -1185,7 +1191,7 @@ annotation_tool_btns = {
     "rectangle_btn": RectangleAnnotationTool(),
     "circle_btn": CircleAnnotationTool(),
     "select_btn": SelectionTool(),
-    "select_box_btn": SelectBoxAnnotationTool(),
+    "check_box_btn": CheckBoxAnnotationTool(),
     "text_btn": TextAnnotationTool(),
     "timer_btn": TimerAnnotationTool(),
     "video_btn": VideoAnnotationTool(),
@@ -1197,3 +1203,5 @@ annotation_tool_btns = {
     "curve_btn": CurveAnnotationTool(),
     "animation_btn": AnimationAnnotationTool()
 }
+
+

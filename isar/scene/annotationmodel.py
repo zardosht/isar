@@ -883,18 +883,43 @@ class TimerThread(Thread):
         self.stop_event.set()
 
 
+class CheckBoxAnnotation(Annotation):
+    def __init__(self):
+        super().__init__()
+
+        self.size = IntAnnotationProperty("Size", 100, self)
+        self.properties.append(self.size)
+
+        self.color = ColorAnnotationProperty("Color", (255, 0, 255), self)
+        self.properties.append(self.color)
+
+        self.thickness = IntAnnotationProperty("Thickness", 3, self)
+        self.properties.append(self.thickness)
+
+        self.checked = BooleanAnnotationProperty("Checked", False, self)
+        self.properties.append(self.checked)
+
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        width = self.size.get_value()
+        height = self.size.get_value()
+        return position[0] <= point[0] <= position[0] + width and \
+            position[1] <= point[1] <= position[1] + height
+
+    def on_select(self):
+        # TODO: Actually the toggling of play mode upon selection should happen
+        #  when we are in ApplicationMode.EXECUTION
+        #  Generally, the bahavior of annotations upon selection, should be defined
+        #  depending on if we are in AUTHORING or EXECUTION mode.
+        checked = self.checked.get_value()
+        self.checked.set_value(not checked)
+
 
 class RelationshipAnnotation(Annotation):
     def __init__(self):
         super().__init__()
         self.text = ""
         self.to_object: PhysicalObject = None
-
-
-class SelectBoxAnnotation(Annotation):
-    def __init__(self):
-        super().__init__()
-        self.text = ""
 
 
 annotation_counters = {
@@ -908,7 +933,7 @@ annotation_counters = {
     TextAnnotation.__name__: 0,
     ArrowAnnotation.__name__: 0,
     RelationshipAnnotation.__name__: 0,
-    SelectBoxAnnotation.__name__: 0,
+    CheckBoxAnnotation.__name__: 0,
     ActionButtonAnnotation.__name__: 0,
     CurveAnnotation.__name__: 0,
     AnimationAnnotation.__name__: 0

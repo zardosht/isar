@@ -722,13 +722,13 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="select_box_btn">
+               <widget class="QToolButton" name="check_box_btn">
                 <property name="text">
                  <string>...</string>
                 </property>
                 <property name="icon">
                  <iconset>
-                  <normaloff>images/select_box.png</normaloff>images/select_box.png</iconset>
+                  <normaloff>images/check_box.png</normaloff>images/check_box.png</iconset>
                 </property>
                 <property name="checkable">
                  <bool>true</bool>
