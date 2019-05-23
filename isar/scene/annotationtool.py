@@ -832,7 +832,7 @@ class TimerAnnotationTool(AnnotationTool):
         text_color = self.annotation.text_color.get_value()
         text_thickness = self.annotation.text_thickness.get_value()
 
-        # TODO: add font property to TextAnnotation()
+        # TODO: add font property
         font = cv2.FONT_HERSHEY_SIMPLEX
         line_type = cv2.LINE_AA
 
@@ -949,8 +949,33 @@ class CheckBoxAnnotationTool(AnnotationTool):
         self.set_drawing(False)
 
     def draw(self):
-        logger.info("Not implemented.")
-        pass
+        if not self._drawing:
+            return
+
+        if self.annotation is None:
+            return
+
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                     self.phys_obj, self.scene_scale_factor)
+        color = self.annotation.color.get_value()
+        thickness = self.annotation.thickness.get_value()
+        size = self.annotation.size.get_value()
+        v2 = (position[0] + size, position[1] + size)
+        checked = self.annotation.checked.get_value()
+        if checked:
+            cv2.rectangle(self._img,
+                          position,
+                          v2,
+                          color,
+                          thickness)
+            cv2.line(self._img, position, v2, color, thickness)
+            cv2.line(self._img, (position[0], position[1] + size), (position[0] + size, position[1]), color, thickness)
+        else:
+            cv2.rectangle(self._img,
+                      position,
+                      v2,
+                      color,
+                      thickness)
 
 
 class RelationshipAnnotationTool(AnnotationTool):
