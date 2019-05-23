@@ -286,6 +286,16 @@ class PlayVideoAction(Action):
         pass
 
 
+class StartAnimationAction(Action):
+    def __init__(self):
+        super().__init__()
+        self.animation_name = None
+
+    def run(self):
+        animation = self.find_annotation(self.animation_name)
+        animation.start()
+
+
 
 # ====================================================
 # ========= initializint defined actions   ===========
@@ -365,6 +375,15 @@ def init_defined_actions():
     reset_timer1.name = "Reset Timer 1"
     reset_timer1.timer_name = "timer1"
     defined_actions.append(reset_timer1)
+
+    start_fly_animation_1 = StartAnimationAction()
+    start_fly_animation_1.name = "Start Fly Animation 1"
+    start_fly_animation_1.animation_name = "fly_animation1"
+    defined_actions.append(start_fly_animation_1)
+
+
+
+
 
 
 

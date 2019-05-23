@@ -628,6 +628,9 @@ class AnimationAnnotation(Annotation):
         return position[0] <= point[0] <= position[0] + width and \
                position[1] <= point[1] <= position[1] + height
 
+    def start(self):
+        logger.info("Start animation: TODO")
+
 
 class AudioAnnotation(Annotation):
     DEFAULT_TEXT = "--"
