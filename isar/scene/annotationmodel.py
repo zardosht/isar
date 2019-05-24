@@ -623,6 +623,19 @@ class AnimationAnnotation(Annotation):
         self.mouse_released = False
         self.animation_thread = None
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["animation_thread"]
+        return state
+
+    def __setstate__(self, state):
+        self.__init__()
+        self.__dict__.update(state)
+
+    def reset_runtime_state(self):
+        # TODO: implement
+        pass
+
     def intersects_with_point(self, point):
         position = self.position.get_value()
         width = self.image_width.get_value()
