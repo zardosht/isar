@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget
 
 from isar.events import actionsservice, eventmanager
 from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent, CheckBoxCheckedEvent
+    TimerFinishedEvent, CheckboxCheckedEvent
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -955,7 +955,7 @@ class TimerThread(Thread):
         self.stop_event.set()
 
 
-class CheckBoxAnnotation(Annotation):
+class CheckboxAnnotation(Annotation):
     def __init__(self):
         super().__init__()
 
@@ -985,7 +985,7 @@ class CheckBoxAnnotation(Annotation):
         #  depending on if we are in AUTHORING or EXECUTION mode.
         checked = self.checked.get_value()
         self.checked.set_value(not checked)
-        checked_event = CheckBoxCheckedEvent(self, not checked)
+        checked_event = CheckboxCheckedEvent(self, not checked)
         eventmanager.fire_event(checked_event)
 
 
@@ -1007,7 +1007,7 @@ annotation_counters = {
     TextAnnotation.__name__: 0,
     ArrowAnnotation.__name__: 0,
     RelationshipAnnotation.__name__: 0,
-    CheckBoxAnnotation.__name__: 0,
+    CheckboxAnnotation.__name__: 0,
     ActionButtonAnnotation.__name__: 0,
     CurveAnnotation.__name__: 0,
     AnimationAnnotation.__name__: 0

@@ -11,7 +11,7 @@ from isar.events.eventmanager import SelectionEvent
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
-    CheckBoxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation
+    CheckboxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -926,13 +926,13 @@ class TimerAnnotationTool(AnnotationTool):
                         font, font_scale, text_color, text_thickness, line_type)
 
 
-class CheckBoxAnnotationTool(AnnotationTool):
+class CheckboxAnnotationTool(AnnotationTool):
     def __init__(self):
-        super(CheckBoxAnnotationTool, self).__init__()
+        super(CheckboxAnnotationTool, self).__init__()
 
     def mouse_press_event(self, camera_view, event):
         self.set_drawing(True)
-        self.annotation = CheckBoxAnnotation()
+        self.annotation = CheckboxAnnotation()
 
         # convert mouse coordinates to image coordinates
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
@@ -1213,7 +1213,7 @@ annotation_tools = {
     TextAnnotation.__name__: TextAnnotationTool(),
     ArrowAnnotation.__name__: ArrowAnnotationTool(),
     RelationshipAnnotation.__name__: RelationshipAnnotationTool(),
-    CheckBoxAnnotation.__name__: CheckBoxAnnotationTool(),
+    CheckboxAnnotation.__name__: CheckboxAnnotationTool(),
     ActionButtonAnnotation.__name__: ActionButtonAnnotationTool(),
     CurveAnnotation.__name__: CurveAnnotationTool(),
     AnimationAnnotation.__name__: AnimationAnnotationTool()
@@ -1224,7 +1224,7 @@ annotation_tool_btns = {
     "rectangle_btn": RectangleAnnotationTool(),
     "circle_btn": CircleAnnotationTool(),
     "select_btn": SelectionTool(),
-    "check_box_btn": CheckBoxAnnotationTool(),
+    "check_box_btn": CheckboxAnnotationTool(),
     "text_btn": TextAnnotationTool(),
     "timer_btn": TimerAnnotationTool(),
     "video_btn": VideoAnnotationTool(),

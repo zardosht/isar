@@ -39,7 +39,7 @@ class SelectionEvent(Event):
     pass
 
 
-class CheckBoxCheckedEvent(Event):
+class CheckboxCheckedEvent(Event):
     def __init__(self, target, check_stat):
         super().__init__(target)
         self.check_state = check_stat
