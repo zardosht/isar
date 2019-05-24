@@ -39,16 +39,10 @@ class SelectionEvent(Event):
     pass
 
 
-class PhysicalObjectAppearedEvent(Event):
-    pass
-
-
-class PhysicalObjectDisappearedEvent(Event):
-    pass
-
-
-class PhysicalObjectPickedEvent(Event):
-    pass
+class CheckBoxCheckedEvent(Event):
+    def __init__(self, target, check_stat):
+        super().__init__(target)
+        self.check_state = check_stat
 
 
 class TimerFinishedEvent(Event):
@@ -78,6 +72,18 @@ class TimerTickEvent(Event):
     def __init__(self, target, current_time):
         super().__init__(target)
         self.current_time = current_time
+
+
+class PhysicalObjectAppearedEvent(Event):
+    pass
+
+
+class PhysicalObjectDisappearedEvent(Event):
+    pass
+
+
+class PhysicalObjectPickedEvent(Event):
+    pass
 
 
 class SceneChangedEvent(Event):

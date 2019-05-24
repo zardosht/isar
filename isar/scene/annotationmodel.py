@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget
 
 from isar.events import actionsservice, eventmanager
 from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent
+    TimerFinishedEvent, CheckBoxCheckedEvent
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -890,7 +890,7 @@ class CheckBoxAnnotation(Annotation):
     def __init__(self):
         super().__init__()
 
-        self.size = IntAnnotationProperty("Size", 100, self)
+        self.size = IntAnnotationProperty("Size", 50, self)
         self.properties.append(self.size)
 
         self.color = ColorAnnotationProperty("Color", (255, 0, 255), self)
@@ -916,6 +916,8 @@ class CheckBoxAnnotation(Annotation):
         #  depending on if we are in AUTHORING or EXECUTION mode.
         checked = self.checked.get_value()
         self.checked.set_value(not checked)
+        checked_event = CheckBoxCheckedEvent(self, not checked)
+        eventmanager.fire_event(checked_event)
 
 
 class RelationshipAnnotation(Annotation):
