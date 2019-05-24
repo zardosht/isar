@@ -293,8 +293,19 @@ class StartAnimationAction(Action):
 
     def run(self):
         animation = self.find_annotation(self.animation_name)
-        animation.start()
+        if animation is not None:
+            animation.start()
 
+
+class StopAnimationAction(Action):
+    def __init__(self):
+        super().__init__()
+        self.animation_name = None
+
+    def run(self):
+        animation = self.find_annotation(self.animation_name)
+        if animation is not None:
+            animation.stop()
 
 
 # ====================================================
@@ -380,6 +391,11 @@ def init_defined_actions():
     start_fly_animation_1.name = "Start Fly Animation 1"
     start_fly_animation_1.animation_name = "fly_animation1"
     defined_actions.append(start_fly_animation_1)
+
+    stop_fly_animation_1 = StopAnimationAction()
+    stop_fly_animation_1.name = "Stop Fly Animation 1"
+    stop_fly_animation_1.animation_name = "fly_animation1"
+    defined_actions.append(stop_fly_animation_1)
 
 
 
