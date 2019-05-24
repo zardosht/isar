@@ -5,7 +5,7 @@ import os
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QTimer, QItemSelectionModel, Qt, QItemSelection
 from PyQt5.QtGui import QPixmap, QMouseEvent, QDrag
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox, QInputDialog
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox, QInputDialog, QMainWindow
 
 from isar.camera.camera import CameraService
 from isar.scene import sceneutil, scenemodel
@@ -21,7 +21,7 @@ from isar.tracking.selectionstick import SelectionStickService
 logger = logging.getLogger("isar.scene.definitionwindow")
 
 
-class SceneDefinitionWindow(QWidget):
+class SceneDefinitionWindow(QMainWindow):
 
     SELECT_BTN_ID = 10
 

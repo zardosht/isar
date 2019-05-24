@@ -18,7 +18,7 @@ from isar.services.servicemanager import ServiceNames
 logger = logging.getLogger("isar.domainlearning")
 
 
-class DomainLearningWindow(QWidget):
+class DomainLearningWindow(QMainWindow):
     def __init__(self, screen_id):
         super().__init__()
         self.camera_view = None
@@ -197,6 +197,11 @@ class DomainLearningWindow(QWidget):
         self.projector_view.close()
         super().close()
 
+    # Just to get the other window (the projector widget) to close :/
+    def closeEvent(self, event):
+        self.projector_view.close()
+        super().closeEvent(event)
+
 
 class CameraViewUpdateThread(QtCore.QThread):
     camera_frame_fetched = QtCore.pyqtSignal(object)
@@ -220,10 +225,4 @@ class CameraViewUpdateThread(QtCore.QThread):
         self._stop = True
 
 
-# Just to get the other window (the projector widget) to close :/
-class DomainLearningMainWindow(QMainWindow):
-
-    def closeEvent(self, event):
-        self.centralWidget().close()
-        super(DomainLearningMainWindow, self).closeEvent(event)
 
