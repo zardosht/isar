@@ -637,7 +637,7 @@ class AnimationAnnotation(Annotation):
             return
 
         self.image_position = self.line_start
-        self.animation_thread = AnnotationThread(self)
+        self.animation_thread = AnimationThread(self)
         self.animation_thread.start()
 
     def stop(self):
@@ -648,7 +648,7 @@ class AnimationAnnotation(Annotation):
             self.image_position = self.line_start
 
 
-class AnnotationThread(Thread):
+class AnimationThread(Thread):
     def __init__(self, animation_annotation):
         super().__init__()
         self.animation_annotation = animation_annotation
