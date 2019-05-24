@@ -6,6 +6,7 @@ import traceback
 from ast import literal_eval
 from threading import Thread, Event
 from typing import List
+import numpy
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, pyqtSignal, QSize
@@ -615,11 +616,12 @@ class AnimationAnnotation(Annotation):
         self.loop = BooleanAnnotationProperty("Loop", False, self)
         self.properties.append(self.loop)
 
-        self.closed_curve = BooleanAnnotationProperty("Closed Curve", False, self)
-        self.properties.append(self.closed_curve)
-
         self.line_positions = []
+        self.line_start = None
+        self.line_stop = None
+        self.image_position = None
         self.mouse_released = False
+        self.animation_thread = None
 
     def intersects_with_point(self, point):
         position = self.position.get_value()
@@ -629,7 +631,74 @@ class AnimationAnnotation(Annotation):
                position[1] <= point[1] <= position[1] + height
 
     def start(self):
-        logger.info("Start animation: TODO")
+        logger.info("Start animation.")
+        if self.animation_thread is not None \
+                and self.animation_thread.is_alive():
+            return
+
+        self.image_position = self.line_start
+        self.animation_thread = AnnotationThread(self)
+        self.animation_thread.start()
+
+    def stop(self):
+        logger.info("Stop animation.")
+        if self.animation_thread is not None:
+            self.animation_thread.stop()
+            self.animation_thread = None
+            self.image_position = self.line_start
+
+
+class AnnotationThread(Thread):
+    def __init__(self, animation_annotation):
+        super().__init__()
+        self.animation_annotation = animation_annotation
+        self.counter = 0
+        self.stop_event = Event()
+        self.loop_direction = False
+
+    def run(self):
+        stopped_before_finish = False
+
+        if self.animation_annotation.loop.get_value() is False:
+            while self.counter < len(self.animation_annotation.line_positions):
+                if self.stop_event.is_set():
+                    stopped_before_finish = True
+                    break
+                self.animation_annotation.image_position = tuple(
+                    numpy.add(self.animation_annotation.line_positions[self.counter], self.animation_annotation.position.get_value()))
+                self.counter += 1
+
+                time.sleep(0.1)
+
+            if not stopped_before_finish:
+                self.stop()
+
+        else:
+            print (stopped_before_finish)
+            while stopped_before_finish is False:
+                if self.stop_event.is_set():
+                    stopped_before_finish = True
+                    break
+
+                if self.loop_direction is False:
+                    if self.counter < len(self.animation_annotation.line_positions) - 1:
+                        self.counter += 1
+                    elif self.counter == (len(self.animation_annotation.line_positions) - 1):
+                        self.loop_direction = True
+
+                if self.loop_direction is True:
+                    if self.counter > 0:
+                        self.counter -= 1
+                    elif self.counter == 0:
+                        self.loop_direction = False
+
+                self.animation_annotation.image_position = tuple(
+                    numpy.add(self.animation_annotation.line_positions[self.counter],
+                              self.animation_annotation.position.get_value()))
+                time.sleep(0.1)
+
+    def stop(self):
+        self.stop_event.set()
 
 
 class AudioAnnotation(Annotation):

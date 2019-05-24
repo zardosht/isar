@@ -1070,6 +1070,8 @@ class AnimationAnnotationTool(AnnotationTool):
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
         self.annotation.set_position((img_x, img_y))
+        self.annotation.line_start = (img_x, img_y)
+        self.annotation.image_position = (img_x, img_y)
 
         # compute the difference between position and the mouse coordinates for moving the animation
         diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
@@ -1097,6 +1099,7 @@ class AnimationAnnotationTool(AnnotationTool):
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
+        self.annotation.line_stop = (img_x, img_y)
         diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
         self.annotation.line_positions.append(diff)
 
@@ -1131,16 +1134,21 @@ class AnimationAnnotationTool(AnnotationTool):
                 cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
                          self.annotation.line_thickness.get_value())
 
+        if self.annotation.animation_thread is None:
+            self.annotation.image_position = self.annotation.position.get_value();
+        self.annotation.line_start = tuple(numpy.add(self.annotation.line_positions[0], self.annotation.position.get_value()))
+        self.annotation.line_stop = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions)-1], self.annotation.position.get_value()))
+
         if self.annotation.mouse_released:
             self.draw_image()
 
     def draw_image(self):
-        img_position = sceneutil.convert_object_to_image(self.annotation.position,
+        img_position = sceneutil.convert_object_to_image(self.annotation.image_position,
                                                          self.phys_obj, self.scene_scale_factor)
         width = self.annotation.image_width.get_value()
         height = self.annotation.image_height.get_value()
-        img_position = [self.annotation.position.get_value()[0] - int(width / 2),
-                        self.annotation.position.get_value()[1] - int(height / 2)]
+        img_position = [self.annotation.image_position[0] - int(width / 2),
+                        self.annotation.image_position[1] - int(height / 2)]
 
         img_path = os.path.join(
             scenemodel.current_project.base_path, self.annotation.image_path.get_value())
