@@ -674,7 +674,6 @@ class AnnotationThread(Thread):
                 self.stop()
 
         else:
-            print (stopped_before_finish)
             while stopped_before_finish is False:
                 if self.stop_event.is_set():
                     stopped_before_finish = True
