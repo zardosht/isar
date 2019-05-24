@@ -655,6 +655,7 @@ class AnnotationThread(Thread):
         self.counter = 0
         self.stop_event = Event()
         self.loop_direction = False
+        self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
 
     def run(self):
         stopped_before_finish = False
@@ -668,7 +669,7 @@ class AnnotationThread(Thread):
                     numpy.add(self.animation_annotation.line_positions[self.counter], self.animation_annotation.position.get_value()))
                 self.counter += 1
 
-                time.sleep(0.1)
+                time.sleep(self.speed)
 
             if not stopped_before_finish:
                 self.stop()
@@ -694,7 +695,7 @@ class AnnotationThread(Thread):
                 self.animation_annotation.image_position = tuple(
                     numpy.add(self.animation_annotation.line_positions[self.counter],
                               self.animation_annotation.position.get_value()))
-                time.sleep(0.1)
+                time.sleep(self.speed)
 
     def stop(self):
         self.stop_event.set()
