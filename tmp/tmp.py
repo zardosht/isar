@@ -1,70 +1,96 @@
-import threading
-import time
+from threading import Thread
 
 
-class TimerAnnotation:
-    def __init__(self):
-        self.current_time = 0
-        self.duration = 60
-        self.tick_interval = 1
-        self.timer_thread = None
-        self.thread_stop_event = threading.Event()
-
-    def start(self):
-        print("TimerAnnotation: start called")
-        if self.timer_thread is not None:
-            if not self.timer_thread.is_alive():
-                self.timer_thread.start()
-        else:
-            self.timer_thread = threading.Thread(target=self.tick)
-            self.timer_thread.start()
-
-    def stop(self):
-        print("TimerAnnotation: stop called")
-        self.thread_stop_event.set()
-
-    def reset(self):
-        print("TimerAnnotation: reset called")
-        self.current_time = 0
-        self.thread_stop_event.clear()
-
-    def tick(self):
-        while not self.thread_stop_event.is_set() and \
-                self.current_time < self.duration:
-            self.current_time += 1
-            if (self.current_time % self.tick_interval) == 0:
-                print("timer tick")
-
-            time.sleep(1)
-
-        self.timer_thread = None
-        self.thread_stop_event.clear()
+def start_task():
+    t2 = Thread(target=do_task)
+    t2.start()
 
 
-def stop_timer_annotation(ta):
-    print("Stopping timer annotation")
-    ta.stop()
+def do_task():
+    j = 0
+    for i in range(30000000):
+        if i == 1000000:
+            print("i is now 1.000.000")
+
+        j += i
+
+    print(j)
 
 
-timer_annotation = TimerAnnotation()
-timer_annotation.start()
-
-# threading.Timer(10, stop_timer_annotation, args=(timer_annotation, )).start()
-
-print("waiting for 10 secs, then stopping the timer annotation")
-time.sleep(10)
-stop_timer_annotation(timer_annotation)
-
-print("waiting for 5 secs, then resetting the timer annotation, then restarting timer annotation")
-time.sleep(5)
-timer_annotation.reset()
-timer_annotation.start()
+t1 = Thread(target=start_task)
+t1.start()
 
 
 
-
-
-# ============================================================
+# # ============================================================
+#
+# import threading
+# import time
+#
+#
+# class TimerAnnotation:
+#     def __init__(self):
+#         self.current_time = 0
+#         self.duration = 60
+#         self.tick_interval = 1
+#         self.timer_thread = None
+#         self.thread_stop_event = threading.Event()
+#
+#     def start(self):
+#         print("TimerAnnotation: start called")
+#         if self.timer_thread is not None:
+#             if not self.timer_thread.is_alive():
+#                 self.timer_thread.start()
+#         else:
+#             self.timer_thread = threading.Thread(target=self.tick)
+#             self.timer_thread.start()
+#
+#     def stop(self):
+#         print("TimerAnnotation: stop called")
+#         self.thread_stop_event.set()
+#
+#     def reset(self):
+#         print("TimerAnnotation: reset called")
+#         self.current_time = 0
+#         self.thread_stop_event.clear()
+#
+#     def tick(self):
+#         while not self.thread_stop_event.is_set() and \
+#                 self.current_time < self.duration:
+#             self.current_time += 1
+#             if (self.current_time % self.tick_interval) == 0:
+#                 print("timer tick")
+#
+#             time.sleep(1)
+#
+#         self.timer_thread = None
+#         self.thread_stop_event.clear()
+#
+#
+# def stop_timer_annotation(ta):
+#     print("Stopping timer annotation")
+#     ta.stop()
+#
+#
+# timer_annotation = TimerAnnotation()
+# timer_annotation.start()
+#
+# # threading.Timer(10, stop_timer_annotation, args=(timer_annotation, )).start()
+#
+# print("waiting for 10 secs, then stopping the timer annotation")
+# time.sleep(10)
+# stop_timer_annotation(timer_annotation)
+#
+# print("waiting for 5 secs, then resetting the timer annotation, then restarting timer annotation")
+# time.sleep(5)
+# timer_annotation.reset()
+# timer_annotation.start()
+#
+#
+#
+#
+#
+# # ============================================================
 #
 # import sys
 # from PyQt5 import QtCore, QtWidgets
