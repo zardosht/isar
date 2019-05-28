@@ -59,7 +59,10 @@ class DomainLearningWindow(QMainWindow):
     def setup_projector_view(self, screen_id):
         self.projector_view = ProjectorView(self.projector_view, screen_id, self._camera_service)
         self.projector_view.setWindowFlag(Qt.Window)
-        self.calibrate_projector()
+        if self.projector_view.is_projector_ready():
+            self.calibrate_projector()
+        else:
+            logger.error("Could not initialize projector. Make sure projector is connected and is turned on!")
 
     def setup_signals(self):
         # scenes list
