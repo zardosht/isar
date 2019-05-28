@@ -183,7 +183,14 @@
        <item>
         <widget class="QPushButton" name="define_navigation_flow_btn">
          <property name="text">
-          <string>Nav. Flow</string>
+          <string>Nav. Flow ...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="ev_act_rules_btn">
+         <property name="text">
+          <string>Ev., Act., Rules ...</string>
          </property>
         </widget>
        </item>

@@ -8,6 +8,7 @@ from PyQt5.QtGui import QPixmap, QMouseEvent, QDrag
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox, QInputDialog, QMainWindow
 
 from isar.camera.camera import CameraService
+from isar.events.event_actions_rules import EventsActionsRulesDialog
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
 from isar.scene.annotationmodel import AnnotationsModel
@@ -85,6 +86,8 @@ class SceneDefinitionWindow(QMainWindow):
         self.clone_scene_btn.clicked.connect(self.clone_scene_btn_clicked)
         self.delete_scene_btn.clicked.connect(self.delete_scene_btn_clicked)
         self.define_navigation_flow_btn.clicked.connect(self.define_navigation_btn_clicked)
+        self.ev_act_rules_btn.clicked.connect(self.ev_act_rules_btn_clicked)
+
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
 
         self.delete_btn.clicked.connect(self.delete_btn_clicked)
@@ -264,6 +267,10 @@ class SceneDefinitionWindow(QMainWindow):
     def scene_down_btn_clicked(self):
         selected_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.model().move_scene_down(selected_index)
+
+    def ev_act_rules_btn_clicked(self):
+        ev_act_rules_dialog = EventsActionsRulesDialog(self)
+        ev_act_rules_dialog.show()
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
