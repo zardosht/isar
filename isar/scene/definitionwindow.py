@@ -45,8 +45,12 @@ class SceneDefinitionWindow(QMainWindow):
         self.setup_object_detection_service()
 
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
+
         self.scenes_model = None
+        self.physical_objects_model = None
+        self.annotations_model = None
         self.setup_models()
+
         self.setup_signals()
 
         self._timer = None
@@ -270,6 +274,9 @@ class SceneDefinitionWindow(QMainWindow):
 
     def ev_act_rules_btn_clicked(self):
         ev_act_rules_dialog = EventsActionsRulesDialog(self)
+        ev_act_rules_dialog.annotation_model = self.annotations_model
+        ev_act_rules_dialog.scenes_model = self.scenes_model
+        ev_act_rules_dialog.physical_objects_model = self.physical_objects_model
         ev_act_rules_dialog.show()
 
     def setup_camera_service(self):
@@ -291,35 +298,35 @@ class SceneDefinitionWindow(QMainWindow):
         current_scene = self.scenes_list.model().get_current_scene()
         self.scenes_model.scene_changed.connect(self.current_scene_changed)
 
-        physical_objects_model = PhysicalObjectsModel()
-        physical_objects_model.set_scene(current_scene)
+        self.physical_objects_model = PhysicalObjectsModel()
+        self.physical_objects_model.set_scene(current_scene)
         all_physical_obj = []
         for po_s in self._object_detection_service.get_physical_objects().values():
             all_physical_obj.extend(po_s)
-        physical_objects_model.set_all_physical_objects(all_physical_obj)
-        self.camera_view.set_physical_objects_model(physical_objects_model)
-        self.objects_view.setModel(physical_objects_model)
+        self.physical_objects_model.set_all_physical_objects(all_physical_obj)
+        self.camera_view.set_physical_objects_model(self.physical_objects_model)
+        self.objects_view.setModel(self.physical_objects_model)
 
-        annotations_model = AnnotationsModel()
-        annotations_model.set_scene(current_scene)
+        self.annotations_model = AnnotationsModel()
+        self.annotations_model.set_scene(current_scene)
 
-        self.camera_view.set_annotations_model(annotations_model)
-        self.annotations_list.setModel(annotations_model)
+        self.camera_view.set_annotations_model(self.annotations_model)
+        self.annotations_list.setModel(self.annotations_model)
 
-        self._selection_stick_service.set_physical_objects_model(physical_objects_model)
-        self._selection_stick_service.set_annotations_model(annotations_model)
+        self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)
+        self._selection_stick_service.set_annotations_model(self.annotations_model)
 
         selection_service = servicemanager.get_service(ServiceNames.SELECTION_SERVICE)
-        selection_service.annotations_model = annotations_model
+        selection_service.annotations_model = self.annotations_model
 
         actions_service = servicemanager.get_service(ServiceNames.ACTIONS_SERVICE)
-        actions_service.set_annotations_model(annotations_model)
+        actions_service.set_annotations_model(self.annotations_model)
         actions_service.set_scenes_model(self.scenes_model)
 
         properties_model = AnnotationPropertiesModel()
         self.properties_view.setModel(properties_model)
         annotation_property_item_delegate = AnnotationPropertyItemDelegate()
-        annotation_property_item_delegate.phys_obj_model = physical_objects_model
+        annotation_property_item_delegate.phys_obj_model = self.physical_objects_model
         self.properties_view.setItemDelegate(annotation_property_item_delegate)
 
     def update_camera_view(self):
