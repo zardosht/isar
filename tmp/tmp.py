@@ -1,27 +1,48 @@
-from threading import Thread
+import sys
+
+from PyQt5.QtWidgets import QApplication, QComboBox
 
 
-def start_task():
-    t2 = Thread(target=do_task)
-    t2.start()
+def combo_current_index_changed(index):
+    print(index)
+    print(combo.itemData(index))
 
 
-def do_task():
-    j = 0
-    for i in range(30000000):
-        if i == 1000000:
-            print("i is now 1.000.000")
-
-        j += i
-
-    print(j)
-
-
-t1 = Thread(target=start_task)
-t1.start()
+app = QApplication(sys.argv)
+combo = QComboBox()
+combo.addItem("A", object())
+combo.addItem("B", object())
+combo.addItem("C", object())
+combo.currentIndexChanged.connect(combo_current_index_changed)
+combo.show()
+app.exec()
 
 
-
+# # ============================================================
+# from threading import Thread
+#
+#
+# def start_task():
+#     t2 = Thread(target=do_task)
+#     t2.start()
+#
+#
+# def do_task():
+#     j = 0
+#     for i in range(30000000):
+#         if i == 1000000:
+#             print("i is now 1.000.000")
+#
+#         j += i
+#
+#     print(j)
+#
+#
+# t1 = Thread(target=start_task)
+# t1.start()
+#
+#
+#
 # # ============================================================
 #
 # import threading

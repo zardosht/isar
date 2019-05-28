@@ -273,10 +273,10 @@ class SceneDefinitionWindow(QMainWindow):
         self.scenes_list.model().move_scene_down(selected_index)
 
     def ev_act_rules_btn_clicked(self):
-        ev_act_rules_dialog = EventsActionsRulesDialog(self)
-        ev_act_rules_dialog.annotation_model = self.annotations_model
-        ev_act_rules_dialog.scenes_model = self.scenes_model
-        ev_act_rules_dialog.physical_objects_model = self.physical_objects_model
+        ev_act_rules_dialog = EventsActionsRulesDialog(self.scenes_model,
+                                                       self.annotations_model,
+                                                       self.physical_objects_model,
+                                                       self)
         ev_act_rules_dialog.show()
 
     def setup_camera_service(self):

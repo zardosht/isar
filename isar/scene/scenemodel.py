@@ -194,6 +194,16 @@ class ScenesModel(QAbstractListModel):
             result.append(scene.name)
         return result
 
+    def get_all_scenes(self):
+        return tuple(self.scenes)
+
+    def get_scene_by_name(self, name):
+        for scene in self.scenes:
+            if scene.name == name:
+                return scene
+
+        return None
+
     def get_current_scene(self):
         return self.__current_scene
 

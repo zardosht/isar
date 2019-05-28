@@ -38,12 +38,7 @@ class ActionsService(Service):
         super().__init__(service_name)
         self.__annotations_model = None
         self.__scenes_model = None
-
-        # TODO: Just for testing now. The actions are defined inside a project
-        #  and must be loaded when project is loaded.
-        #  Also, some of the actions are bound to a scene and must be only available on that scene,
-        #  for example ShowAnnotations
-        # self.init_defined_actions()
+        self.scene_id = None
 
     def set_annotations_model(self, annotations_model):
         self.__annotations_model = annotations_model
@@ -373,6 +368,27 @@ class SequentialCompositeAction(Action):
             self._action_service.perform_action(action)
             time.sleep(self.time_between_actions)
 
+
+action_types = {
+    ToggleAnnotationVisibilityAction.__name__: ToggleAnnotationVisibilityAction,
+    ShowAnnotationAction.__name__: ShowAnnotationAction,
+    HideAnnotationAction.__name__: HideAnnotationAction,
+    ShowSceneAction.__name__: ShowSceneAction,
+    NextSceneAction.__name__: NextSceneAction,
+    PreviousSceneAction.__name__: PreviousSceneAction,
+    BackSceneAction.__name__: BackSceneAction,
+    StartTimerAction.__name__: StartTimerAction,
+    StopTimerAction.__name__: StopTimerAction,
+    ResetTimerAction.__name__: ResetTimerAction,
+    StartAudioAction.__name__: StartAudioAction,
+    StopAudioAction.__name__: StopAudioAction,
+    StartVideoAction.__name__: StartVideoAction,
+    StopVideoAction.__name__: StopVideoAction,
+    StartAnimationAction.__name__: StartAnimationAction,
+    StopAnimationAction.__name__: StopAnimationAction,
+    ParallelCompositeAction.__name__: ParallelCompositeAction,
+    SequentialCompositeAction.__name__: SequentialCompositeAction
+}
 
 # ====================================================
 # ========= initializint defined actions   ===========

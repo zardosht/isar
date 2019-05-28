@@ -28,6 +28,7 @@ def fire_event(event):
 
 class Event:
     def __init__(self, target):
+        self.scene_id = None
         self.target = target
 
 
@@ -90,3 +91,16 @@ class SceneChangedEvent(Event):
     pass
 
 
+event_types = {
+    SelectionEvent.__name__: SelectionEvent,
+    CheckboxCheckedEvent.__name__: CheckboxCheckedEvent,
+    TimerFinishedEvent.__name__: TimerFinishedEvent,
+    TimerTimeout1Event.__name__: TimerTimeout1Event,
+    TimerTimeout2Event.__name__: TimerTimeout2Event,
+    TimerTimeout3Event.__name__: TimerTimeout3Event,
+    TimerTickEvent.__name__: TimerTickEvent,
+    PhysicalObjectAppearedEvent.__name__: PhysicalObjectAppearedEvent,
+    PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
+    PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
+    SceneChangedEvent.__name__: SceneChangedEvent
+}
