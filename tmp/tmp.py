@@ -3,9 +3,10 @@ import sys
 from PyQt5.QtWidgets import QApplication, QComboBox
 
 
-def combo_current_index_changed(index):
+def combo_current_index_changed(index, combo_name):
     print(index)
     print(combo.itemData(index))
+    print(combo_name)
 
 
 app = QApplication(sys.argv)
@@ -13,7 +14,7 @@ combo = QComboBox()
 combo.addItem("A", object())
 combo.addItem("B", object())
 combo.addItem("C", object())
-combo.currentIndexChanged.connect(combo_current_index_changed)
+combo.currentIndexChanged.connect(lambda index: combo_current_index_changed(index, "ABCCombo"))
 combo.show()
 app.exec()
 

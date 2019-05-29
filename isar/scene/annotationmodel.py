@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget
 
 from isar.events import actionsservice, eventmanager
 from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent, CheckboxCheckedEvent
+    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -996,10 +996,16 @@ class CheckboxAnnotation(Annotation):
         #  when we are in ApplicationMode.EXECUTION
         #  Generally, the bahavior of annotations upon selection, should be defined
         #  depending on if we are in AUTHORING or EXECUTION mode.
-        checked = self.checked.get_value()
-        self.checked.set_value(not checked)
-        checked_event = CheckboxCheckedEvent(self, not checked)
-        eventmanager.fire_event(checked_event)
+        was_checked = self.checked.get_value()
+        self.checked.set_value(not was_checked)
+        if not was_checked:
+            # the checkbox is now checked
+            checked_event = CheckboxCheckedEvent(self)
+            eventmanager.fire_event(checked_event)
+        else:
+            # the checkbox is now unchecked
+            unchecked_event = CheckboxUncheckedEvent(self)
+            eventmanager.fire_event(unchecked_event)
 
 
 class RelationshipAnnotation(Annotation):

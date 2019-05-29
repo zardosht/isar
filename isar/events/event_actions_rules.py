@@ -9,9 +9,6 @@ from isar.events import eventmanager, actionsservice
 logger = logging.getLogger("isar.scene.physicalobjecttool")
 
 
-GLOBAL_SCENE_ID = "GLOBAL"
-
-
 class EventsActionsRulesDialog(QDialog):
     def __init__(self, scenes_model, annotations_model, phys_obj_model, parent=None):
         super().__init__(parent)
@@ -20,32 +17,60 @@ class EventsActionsRulesDialog(QDialog):
         self.annotations_model = annotations_model
         self.physical_objects_model = phys_obj_model
 
-        self.scene_events_model = None
-        self.global_events_model = None
+        self.events_model = None
+        self.events_scene = None
 
-        self.scene_actions_model = None
-        self.global_actions_model = None
+        self.actions_model = None
+        self.actions_scene = None
 
-        self.scene_rules_model = None
-        self.global_rules_model = None
+        self.rules_model = None
+        self.rules_scene = None
+
+        self.event = None
+        self.action = None
+        self.rule = None
 
         self.init_ui()
         self.init_models()
-        self.init_signals()
 
     def init_ui(self):
         uic.loadUi("isar/ui/events_actions_rules_dialog.ui", self)
+
+        self.event_properties_frame.hide()
+
         self.init_scenes_combos()
         self.init_event_type_combo()
         self.init_action_type_combo()
+
+        self.event_select_target_btn.clicked.connect(self.event_select_target_btn_clicked)
 
     def init_scenes_combos(self):
         scene_combos = [self.event_scenes_combo, self.action_scenes_combo, self.rule_scenes_combo]
         scenes = self.scenes_model.get_all_scenes()
         for combo in scene_combos:
-            combo.addItem(GLOBAL_SCENE_ID, None)
             for scene in scenes:
                 combo.addItem(scene.name, scene)
+
+        self.event_scenes_combo.currentIndexChanged.connect(
+            lambda index: self.scenes_combo_current_index_changed(index, "event_scenes_combo"))
+        self.action_scenes_combo.currentIndexChanged.connect(
+            lambda index: self.scenes_combo_current_index_changed(index, "action_scenes_combo"))
+        self.rule_scenes_combo.currentIndexChanged.connect(
+            lambda index: self.scenes_combo_current_index_changed(index, "rule_scenes_combo"))
+
+    def scenes_combo_current_index_changed(self, index, combo_name):
+        if self.event_scenes_combo.objectName() == combo_name:
+            scene = self.event_scenes_combo.itemData(index)
+            self.events_model.current_scene = scene
+            self.events_scene = scene
+        elif self.action_scenes_combo.objectName() == combo_name:
+            scene = self.action_scenes_combo.itemData(index)
+            self.actions_model.current_scene = scene
+            self.actions_scene = scene
+        elif self.rule_scenes_combo.objectName() == combo_name:
+            scene = self.rule_scenes_combo.itemData(index)
+            self.rules_model.current_scene = scene
+            self.rules_scene = scene
 
     def init_event_type_combo(self):
         for ev_name, ev_type in eventmanager.event_types.items():
@@ -58,8 +83,11 @@ class EventsActionsRulesDialog(QDialog):
         self.update_event_properties_frame(event_type)
 
     def update_event_properties_frame(self, event_type):
-        # event_type.update_event_properties_frame(self.event_properties_frame)
-        logger.info("update_event_properties_frame")
+        if event_type.has_properties:
+            self.event_properties_frame.show()
+            event_type.update_event_properties_frame(self.event_properties_frame)
+        else:
+            self.event_properties_frame.hide()
 
     def init_action_type_combo(self):
         for ac_name, ac_type in actionsservice.action_types.items():
@@ -74,38 +102,35 @@ class EventsActionsRulesDialog(QDialog):
     def update_action_properties_frame(self, action_type):
         logger.info("update_action_properties_frame")
 
-    def init_signals(self):
-        pass
+    def event_select_target_btn_clicked(self):
+        target = self.show_select_target_dialog()
+        if target is not None:
+            self.event.target = target
+
+    def show_select_target_dialog(self):
+        target = None
+        target_type = self.event_type
+
+        return target
 
     def init_models(self):
-        self.scene_events_model = ItemsModel()
-        self.scene_events_list.setModel(self.scene_events_model)
-        self.global_events_model = ItemsModel(for_global_list=True)
-        self.global_events_list.setModel(self.global_events_model)
+        self.events_model = ItemsModel()
+        self.events_list.setModel(self.events_model)
 
-        self.scene_actions_model = ItemsModel()
-        self.scene_actions_list.setModel(self.scene_actions_model)
-        self.global_actions_model = ItemsModel(for_global_list=True)
-        self.global_actions_list.setModel(self.global_actions_model)
+        self.actions_model = ItemsModel()
+        self.actions_list.setModel(self.actions_model)
 
-        self.scene_rules_model = ItemsModel()
-        self.scene_rules_list.setModel(self.scene_rules_model)
-        self.global_rules_model = ItemsModel(for_global_list=True)
-        self.global_rules_list.setModel(self.global_rules_model)
+        self.rules_model = ItemsModel()
+        self.rules_list.setModel(self.rules_model)
 
 
 class ItemsModel(QAbstractListModel):
-    def __init__(self, for_global_list=False):
+    def __init__(self):
         super().__init__()
-        self.for_global_list = for_global_list
-        self.scene_items = []
-        self.global_items = []
+        self.items = []
 
     def rowCount(self, parent=None):
-        if self.for_global_list:
-            return len(self.global_items)
-        else:
-            return len(self.scene_items)
+        return len(self.items)
 
     def data(self, index, role):
         item = index.internalPointer()
@@ -118,19 +143,12 @@ class ItemsModel(QAbstractListModel):
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
     def add_item(self, item):
-        if item.scene_id == GLOBAL_SCENE_ID:
-            self.global_items.append(item)
-        else:
-            self.scene_items.append(item)
+        self.items.append(item)
 
     def index(self, row, column, parent):
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
 
-        if self.for_global_list:
-            item = self.global_items[row]
-        else:
-            item = self.scene_items[row]
-
+        item = self.items[row]
         return self.createIndex(row, 0, item)
 
