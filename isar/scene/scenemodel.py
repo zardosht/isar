@@ -307,6 +307,9 @@ class Scene:
         self.__physical_objects = []
         self.__annotations = []
         self.__po_annotations_dict = {}
+        self.__events = []
+        self.__actions = []
+        self.__rules = []
 
     def update_po_annotations_dict(self):
         self.__po_annotations_dict.clear()
@@ -382,11 +385,44 @@ class Scene:
         for annotation in self.get_all_annotations():
             annotation.reset_runtime_state()
 
+    def add_event(self, event):
+        self.__events.append(event)
+
+    def remove_event(self, event):
+        if event in self.__events:
+            self.__events.remove(event)
+
+    def get_events(self):
+        return tuple(self.__events)
+    
+    def add_action(self, action):
+        self.__actions.append(action)
+
+    def remove_action(self, action):
+        if action in self.__actions:
+            self.__actions.remove(action)
+
+    def get_actions(self):
+        return tuple(self.__actions)
+    
+    def add_rule(self, rule):
+        self.__rules.append(rule)
+
+    def remove_rule(self, rule):
+        if rule in self.__rules:
+            self.__rules.remove(rule)
+
+    def get_rules(self):
+        return tuple(self.__rules)
+
     def clone(self):
         cloned_scene = Scene("Cloned-" + self.name + str(time.time()))
         cloned_scene.__annotations = []
         cloned_scene.__physical_objects = []
         cloned_scene.__po_annotations_dict = {}
+        cloned_scene.__events = []
+        cloned_scene.__actions = []
+        cloned_scene.__rules = []
 
         for annotation in self.__annotations:
             cloned_annotation = copy.deepcopy(annotation)
@@ -407,6 +443,9 @@ class Scene:
 
             cloned_scene.__po_annotations_dict[po.name] = cloned_po_annotations
             cloned_scene.add_physical_object(po)
+
+        # TODO: we don't clone events, actions, and rules for now! After cloning a scene,
+        #  the user must define the events, actions, and rules for the cloned scene again.
 
         return cloned_scene
 

@@ -606,7 +606,7 @@
               </widget>
              </item>
              <item row="4" column="1">
-              <widget class="QLabel" name="rule_action_name_text">
+              <widget class="QLabel" name="rule_action_name_label">
                <property name="text">
                 <string>... action name ...</string>
                </property>
@@ -627,7 +627,7 @@
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="QLabel" name="rule_event_name_text">
+              <widget class="QLabel" name="rule_event_name_label">
                <property name="text">
                 <string> .... event name ...</string>
                </property>
