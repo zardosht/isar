@@ -12,6 +12,7 @@ class Event:
 
     def __init__(self, target):
         self.scene_id = None
+        self.name = None
         self.target = target
 
     @staticmethod

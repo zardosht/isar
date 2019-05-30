@@ -5,6 +5,7 @@ from PyQt5.QtCore import QAbstractListModel, QModelIndex
 from PyQt5.QtWidgets import QDialog, QListWidget, QLabel, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QWidget
 
 from isar.events import actionsservice, events
+from isar.events.events import SelectionEvent
 from isar.scene.annotationmodel import Annotation
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -42,6 +43,8 @@ class EventsActionsRulesDialog(QDialog):
 
         self.events_scene = None
         self.event_type = None
+        self.event_target = None
+        self.event_name = None
         self.event = None
         self.scenes_combo_current_index_changed(0, "event_scenes_combo")
         self.event_type_combo_current_index_changed(0)
@@ -127,14 +130,23 @@ class EventsActionsRulesDialog(QDialog):
     def event_select_target_btn_clicked(self):
         target = self.show_select_event_target_dialog()
         if target is not None:
-            self.event.target = target
+            logger.info("received event target: {}".format(str(target)))
+            self.event_target = target
+            self.event_name = "On_" + self.event_target.name + "_" +  self.event_type.__name__
+            self.event_name_text.setText(self.event_name)
+            if isinstance(target, Scene):
+                self.event_target_label.setText(target.name)
+            else:
+                self.event_target_label.setText(self.events_scene.name + "." + target.name)
+        else:
+            logger.warning("target is none")
 
     def show_select_event_target_dialog(self):
         target = None
         self.select_event_target_dialog.scene = self.events_scene
-        self.select_event_target_dialog.set_target_types(self.event_type.target_types)
+        self.select_event_target_dialog.set_target_types(self.event_type, self.event_type.target_types)
         self.select_event_target_dialog.setModal(True)
-        self.select_event_target_dialog.show()
+        self.select_event_target_dialog.exec()
         if self.select_event_target_dialog.result() == QDialog.Accepted:
             target = self.select_event_target_dialog.get_event_target()
 
@@ -201,10 +213,14 @@ class SelectTargetDialog(QDialog):
 
         self.setup_ui()
 
-    def set_target_types(self, target_types):
+    def set_target_types(self, event_type, target_types):
         if self.scene is None:
             logger.warning("The scene is not set for select event target dialog. Return.")
             return
+
+        self.scenes_list.clear()
+        self.annotations_list.clear()
+        self.phys_objs_list.clear()
 
         if len(target_types) == 1:
             target_type = target_types[0]
@@ -236,7 +252,11 @@ class SelectTargetDialog(QDialog):
         elif len(target_types) == 2:
             all_scene_annotations = self.scene.get_all_annotations()
             for annotation in all_scene_annotations:
-                self.annotations_list.addItem(annotation.name)
+                if event_type == SelectionEvent:
+                    if annotation.is_selectable:
+                        self.annotations_list.addItem(annotation.name)
+                else:
+                    self.annotations_list.addItem(annotation.name)
 
             phys_objs = self.scene.get_physical_objects()
             for phys_obj in phys_objs:

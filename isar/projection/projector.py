@@ -6,16 +6,13 @@ import traceback
 
 import cv2
 import numpy as np
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt, QPoint
 
-import isar
 from isar.camera.camera import CameraService, CameraFrame
 from isar.projection import projectionutil
 from isar.scene import sceneutil
-from isar.scene.scenemodel import current_project
 from isar.scene.scenerenderer import SceneRenderer
-from isar.scene.sceneutil import get_scene_scale_factor_c
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
 

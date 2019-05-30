@@ -8,7 +8,6 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
 from isar.events import actionsservice
-from isar.events.actionsservice import ActionsService
 from isar.scene import sceneutil
 
 logger = logging.getLogger("isar.scene.scenemodel")
@@ -287,6 +286,7 @@ class ScenesModel(QAbstractListModel):
             self.scenes = current_project.scenes
             for scene in self.scenes:
                 scene.reset_runtime_state()
+
             self.defined_scene_navigation_flow = current_project.scene_navigation
             self.default_scene_navigation_flow = self.get_ordered_scene_ids()
 
