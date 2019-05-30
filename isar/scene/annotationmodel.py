@@ -654,15 +654,16 @@ class AnimationAnnotation(Annotation):
                 and self.animation_thread.is_alive():
             return
 
+        self.image_shown = True
         self.image_position = self.line_start
         self.animation_thread = AnimationThread(self)
         self.animation_thread.start()
 
     def stop(self):
         logger.info("Stop animation.")
+        self.image_shown = True
+        self.image_position = self.line_start
         if self.animation_thread is not None:
-            self.image_position = self.line_start
-            self.image_shown = True
             self.animation_thread.stop()
             self.animation_thread = None
 
