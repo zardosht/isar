@@ -270,7 +270,7 @@ class SceneDefinitionWindow(QMainWindow):
         self._camera_service.start_capture()
 
     def setup_object_detection_service(self):
-        self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
+        # self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
         self._selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
 
     def setup_timer(self):
@@ -287,8 +287,8 @@ class SceneDefinitionWindow(QMainWindow):
         physical_objects_model = PhysicalObjectsModel()
         physical_objects_model.set_scene(current_scene)
         all_physical_obj = []
-        for po_s in self._object_detection_service.get_physical_objects().values():
-            all_physical_obj.extend(po_s)
+        # for po_s in self._object_detection_service.get_physical_objects().values():
+        #     all_physical_obj.extend(po_s)
         physical_objects_model.set_all_physical_objects(all_physical_obj)
         self.camera_view.set_physical_objects_model(physical_objects_model)
         self.objects_view.setModel(physical_objects_model)
