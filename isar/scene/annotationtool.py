@@ -1039,7 +1039,6 @@ class CurveAnnotationTool(AnnotationTool):
 
         if self.is_annotation_valid():
             self.annotations_model.add_annotation(self.annotation)
-            self.annotation.drawing_finished = True
 
         self.set_drawing(False)
 
@@ -1051,7 +1050,7 @@ class CurveAnnotationTool(AnnotationTool):
             return
 
         if self.is_annotation_valid():
-            if self.annotation.drawing_finished:
+            if self.annotation.end.get_value() is not None:
                 self.annotation.line_positions[0] = self.annotation.start.get_value()
                 self.annotation.line_positions[
                     len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
@@ -1124,12 +1123,12 @@ class AnimationAnnotationTool(AnnotationTool):
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-        self.annotation.line_stop = (img_x, img_y)
         diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
         self.annotation.line_positions.append(diff)
 
         file_path, _ = QFileDialog.getOpenFileName()
         if file_path is None or file_path == "":
+            self.set_drawing(False)
             return
 
         self.annotation.image_path.set_value(file_path)
@@ -1137,7 +1136,7 @@ class AnimationAnnotationTool(AnnotationTool):
         if self.is_annotation_valid():
             self.annotations_model.add_annotation(self.annotation)
 
-        self.annotation.mouse_released = True
+        self.annotation.image_shown = True
         self.set_drawing(False)
 
     def draw(self):
@@ -1148,7 +1147,6 @@ class AnimationAnnotationTool(AnnotationTool):
             return
 
         if self.is_annotation_valid():
-
             for i in range(len(self.annotation.line_positions) - 1):
                 start_add = tuple(numpy.add(self.annotation.line_positions[i], self.annotation.position.get_value()))
                 start = sceneutil.convert_object_to_image(start_add, self.phys_obj, self.scene_scale_factor)
@@ -1162,9 +1160,8 @@ class AnimationAnnotationTool(AnnotationTool):
         if self.annotation.animation_thread is None:
             self.annotation.image_position = self.annotation.position.get_value();
         self.annotation.line_start = tuple(numpy.add(self.annotation.line_positions[0], self.annotation.position.get_value()))
-        self.annotation.line_stop = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions)-1], self.annotation.position.get_value()))
 
-        if self.annotation.mouse_released:
+        if self.annotation.image_shown is True:
             self.draw_image()
 
     def draw_image(self):
