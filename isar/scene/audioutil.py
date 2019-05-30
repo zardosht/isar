@@ -3,7 +3,7 @@ import os
 
 import vlc
 
-from isar.scene import scenemodel
+from isar.scene import sceneutil, scenemodel
 
 logger = logging.getLogger("isar.scene.audioutil")
 

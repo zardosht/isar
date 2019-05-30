@@ -8,6 +8,8 @@ from isar.events.actionsservice import ActionsService
 from isar.events.eventmanager import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
+from isar.tracking import objectdetection
+from isar.tracking.objectdetection import ObjectDetectionService
 from isar.tracking.selectionstick import SelectionStickService
 
 __services = {}
