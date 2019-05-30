@@ -14,8 +14,6 @@ from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget
     QPushButton, QLabel, QVBoxLayout, QSizePolicy
 
 from isar.events import actionsservice, eventmanager
-from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -172,6 +170,18 @@ class AnnotationsModel(QAbstractListModel):
             return tuple(self.__annotations)
         else:
             return ()
+
+    def get_all_annotations_by_type(self, t):
+        all_annotations = self.get_all_annotations()
+        if t == Annotation:
+            return all_annotations
+        else:
+            result = []
+            for annotation in all_annotations:
+                if isinstance(annotation, t):
+                    result.append(annotation)
+
+            return result
 
     def get_annotation_by_name(self, name):
         for annotation in self.get_all_annotations():
@@ -934,26 +944,21 @@ class TimerThread(Thread):
 
             self.timer_annotation.current_time += 1
             if (self.timer_annotation.current_time % self.timer_annotation.tick_interval.get_value()) == 0:
-                timer_tick_event = TimerTickEvent(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_tick_event)
+                eventmanager.fire_timer_tick_event(self.timer_annotation, self.timer_annotation.current_time)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_1.get_value():
-                timer_timeout1_event = TimerTimeout1Event(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_timeout1_event)
+                eventmanager.fire_timer_timeout1_event(self.timer_annotation, self.timer_annotation.current_time)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_2.get_value():
-                timer_timeout2_event = TimerTimeout2Event(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_timeout2_event)
+                eventmanager.fire_timer_timeout2_event(self.timer_annotation, self.timer_annotation.current_time)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_3.get_value():
-                timer_timeout3_event = TimerTimeout3Event(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_timeout3_event)
+                eventmanager.fire_timer_timeout3_event(self.timer_annotation, self.timer_annotation.current_time)
 
             time.sleep(1)
 
         if not stopped_before_finish:
-            timer_finished_event = TimerFinishedEvent(self.timer_annotation)
-            eventmanager.fire_event(timer_finished_event)
+            eventmanager.fire_timer_finished_event(self.timer_annotation)
 
     def stop(self):
         self.stop_event.set()
@@ -991,12 +996,10 @@ class CheckboxAnnotation(Annotation):
         self.checked.set_value(not was_checked)
         if not was_checked:
             # the checkbox is now checked
-            checked_event = CheckboxCheckedEvent(self)
-            eventmanager.fire_event(checked_event)
+            eventmanager.fire_checkbox_checked_event(self)
         else:
             # the checkbox is now unchecked
-            unchecked_event = CheckboxUncheckedEvent(self)
-            eventmanager.fire_event(unchecked_event)
+            eventmanager.fire_checkbox_unchecked_event(self)
 
 
 class RelationshipAnnotation(Annotation):

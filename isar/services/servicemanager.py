@@ -5,7 +5,7 @@ from enum import Enum
 from isar.camera.camera import CameraService
 from isar.events import eventmanager
 from isar.events.actionsservice import ActionsService
-from isar.events.eventmanager import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
+from isar.events.events import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
 from isar.tracking import objectdetection

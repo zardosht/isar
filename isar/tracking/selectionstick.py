@@ -7,7 +7,7 @@ import threading
 import numpy as np
 
 from isar.events import eventmanager
-from isar.events.eventmanager import SelectionEvent
+from isar.events.events import SelectionEvent
 from isar.scene import sceneutil
 from isar.services.service import Service
 

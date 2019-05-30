@@ -277,6 +277,7 @@ class SceneDefinitionWindow(QMainWindow):
                                                        self.annotations_model,
                                                        self.physical_objects_model,
                                                        self)
+        ev_act_rules_dialog.setModal(True)
         ev_act_rules_dialog.show()
 
     def setup_camera_service(self):

@@ -1,8 +1,7 @@
 import logging
 
-from isar.scene.annotationmodel import Annotation, CheckboxAnnotation, TimerAnnotation
-from isar.scene.physicalobjectmodel import PhysicalObject
-from isar.scene.scenemodel import Scene
+from isar.events.events import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
+    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent
 
 logger = logging.getLogger("isar.eventmanager")
 
@@ -28,123 +27,39 @@ def fire_event(event):
         listener.on_event(event)
 
 
-# ======================= Events ====================
-
-class Event:
-    # if an event has extra properties, it must set this to true,
-    # and give an implementation for update_event_properties_frame(qt_frame)
-    has_properties = False
-
-    # each type of event must define its target types.
-    target_types = None
-
-    def __init__(self, target):
-        self.scene_id = None
-        self.target = target
-
-    @staticmethod
-    def update_event_properties_frame(qt_frame):
-        pass
+def fire_timer_tick_event(timer_annotation, current_time):
+    timer_tick_event = TimerTickEvent(timer_annotation, current_time)
+    fire_event(timer_tick_event)
 
 
-class SelectionEvent(Event):
-
-    target_types = [PhysicalObject, Annotation]
-
-    trigger_interval = 1
-    """
-    Defines the interval between firing selection events. 
-    """
-    pass
+def fire_timer_timeout1_event(timer_annotation, current_time):
+    timer_timeout1_event = TimerTimeout1Event(timer_annotation, current_time)
+    fire_event(timer_timeout1_event)
 
 
-class CheckboxCheckedEvent(Event):
-    target_types = [CheckboxAnnotation]
-
-    def __init__(self, target):
-        super().__init__(target)
+def fire_timer_timeout2_event(timer_annotation, current_time):
+    timer_timeout2_event = TimerTimeout2Event(timer_annotation, current_time)
+    fire_event(timer_timeout2_event)
 
 
-class CheckboxUncheckedEvent(Event):
-    target_types = [CheckboxAnnotation]
-
-    def __init__(self, target):
-        super().__init__(target)
+def fire_timer_timeout3_event(timer_annotation, current_time):
+    timer_timeout3_event = TimerTimeout3Event(timer_annotation, current_time)
+    fire_event(timer_timeout3_event)
 
 
-class TimerFinishedEvent(Event):
-    target_types = [TimerAnnotation]
-
-    def __init__(self, target):
-        super().__init__(target)
+def fire_timer_finished_event(timer_annotation):
+    timer_finished_event = TimerFinishedEvent(timer_annotation)
+    fire_event(timer_finished_event)
 
 
-class TimerTimeout1Event(Event):
-    target_types = [TimerAnnotation]
-
-    def __init__(self, target, current_time):
-        super().__init__(target)
-        self.current_time = current_time
+def fire_checkbox_checked_event(checkbox_annotation):
+    checked_event = CheckboxCheckedEvent(checkbox_annotation)
+    fire_event(checked_event)
 
 
-class TimerTimeout2Event(Event):
-    target_types = [TimerAnnotation]
-
-    def __init__(self, target, current_time):
-        super().__init__(target)
-        self.current_time = current_time
+def fire_checkbox_unchecked_event(checkbox_annotation):
+    unchecked_event = CheckboxUncheckedEvent(checkbox_annotation)
+    fire_event(unchecked_event)
 
 
-class TimerTimeout3Event(Event):
-    target_types = [TimerAnnotation]
 
-    def __init__(self, target, current_time):
-        super().__init__(target)
-        self.current_time = current_time
-
-
-class TimerTickEvent(Event):
-    target_types = [TimerAnnotation]
-
-    def __init__(self, target, current_time):
-        super().__init__(target)
-        self.current_time = current_time
-
-
-class PhysicalObjectAppearedEvent(Event):
-    target_types = [PhysicalObject]
-
-    pass
-
-
-class PhysicalObjectDisappearedEvent(Event):
-    target_types = [PhysicalObject]
-
-    pass
-
-
-class PhysicalObjectPickedEvent(Event):
-    target_types = [PhysicalObject]
-
-    pass
-
-
-class SceneShownEvent(Event):
-    target_types = [Scene]
-
-    pass
-
-
-event_types = {
-    SelectionEvent.__name__: SelectionEvent,
-    CheckboxCheckedEvent.__name__: CheckboxCheckedEvent,
-    TimerFinishedEvent.__name__: TimerFinishedEvent,
-    TimerTimeout1Event.__name__: TimerTimeout1Event,
-    TimerTimeout2Event.__name__: TimerTimeout2Event,
-    TimerTimeout3Event.__name__: TimerTimeout3Event,
-    TimerTickEvent.__name__: TimerTickEvent,
-    PhysicalObjectAppearedEvent.__name__: PhysicalObjectAppearedEvent,
-    PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
-    PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
-    SceneShownEvent.__name__: SceneShownEvent
-}

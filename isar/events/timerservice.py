@@ -1,11 +1,9 @@
 import threading
 import logging
 
-from isar.events import actionsservice
-from isar.events.eventmanager import TimerFinishedEvent, TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, \
+from isar.events.events import TimerFinishedEvent, TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, \
     TimerTimeout3Event
-from isar.scene.annotationmodel import Annotation, ActionButtonAnnotation, TimerAnnotation
-from isar.scene.physicalobjectmodel import PhysicalObject
+from isar.scene.annotationmodel import TimerAnnotation
 from isar.services.service import Service
 
 logger = logging.getLogger("isar.timerservice")

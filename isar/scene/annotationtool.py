@@ -7,7 +7,6 @@ import numpy
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 
 from isar.events import eventmanager
-from isar.events.eventmanager import SelectionEvent
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
@@ -712,6 +711,7 @@ class SelectionTool(AnnotationTool):
 
     def mouse_release_event(self, camera_view, event):
         if self.annotation is not None:
+            from isar.events.events import SelectionEvent
             eventmanager.fire_event(SelectionEvent(self.annotation))
 
 

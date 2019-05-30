@@ -1,17 +1,23 @@
 
-from tmp_package.tmp1 import A
 
 
-class CheckboxEvent:
-    target_type = A
-
-    def __init__(self):
-        pass
-
-    def fire(self):
-        print("fired ", self)
 
 
+# # ============================================================
+#
+# from tmp_package.tmp1 import A
+#
+#
+# class CheckboxEvent:
+#     target_type = A
+#
+#     def __init__(self):
+#         pass
+#
+#     def fire(self):
+#         print("fired ", self)
+#
+#
 # # ============================================================
 #
 # import sys

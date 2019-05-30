@@ -331,6 +331,18 @@ class Scene:
     def get_physical_objects(self):
         return tuple(self.__physical_objects)
 
+    def get_physical_object_by_name(self, name):
+        phys_objs = self.get_physical_objects()
+        for phys_obj in phys_objs:
+            if phys_obj.name == name:
+                return phys_obj
+
+    def get_annotation_by_name(self, name):
+        annotations = self.get_all_annotations()
+        for annotation in annotations:
+            if annotation.name == name:
+                return annotation
+
     def add_annotation(self, annotation):
         if annotation not in self.__annotations:
             annotation.scene = self
