@@ -95,6 +95,9 @@ class ProjectorView(QtWidgets.QWidget):
 
         self.set_scene_image(blank_image)
 
+    def is_projector_ready(self):
+        return self.projector is not None and self.projector_width != 0 and self.projector_height != 0
+
     def paintEvent(self, event):
         qpainter = QtGui.QPainter()
         qpainter.begin(self)

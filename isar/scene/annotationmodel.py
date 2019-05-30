@@ -6,16 +6,16 @@ import traceback
 from ast import literal_eval
 from threading import Thread, Event
 from typing import List
-
 import numpy
+
 from PyQt5 import QtCore
-from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, pyqtSignal
+from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, pyqtSignal, QSize
 from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
-    QPushButton, QLabel, QVBoxLayout, QSizePolicy
+    QPushButton, QLabel, QToolButton, QVBoxLayout, QSizePolicy
 
 from isar.events import actionsservice, eventmanager
 from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent
+    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -584,6 +584,7 @@ class CurveAnnotation(Annotation):
         self.properties.append(self.thickness)
 
         self.line_positions = []
+        self.drawing_finished = False
 
 
 class AnimationAnnotation(Annotation):
@@ -617,8 +618,9 @@ class AnimationAnnotation(Annotation):
 
         self.line_positions = []
         self.line_start = None
+        self.line_stop = None
         self.image_position = None
-        self.image_shown = False
+        self.mouse_released = False
         self.animation_thread = None
 
     def __getstate__(self):
@@ -630,23 +632,16 @@ class AnimationAnnotation(Annotation):
         self.__init__()
         self.__dict__.update(state)
 
+    def reset_runtime_state(self):
+        # TODO: implement
+        pass
+
     def intersects_with_point(self, point):
-        position = self.image_position
+        position = self.position.get_value()
         width = self.image_width.get_value()
         height = self.image_height.get_value()
         return position[0] <= point[0] <= position[0] + width and \
                position[1] <= point[1] <= position[1] + height
-
-    def reset_runtime_state(self):
-        self.image_position = self.line_start
-        self.image_shown = True
-
-    def on_select(self):
-        logger.info("On Select.")
-        self.image_shown = False
-        if self.animation_thread is not None:
-            self.animation_thread.stop()
-            self.animation_thread = None
 
     def start(self):
         logger.info("Start animation.")
@@ -661,44 +656,59 @@ class AnimationAnnotation(Annotation):
     def stop(self):
         logger.info("Stop animation.")
         if self.animation_thread is not None:
-            self.image_position = self.line_start
-            self.image_shown = True
             self.animation_thread.stop()
             self.animation_thread = None
+            self.image_position = self.line_start
 
 
 class AnimationThread(Thread):
     def __init__(self, animation_annotation):
         super().__init__()
         self.animation_annotation = animation_annotation
+        self.counter = 0
         self.stop_event = Event()
-        self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
         self.loop_direction = False
+        self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
 
     def run(self):
+        stopped_before_finish = False
+
         if self.animation_annotation.loop.get_value() is False:
-            for point in self.animation_annotation.line_positions:
+            while self.counter < len(self.animation_annotation.line_positions):
                 if self.stop_event.is_set():
+                    stopped_before_finish = True
                     break
                 self.animation_annotation.image_position = tuple(
-                    numpy.add(point, self.animation_annotation.position.get_value()))
+                    numpy.add(self.animation_annotation.line_positions[self.counter], self.animation_annotation.position.get_value()))
+                self.counter += 1
+
                 time.sleep(self.speed)
+
+            if not stopped_before_finish:
+                self.stop()
+
         else:
-            while self.stop_event.is_set() is False:
+            while stopped_before_finish is False:
+                if self.stop_event.is_set():
+                    stopped_before_finish = True
+                    break
+
                 if self.loop_direction is False:
-                    for point in self.animation_annotation.line_positions:
-                        self.animation_annotation.image_position = tuple(
-                            numpy.add(point, self.animation_annotation.position.get_value()))
-                        time.sleep(self.speed)
-                    self.loop_direction = True
+                    if self.counter < len(self.animation_annotation.line_positions) - 1:
+                        self.counter += 1
+                    elif self.counter == (len(self.animation_annotation.line_positions) - 1):
+                        self.loop_direction = True
 
                 if self.loop_direction is True:
-                    for point in reversed(self.animation_annotation.line_positions):
-                        self.animation_annotation.image_position = tuple(
-                            numpy.add(point, self.animation_annotation.position.get_value()))
-                        time.sleep(self.speed)
-                    self.loop_direction = False
-        logger.info("Thread finished.")
+                    if self.counter > 0:
+                        self.counter -= 1
+                    elif self.counter == 0:
+                        self.loop_direction = False
+
+                self.animation_annotation.image_position = tuple(
+                    numpy.add(self.animation_annotation.line_positions[self.counter],
+                              self.animation_annotation.position.get_value()))
+                time.sleep(self.speed)
 
     def stop(self):
         self.stop_event.set()
@@ -958,11 +968,11 @@ class TimerThread(Thread):
         self.stop_event.set()
 
 
-class CheckBoxAnnotation(Annotation):
+class CheckboxAnnotation(Annotation):
     def __init__(self):
         super().__init__()
 
-        self.size = IntAnnotationProperty("Size", 100, self)
+        self.size = IntAnnotationProperty("Size", 50, self)
         self.properties.append(self.size)
 
         self.color = ColorAnnotationProperty("Color", (255, 0, 255), self)
@@ -986,8 +996,16 @@ class CheckBoxAnnotation(Annotation):
         #  when we are in ApplicationMode.EXECUTION
         #  Generally, the bahavior of annotations upon selection, should be defined
         #  depending on if we are in AUTHORING or EXECUTION mode.
-        checked = self.checked.get_value()
-        self.checked.set_value(not checked)
+        was_checked = self.checked.get_value()
+        self.checked.set_value(not was_checked)
+        if not was_checked:
+            # the checkbox is now checked
+            checked_event = CheckboxCheckedEvent(self)
+            eventmanager.fire_event(checked_event)
+        else:
+            # the checkbox is now unchecked
+            unchecked_event = CheckboxUncheckedEvent(self)
+            eventmanager.fire_event(unchecked_event)
 
 
 class RelationshipAnnotation(Annotation):
@@ -1008,7 +1026,7 @@ annotation_counters = {
     TextAnnotation.__name__: 0,
     ArrowAnnotation.__name__: 0,
     RelationshipAnnotation.__name__: 0,
-    CheckBoxAnnotation.__name__: 0,
+    CheckboxAnnotation.__name__: 0,
     ActionButtonAnnotation.__name__: 0,
     CurveAnnotation.__name__: 0,
     AnimationAnnotation.__name__: 0

@@ -1,5 +1,7 @@
 import logging
+import time
 import traceback
+from threading import Thread
 
 from isar.scene import audioutil
 from isar.services.service import Service
@@ -36,12 +38,7 @@ class ActionsService(Service):
         super().__init__(service_name)
         self.__annotations_model = None
         self.__scenes_model = None
-
-        # TODO: Just for testing now. The actions are defined inside a project
-        #  and must be loaded when project is loaded.
-        #  Also, some of the actions are bound to a scene and must be only available on that scene,
-        #  for example ShowAnnotations
-        # self.init_defined_actions()
+        self.scene_id = None
 
     def set_annotations_model(self, annotations_model):
         self.__annotations_model = annotations_model
@@ -59,6 +56,9 @@ class ActionsService(Service):
 
         if action.scenes_model is None:
             action.scenes_model = self.__scenes_model
+
+        if action._action_service is None:
+            action._action_service = self
 
         try:
             action.run()
@@ -79,6 +79,7 @@ class Action:
         self.name = "action"
         self.annotations_model = None
         self.scenes_model = None
+        self._action_service = None
 
     def run(self):
         # must be implemented by subclasses
@@ -88,6 +89,7 @@ class Action:
         state = self.__dict__.copy()
         del state["annotations_model"]
         del state["scenes_model"]
+        del state["_action_service"]
         return state
 
     def __setstate__(self, state):
@@ -256,7 +258,7 @@ class ResetTimerAction(Action):
             timer.reset()
 
 
-class PlaySoundAction(Action):
+class StartAudioAction(Action):
     """
     Must have a sound annotation as its target.
     """
@@ -275,7 +277,25 @@ class PlaySoundAction(Action):
         audioutil.play(audio_file_path, loop)
 
 
-class PlayVideoAction(Action):
+class StopAudioAction(Action):
+    """
+    Must have a sound annotation as its target.
+    """
+    def __init__(self):
+        super().__init__()
+        self.annotation_name = None
+
+    def run(self):
+        annotation = self.find_annotation(self.annotation_name)
+        if annotation is None:
+            logger.error("Target annotation is None")
+            return
+
+        audio_file_path = annotation.audio_path.get_value()
+        audioutil.stop(audio_file_path)
+
+
+class StartVideoAction(Action):
     """
     Must have a video annotation as its target.
     """
@@ -283,6 +303,20 @@ class PlayVideoAction(Action):
         super().__init__()
 
     def run(self):
+        # TODO: not implemented
+        pass
+
+
+class StopVideoAction(Action):
+    """
+    Must have a video annotation as its target.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        # TODO: not implemented
         pass
 
 
@@ -308,10 +342,59 @@ class StopAnimationAction(Action):
             animation.stop()
 
 
+class ParallelCompositeAction(Action):
+    def __init__(self):
+        super().__init__()
+        self.actions = []
+
+    def run(self):
+        for action in self.actions:
+            t = Thread(target=lambda a: self._action_service.perform_action(a), args=(action, ))
+            t.start()
+
+
+class SequentialCompositeAction(Action):
+    def __init__(self):
+        super().__init__()
+        self.actions = []
+        self.time_between_actions = 1
+
+    def run(self):
+        t = Thread(target=self.do_run)
+        t.start()
+
+    def do_run(self):
+        for action in self.actions:
+            self._action_service.perform_action(action)
+            time.sleep(self.time_between_actions)
+
+
+action_types = {
+    ToggleAnnotationVisibilityAction.__name__: ToggleAnnotationVisibilityAction,
+    ShowAnnotationAction.__name__: ShowAnnotationAction,
+    HideAnnotationAction.__name__: HideAnnotationAction,
+    ShowSceneAction.__name__: ShowSceneAction,
+    NextSceneAction.__name__: NextSceneAction,
+    PreviousSceneAction.__name__: PreviousSceneAction,
+    BackSceneAction.__name__: BackSceneAction,
+    StartTimerAction.__name__: StartTimerAction,
+    StopTimerAction.__name__: StopTimerAction,
+    ResetTimerAction.__name__: ResetTimerAction,
+    StartAudioAction.__name__: StartAudioAction,
+    StopAudioAction.__name__: StopAudioAction,
+    StartVideoAction.__name__: StartVideoAction,
+    StopVideoAction.__name__: StopVideoAction,
+    StartAnimationAction.__name__: StartAnimationAction,
+    StopAnimationAction.__name__: StopAnimationAction,
+    ParallelCompositeAction.__name__: ParallelCompositeAction,
+    SequentialCompositeAction.__name__: SequentialCompositeAction
+}
+
 # ====================================================
 # ========= initializint defined actions   ===========
 # ========= This must be read from project ===========
 # ====================================================
+
 
 def init_defined_actions():
     # TODO: This will be read from the prorject. During the scene definition, the user defines actions.
@@ -324,6 +407,11 @@ def init_defined_actions():
     toggle_red_box.name = "Toggle Red Box"
     toggle_red_box.annotation_names = ["red_box"]
     defined_actions.append(toggle_red_box)
+
+    toggle_red_circle = ToggleAnnotationVisibilityAction()
+    toggle_red_circle.name = "Toggle Red Circle"
+    toggle_red_circle.annotation_names = ["red_circle"]
+    defined_actions.append(toggle_red_circle)
 
     toggle_help = ToggleAnnotationVisibilityAction()
     toggle_help.name = "Toggle Help"
@@ -367,7 +455,7 @@ def init_defined_actions():
     back_scene.name = "Back Scene"
     defined_actions.append(back_scene)
 
-    play_pincers_audio = PlaySoundAction()
+    play_pincers_audio = StartAudioAction()
     play_pincers_audio.name = "Play Pincers Audio"
     play_pincers_audio.annotation_name = "pincers_audio"
     defined_actions.append(play_pincers_audio)
@@ -397,12 +485,20 @@ def init_defined_actions():
     stop_fly_animation_1.animation_name = "fly_animation1"
     defined_actions.append(stop_fly_animation_1)
 
+    start_timer1_and_play_pincers_audio = ParallelCompositeAction()
+    start_timer1_and_play_pincers_audio.name = "Start Timer 1 AND Play Pincers Audio"
+    start_timer1_and_play_pincers_audio.actions = [start_timer1, play_pincers_audio]
+    defined_actions.append(start_timer1_and_play_pincers_audio)
 
+    hide_lenna_then_show_lenna = SequentialCompositeAction()
+    hide_lenna_then_show_lenna.name = "Hide lenna THEN Show lenna"
+    hide_lenna_then_show_lenna.actions = [hide_lenna, show_lenna]
+    defined_actions.append(hide_lenna_then_show_lenna)
 
-
-
-
-
+    hide_lenna_then_show_lenna_then_toggle_redcircle = SequentialCompositeAction()
+    hide_lenna_then_show_lenna_then_toggle_redcircle.name = "hide_lenna_then_show_lenna_then_toggle_redcircle"
+    hide_lenna_then_show_lenna_then_toggle_redcircle.actions = [hide_lenna, show_lenna, toggle_red_circle]
+    defined_actions.append(hide_lenna_then_show_lenna_then_toggle_redcircle)
 
 
 

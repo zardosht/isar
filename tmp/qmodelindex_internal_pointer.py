@@ -90,7 +90,7 @@ class NodeTree(QAbstractItemModel):
        return QVariant()
 
    def index(self, row, column, parent):
-       if not self.hasIndex(row, column, parent):
+       if not self.hasIndex(row, 0, parent):
           return QModelIndex()
 
        if not parent.isValid():

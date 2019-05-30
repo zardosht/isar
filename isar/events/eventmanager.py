@@ -27,8 +27,17 @@ def fire_event(event):
 # ======================= Events ====================
 
 class Event:
+    # if an event has extra properties, it must set this to true,
+    # and give an implementation for update_event_properties_frame(qt_frame)
+    has_properties = False
+
     def __init__(self, target):
+        self.scene_id = None
         self.target = target
+
+    @staticmethod
+    def update_event_properties_frame(qt_frame):
+        pass
 
 
 class SelectionEvent(Event):
@@ -40,9 +49,13 @@ class SelectionEvent(Event):
 
 
 class CheckboxCheckedEvent(Event):
-    def __init__(self, target, check_stat):
+    def __init__(self, target):
         super().__init__(target)
-        self.check_state = check_stat
+
+
+class CheckboxUncheckedEvent(Event):
+    def __init__(self, target):
+        super().__init__(target)
 
 
 class TimerFinishedEvent(Event):
@@ -86,7 +99,20 @@ class PhysicalObjectPickedEvent(Event):
     pass
 
 
-class SceneChangedEvent(Event):
+class SceneShownEvent(Event):
     pass
 
 
+event_types = {
+    SelectionEvent.__name__: SelectionEvent,
+    CheckboxCheckedEvent.__name__: CheckboxCheckedEvent,
+    TimerFinishedEvent.__name__: TimerFinishedEvent,
+    TimerTimeout1Event.__name__: TimerTimeout1Event,
+    TimerTimeout2Event.__name__: TimerTimeout2Event,
+    TimerTimeout3Event.__name__: TimerTimeout3Event,
+    TimerTickEvent.__name__: TimerTickEvent,
+    PhysicalObjectAppearedEvent.__name__: PhysicalObjectAppearedEvent,
+    PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
+    PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
+    SceneShownEvent.__name__: SceneShownEvent
+}
