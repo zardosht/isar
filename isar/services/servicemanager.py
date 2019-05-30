@@ -28,21 +28,21 @@ class ServiceNames(Enum):
 
 def start_services():
     try:
-        camera1_service = CameraService(ServiceNames.CAMERA1, 0)
+        camera1_service = CameraService(ServiceNames.CAMERA1, 2)
         camera1_service.start()
         __services[ServiceNames.CAMERA1] = camera1_service
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
 
-    # try:
-    #     objectdetection.init()
-    #     objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION)
-    #     objectdetection_service.start()
-    #     __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
-    # except Exception as exp:
-    #     logger.error(exp)
-    #     traceback.print_tb(exp.__traceback__)
+    try:
+        objectdetection.init()
+        objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION)
+        objectdetection_service.start()
+        __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
+    except Exception as exp:
+        logger.error(exp)
+        traceback.print_tb(exp.__traceback__)
 
     try:
         actions_service = ActionsService(ServiceNames.ACTIONS_SERVICE)
