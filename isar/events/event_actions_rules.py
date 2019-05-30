@@ -2,11 +2,22 @@ import logging
 
 from PyQt5 import uic, Qt, QtCore
 from PyQt5.QtCore import QAbstractListModel, QModelIndex
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QListWidget, QLabel, QVBoxLayout, QHBoxLayout
 
 from isar.events import eventmanager, actionsservice
 
 logger = logging.getLogger("isar.scene.physicalobjecttool")
+
+
+"""
+
+* get rid of global event, actions, and rules.
+* Every event, action, or rule is defined only on one scene (the one user chooses) 
+and is only available/active on this scene. 
+* If the target of an event or action is an annotation, or physical object, 
+only those annotations and physical objects of the selected scene can be chosen as target.
+
+"""
 
 
 class EventsActionsRulesDialog(QDialog):
@@ -19,15 +30,16 @@ class EventsActionsRulesDialog(QDialog):
 
         self.events_model = None
         self.events_scene = None
+        self.event_type = None
+        self.event = None
 
         self.actions_model = None
         self.actions_scene = None
+        self.action_type = None
+        self.action = None
 
         self.rules_model = None
         self.rules_scene = None
-
-        self.event = None
-        self.action = None
         self.rule = None
 
         self.init_ui()
@@ -109,7 +121,12 @@ class EventsActionsRulesDialog(QDialog):
 
     def show_select_target_dialog(self):
         target = None
-        target_type = self.event_type
+        target_types = self.event_type.target_type
+        dialog = SelectTargetDialog(target_types)
+        dialog.setModal(True)
+        dialog.show()
+        if dialog.result() == QDialog.Accepted:
+            target = dialog.get_event_target()
 
         return target
 
@@ -128,6 +145,7 @@ class ItemsModel(QAbstractListModel):
     def __init__(self):
         super().__init__()
         self.items = []
+        self.current_scene = None
 
     def rowCount(self, parent=None):
         return len(self.items)
@@ -151,4 +169,47 @@ class ItemsModel(QAbstractListModel):
 
         item = self.items[row]
         return self.createIndex(row, 0, item)
+
+
+class SelectTargetDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.scenes_list = None
+        self.annotations_list = None
+        self.phys_objs_list = None
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        l1 = QVBoxLayout()
+        label1 = QLabel()
+        label1.setText("Scenes:")
+        self.scenes_list = QListWidget()
+        l1.addWidget(label1)
+        l1.addWidget(self.scenes_list)
+
+        l2 = QVBoxLayout()
+        label2 = QLabel()
+        label2.setText("Annotations:")
+        self.annotations_list = QListWidget()
+        l2.addWidget(label2)
+        l2.addWidget(self.annotations_list)
+
+        l3 = QVBoxLayout()
+        label3 = QLabel()
+        label3.setText("PhysicalObjects:")
+        self.phys_objs_list = QListWidget()
+        l3.addWidget(label3)
+        l3.addWidget(self.phys_objs_list)
+
+        layout = QHBoxLayout()
+        layout.addWidget(l1)
+        layout.addWidget(l2)
+        layout.addWidget(l3)
+        self.setLayout(layout)
+
+        self.buttonBox.accepted.connect(self.accept())
+        self.buttonBox.rejected.connect(self.reject())
+
 

@@ -1,34 +1,6 @@
-import logging
-
-from isar.scene.annotationmodel import Annotation, CheckboxAnnotation, TimerAnnotation
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
-logger = logging.getLogger("isar.eventmanager")
-
-# event listener must have an on_event(e) method.
-event_listeners = {}
-
-
-def register_listener(event_class_name, listener):
-    if event_class_name in event_listeners:
-        event_listeners[event_class_name].append(listener)
-    else:
-        event_listeners[event_class_name] = [listener]
-
-
-def fire_event(event):
-    event_class_name = event.__class__.__name__
-    if event_class_name not in event_listeners:
-        logger.warning("Event class is not the event registry. First register listeners for this event type.")
-        return
-
-    listeners = event_listeners[event_class_name]
-    for listener in listeners:
-        listener.on_event(event)
-
-
-# ======================= Events ====================
 
 class Event:
     # if an event has extra properties, it must set this to true,
@@ -48,7 +20,7 @@ class Event:
 
 
 class SelectionEvent(Event):
-
+    from isar.scene.annotationmodel import Annotation
     target_types = [PhysicalObject, Annotation]
 
     trigger_interval = 1
@@ -59,6 +31,7 @@ class SelectionEvent(Event):
 
 
 class CheckboxCheckedEvent(Event):
+    from isar.scene.annotationmodel import CheckboxAnnotation
     target_types = [CheckboxAnnotation]
 
     def __init__(self, target):
@@ -66,6 +39,7 @@ class CheckboxCheckedEvent(Event):
 
 
 class CheckboxUncheckedEvent(Event):
+    from isar.scene.annotationmodel import CheckboxAnnotation
     target_types = [CheckboxAnnotation]
 
     def __init__(self, target):
@@ -73,6 +47,7 @@ class CheckboxUncheckedEvent(Event):
 
 
 class TimerFinishedEvent(Event):
+    from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
     def __init__(self, target):
@@ -80,6 +55,7 @@ class TimerFinishedEvent(Event):
 
 
 class TimerTimeout1Event(Event):
+    from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
     def __init__(self, target, current_time):
@@ -88,6 +64,7 @@ class TimerTimeout1Event(Event):
 
 
 class TimerTimeout2Event(Event):
+    from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
     def __init__(self, target, current_time):
@@ -96,6 +73,7 @@ class TimerTimeout2Event(Event):
 
 
 class TimerTimeout3Event(Event):
+    from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
     def __init__(self, target, current_time):
@@ -104,6 +82,7 @@ class TimerTimeout3Event(Event):
 
 
 class TimerTickEvent(Event):
+    from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
     def __init__(self, target, current_time):
