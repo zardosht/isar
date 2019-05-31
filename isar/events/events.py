@@ -24,10 +24,17 @@ class SelectionEvent(Event):
     from isar.scene.annotationmodel import Annotation
     target_types = [PhysicalObject, Annotation]
 
-    trigger_interval = 1
+    trigger_interval = 0.2
     """
-    Defines the interval between firing selection events. 
+    Defines the interval before firing selection events. Added to prevent immediate firing of the event
+    as the user moves the selection tool on top of different annotations and objects 
     """
+
+    repeat_interval = 1
+    """
+    Interval between repeated sending of the event. 
+    """
+
     pass
 
 
