@@ -323,23 +323,25 @@ class StopVideoAction(Action):
 class StartAnimationAction(Action):
     def __init__(self):
         super().__init__()
-        self.animation_name = None
+        self.animation_names = None
 
     def run(self):
-        animation = self.find_annotation(self.animation_name)
-        if animation is not None:
-            animation.start()
+        animations = self.find_annotations(self.animation_names)
+        if animations is not None and len(animations) != 0:
+            for animation in animations:
+                animation.start()
 
 
 class StopAnimationAction(Action):
     def __init__(self):
         super().__init__()
-        self.animation_name = None
+        self.animation_names = None
 
     def run(self):
-        animation = self.find_annotation(self.animation_name)
-        if animation is not None:
-            animation.stop()
+        animations = self.find_annotations(self.animation_names)
+        if animations is not None and len(animations) != 0:
+            for animation in animations:
+                animation.stop()
 
 
 class ParallelCompositeAction(Action):
@@ -477,12 +479,12 @@ def init_defined_actions():
 
     start_fly_animation_1 = StartAnimationAction()
     start_fly_animation_1.name = "Start Fly Animation 1"
-    start_fly_animation_1.animation_name = "fly_animation1"
+    start_fly_animation_1.animation_names = ["fly_animation1", "fly_animation2"]
     defined_actions.append(start_fly_animation_1)
 
     stop_fly_animation_1 = StopAnimationAction()
     stop_fly_animation_1.name = "Stop Fly Animation 1"
-    stop_fly_animation_1.animation_name = "fly_animation1"
+    stop_fly_animation_1.animation_names = ["fly_animation1", "fly_animation2"]
     defined_actions.append(stop_fly_animation_1)
 
     start_timer1_and_play_pincers_audio = ParallelCompositeAction()
