@@ -72,6 +72,7 @@ class EventsActionsRulesDialog(QDialog):
 
         self.event_select_target_btn.clicked.connect(self.event_select_target_btn_clicked)
         self.add_event_btn.clicked.connect(self.add_event_btn_clicked)
+        self.remove_event_btn.clicked.connect(self.remove_event_btn_clicked)
 
     def add_event_btn_clicked(self):
         if self.event_target is None:
@@ -87,6 +88,10 @@ class EventsActionsRulesDialog(QDialog):
             self.event.name = self.event_name
             self.event.scene_id = self.events_scene.name
             self.events_model.add_item(self.event)
+
+    def remove_event_btn_clicked(self):
+        index = self.events_list.selectionModel().currentIndex()
+        self.events_model.remove_item(index)
 
     def init_scenes_combos(self):
         scene_combos = [self.event_scenes_combo, self.action_scenes_combo, self.rule_scenes_combo]
@@ -261,6 +266,23 @@ class ItemsModel(QAbstractListModel):
         else:
             logger.warning("current_scene is None!")
         self.endInsertRows()
+
+    def remove_item(self, index):
+        self.beginRemoveRows(QModelIndex(), index.row(), index.row())
+        item = index.internalPointer()
+        if self.current_scene is not None:
+            if self.item_type == ItemsModel.EVENTS:
+                if isinstance(item, Event):
+                    self.current_scene.remove_event(item)
+            elif self.item_type == ItemsModel.ACTIONS:
+                if isinstance(item, Action):
+                    self.current_scene.remove_action(item)
+            elif self.item_type == ItemsModel.RULES:
+                if isinstance(item, Rule):
+                    self.current_scene.remove_rule(item)
+        else:
+            logger.warning("current_scene is None!")
+        self.endRemoveRows()
 
     def index(self, row, column, parent):
         if not self.hasIndex(row, column, parent):
