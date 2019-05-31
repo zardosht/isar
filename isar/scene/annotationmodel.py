@@ -672,31 +672,27 @@ class AnimationThread(Thread):
     def __init__(self, animation_annotation):
         super().__init__()
         self.animation_annotation = animation_annotation
+        self.image_positions = numpy.add(self.animation_annotation.line_positions, self.animation_annotation.position.get_value())
         self.stop_event = Event()
         self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
         self.loop_direction = False
 
     def run(self):
         if self.animation_annotation.loop.get_value() is False:
-            for point in self.animation_annotation.line_positions:
-                if self.stop_event.is_set():
-                    break
-                self.animation_annotation.image_position = tuple(
-                    numpy.add(point, self.animation_annotation.position.get_value()))
+            for point in self.image_positions:
+                self.animation_annotation.image_position = tuple(point)
                 time.sleep(self.speed)
         else:
             while self.stop_event.is_set() is False:
                 if self.loop_direction is False:
-                    for point in self.animation_annotation.line_positions:
-                        self.animation_annotation.image_position = tuple(
-                            numpy.add(point, self.animation_annotation.position.get_value()))
+                    for point in self.image_positions:
+                        self.animation_annotation.image_position = tuple(point)
                         time.sleep(self.speed)
                     self.loop_direction = True
 
                 if self.loop_direction is True:
-                    for point in reversed(self.animation_annotation.line_positions):
-                        self.animation_annotation.image_position = tuple(
-                            numpy.add(point, self.animation_annotation.position.get_value()))
+                    for point in reversed(self.image_positions):
+                        self.animation_annotation.image_position = tuple(point)
                         time.sleep(self.speed)
                     self.loop_direction = False
         logger.info("Thread finished.")
