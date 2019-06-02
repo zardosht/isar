@@ -1,5 +1,10 @@
+import logging
+
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
+
+
+logger = logging.getLogger("isar.events.events")
 
 
 class Event:

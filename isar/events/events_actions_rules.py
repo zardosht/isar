@@ -4,8 +4,8 @@ from PyQt5 import uic, Qt, QtCore
 from PyQt5.QtCore import QAbstractListModel, QModelIndex
 from PyQt5.QtWidgets import QDialog, QListWidget, QLabel, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QWidget
 
-from isar.events import actionsservice, events
-from isar.events.actionsservice import Action
+from isar.events import actionsservice, events, actions
+from isar.events.actions import Action
 from isar.events.events import SelectionEvent, Event
 from isar.events.rulesmanager import Rule
 from isar.events.select_target_dialog import SelectTargetDialog
@@ -183,7 +183,7 @@ class EventsActionsRulesDialog(QDialog):
             self.event_properties_frame.hide()
 
     def init_action_type_combo(self):
-        for ac_name, ac_type in actionsservice.action_types.items():
+        for ac_name, ac_type in actions.action_types.items():
             self.action_type_combo.addItem(ac_name, ac_type)
 
         self.action_type_combo.currentIndexChanged.connect(self.action_type_combo_current_index_changed)
