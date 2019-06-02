@@ -105,74 +105,74 @@ def init_defined_actions():
 
     init_global_actions()
 
-    toggle_red_box = ToggleAnnotationVisibilityAction()
+    annotation_names = ["red_box"]
+    toggle_red_box = ToggleAnnotationVisibilityAction(annotation_names)
     toggle_red_box.name = "Toggle Red Box"
-    toggle_red_box.annotation_names = ["red_box"]
     defined_actions.append(toggle_red_box)
 
-    toggle_red_circle = ToggleAnnotationVisibilityAction()
+    annotation_names = ["red_circle"]
+    toggle_red_circle = ToggleAnnotationVisibilityAction(annotation_names)
     toggle_red_circle.name = "Toggle Red Circle"
-    toggle_red_circle.annotation_names = ["red_circle"]
     defined_actions.append(toggle_red_circle)
 
-    toggle_help = ToggleAnnotationVisibilityAction()
+    annotation_names = ["help_text1", "help_text2"]
+    toggle_help = ToggleAnnotationVisibilityAction(annotation_names)
     toggle_help.name = "Toggle Help"
-    toggle_help.annotation_names = ["help_text1", "help_text2"]
     defined_actions.append(toggle_help)
 
-    show_lenna = ShowAnnotationAction()
+    annotation_names = ["lenna"]
+    show_lenna = ShowAnnotationAction(annotation_names)
     show_lenna.name = "Show Lenna"
-    show_lenna.annotation_names = ["lenna"]
     defined_actions.append(show_lenna)
 
-    hide_lenna = HideAnnotationAction()
+    annotation_names = ["lenna"]
+    hide_lenna = HideAnnotationAction(annotation_names)
     hide_lenna.name = "Hide Lenna"
-    hide_lenna.annotation_names = ["lenna"]
     defined_actions.append(hide_lenna)
 
-    show_scene1 = ShowSceneAction()
+    scene_name = "Scene1"
+    show_scene1 = ShowSceneAction(scene_name)
     show_scene1.name = "Show Scene1"
-    show_scene1.scene_name = "Scene1"
     defined_actions.append(show_scene1)
 
-    show_help_scene = ShowSceneAction()
+    scene_name = "help"
+    show_help_scene = ShowSceneAction(scene_name)
     show_help_scene.name = "Show Help Scene"
-    show_help_scene.scene_name = "help"
     defined_actions.append(show_help_scene)
 
-    show_joke_scene = ShowSceneAction()
+    scene_name = "joke"
+    show_joke_scene = ShowSceneAction(scene_name)
     show_joke_scene.name = "Show Joke Scene"
-    show_joke_scene.scene_name = "joke"
     defined_actions.append(show_joke_scene)
 
-    play_pincers_audio = StartAudioAction()
+    annotation_name = "pincers_audio"
+    play_pincers_audio = StartAudioAction(annotation_name)
     play_pincers_audio.name = "Play Pincers Audio"
-    play_pincers_audio.annotation_name = "pincers_audio"
     defined_actions.append(play_pincers_audio)
 
-    start_timer1 = StartTimerAction()
+    timer_name = "timer1"
+    start_timer1 = StartTimerAction(timer_name)
     start_timer1.name = "Start Timer 1"
-    start_timer1.timer_name = "timer1"
     defined_actions.append(start_timer1)
 
-    stop_timer1 = StopTimerAction()
+    timer_name = "timer1"
+    stop_timer1 = StopTimerAction(timer_name)
     stop_timer1.name = "Stop Timer 1"
-    stop_timer1.timer_name = "timer1"
     defined_actions.append(stop_timer1)
 
-    reset_timer1 = ResetTimerAction()
+    timer_name = "timer1"
+    reset_timer1 = ResetTimerAction(timer_name)
     reset_timer1.name = "Reset Timer 1"
-    reset_timer1.timer_name = "timer1"
     defined_actions.append(reset_timer1)
 
-    start_fly_animation_1 = StartAnimationAction()
+    animation_names = ["fly_animation1", "fly_animation2"]
+    start_fly_animation_1 = StartAnimationAction(animation_names)
     start_fly_animation_1.name = "Start Fly Animation 1"
-    start_fly_animation_1.animation_names = ["fly_animation1", "fly_animation2"]
     defined_actions.append(start_fly_animation_1)
 
-    stop_fly_animation_1 = StopAnimationAction()
+    animation_names = ["fly_animation1", "fly_animation2"]
+    stop_fly_animation_1 = StopAnimationAction(animation_names)
     stop_fly_animation_1.name = "Stop Fly Animation 1"
-    stop_fly_animation_1.animation_names = ["fly_animation1", "fly_animation2"]
     defined_actions.append(stop_fly_animation_1)
 
     start_timer1_and_play_pincers_audio = ParallelCompositeAction()

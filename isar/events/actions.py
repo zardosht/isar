@@ -12,9 +12,12 @@ class Action:
     # if an action has extra properties, it must set this to true,
     # and give an implementation for update_action_properties_frame(qt_frame)
     has_properties = False
+    has_target = True
+    has_single_target = False
 
-    def __init__(self):
+    def __init__(self, target=None):
         self.name = "action"
+        self.target = target
         self.annotations_model = None
         self.scenes_model = None
         self._action_service = None
@@ -34,9 +37,9 @@ class Action:
         self.__init__()
         self.__dict__.update(state)
 
-    def find_annotations(self, annotation_names):
-        if annotation_names is None:
-            logger.error("annotation_names is none!")
+    def find_annotations(self):
+        if self.target is None:
+            logger.error("target is none!")
             return []
 
         if self.annotations_model is None:
@@ -44,18 +47,21 @@ class Action:
             return []
 
         annotations = []
-        for annotation_name in annotation_names:
-            annotation = self.annotations_model.get_annotation_by_name(annotation_name)
-            if annotation is None:
-                logger.error("Could not find an annotation with name: {}".format(annotation_name))
-                continue
-            else:
-                annotations.append(annotation)
+        if type(self.target) == list:
+            for annotation_name in self.target:
+                annotation = self.annotations_model.get_annotation_by_name(annotation_name)
+                if annotation is None:
+                    logger.error("Could not find an annotation with name: {}".format(annotation_name))
+                    continue
+                else:
+                    annotations.append(annotation)
 
-        return annotations
+            return annotations
+        else:
+            return self.find_annotation(self.target)
 
-    def find_annotation(self, annotation_name):
-        if annotation_name is None:
+    def find_annotation(self, target):
+        if target is None:
             logger.error("annotation_name is none!")
             return None
 
@@ -63,9 +69,9 @@ class Action:
             logger.error("AnnotationsModel is none!")
             return None
 
-        annotation = self.annotations_model.get_annotation_by_name(annotation_name)
+        annotation = self.annotations_model.get_annotation_by_name(target)
         if annotation is None:
-            logger.error("Could not find an annotation with name: {}".format(annotation_name))
+            logger.error("Could not find an annotation with name: {}".format(target))
         return annotation
 
     @classmethod
@@ -80,33 +86,32 @@ class ToggleAnnotationVisibilityAction(Action):
     from isar.scene.annotationmodel import Annotation
     target_types = [Annotation]
 
-    def __init__(self):
-        super().__init__()
-        self.annotation_names = None
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
-        annotations = self.find_annotations(self.annotation_names)
+        annotations = self.find_annotations()
         for annotation in annotations:
             is_visible = annotation.show.get_value()
             annotation.show.set_value(not is_visible)
 
 
 class ShowAnnotationAction(ToggleAnnotationVisibilityAction):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
-        annotations = self.find_annotations(self.annotation_names)
+        annotations = self.find_annotations()
         for annotation in annotations:
             annotation.show.set_value(True)
 
 
 class HideAnnotationAction(ToggleAnnotationVisibilityAction):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
-        annotations = self.find_annotations(self.annotation_names)
+        annotations = self.find_annotations()
         for annotation in annotations:
             annotation.show.set_value(False)
 
@@ -116,24 +121,27 @@ class ShowSceneAction(Action):
     Must have a scene as its target
     """
     target_types = [Scene]
+    has_single_target = True
 
-    def __init__(self):
-        super().__init__()
-        self.scene_name = None
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
-        self.scenes_model.show_scene(self.scene_name)
+        if type(self.target) == str:
+            self.scenes_model.show_scene(self.scene_name)
+        else:
+            logger.warning("scene name is invalid: {}", str(self.target))
 
 
 class NextSceneAction(Action):
     """
     Next scene in scene navigation sequence
     """
-
     global_action_name = "Next Scene"
+    has_target = False
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
         self.scenes_model.show_next_scene()
@@ -143,11 +151,11 @@ class PreviousSceneAction(Action):
     """
     Previous scene in scene navigation sequence
     """
-
     global_action_name = "Previous Scene"
+    has_target = False
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
         self.scenes_model.show_previous_scene()
@@ -161,11 +169,11 @@ class BackSceneAction(Action):
     an action button calls the back action to return to S2. This is different from previous scene action, that
     refers to the previous scene in navigation flow, i.e. S1
     """
-
     global_action_name = "Back Scene"
+    has_target = False
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
         self.scenes_model.show_back_scene()
@@ -175,12 +183,15 @@ class StartTimerAction(Action):
     """
     Must have a timer annotation as its target.
     """
-    def __init__(self):
-        super().__init__()
-        self.timer_name = None
+    from isar.scene.annotationmodel import TimerAnnotation
+    target_types = [TimerAnnotation]
+    has_single_target = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
-        timer = self.find_annotation(self.timer_name)
+        timer = self.find_annotations()
         if timer is not None:
             timer.start()
 
@@ -189,12 +200,16 @@ class StopTimerAction(Action):
     """
     Must have a timer annotation as its target.
     """
-    def __init__(self):
-        super().__init__()
+    from isar.scene.annotationmodel import TimerAnnotation
+    target_types = [TimerAnnotation]
+    has_single_target = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.timer_name = None
 
     def run(self):
-        timer = self.find_annotation(self.timer_name)
+        timer = self.find_annotations()
         if timer is not None:
             timer.stop()
 
@@ -203,12 +218,16 @@ class ResetTimerAction(Action):
     """
     Must have a timer annotation as its target.
     """
-    def __init__(self):
-        super().__init__()
+    from isar.scene.annotationmodel import TimerAnnotation
+    target_types = [TimerAnnotation]
+    has_single_target = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.timer_name = None
 
     def run(self):
-        timer = self.find_annotation(self.timer_name)
+        timer = self.find_annotations()
         if timer is not None:
             timer.reset()
 
@@ -217,12 +236,16 @@ class StartAudioAction(Action):
     """
     Must have a sound annotation as its target.
     """
-    def __init__(self):
-        super().__init__()
+    from isar.scene.annotationmodel import AudioAnnotation
+    target_types = [AudioAnnotation]
+    has_single_target = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.annotation_name = None
 
     def run(self):
-        annotation = self.find_annotation(self.annotation_name)
+        annotation = self.find_annotations()
         if annotation is None:
             logger.error("Target annotation is None")
             return
@@ -236,12 +259,16 @@ class StopAudioAction(Action):
     """
     Must have a sound annotation as its target.
     """
-    def __init__(self):
-        super().__init__()
+    from isar.scene.annotationmodel import AudioAnnotation
+    target_types = [AudioAnnotation]
+    has_single_target = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.annotation_name = None
 
     def run(self):
-        annotation = self.find_annotation(self.annotation_name)
+        annotation = self.find_annotations()
         if annotation is None:
             logger.error("Target annotation is None")
             return
@@ -254,8 +281,12 @@ class StartVideoAction(Action):
     """
     Must have a video annotation as its target.
     """
-    def __init__(self):
-        super().__init__()
+    from isar.scene.annotationmodel import VideoAnnotation
+    target_types = [VideoAnnotation]
+    has_single_target = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
         # TODO: not implemented
@@ -266,9 +297,12 @@ class StopVideoAction(Action):
     """
     Must have a video annotation as its target.
     """
+    from isar.scene.annotationmodel import VideoAnnotation
+    target_types = [VideoAnnotation]
+    has_single_target = True
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, target=None):
+        super().__init__(target)
 
     def run(self):
         # TODO: not implemented
@@ -276,32 +310,41 @@ class StopVideoAction(Action):
 
 
 class StartAnimationAction(Action):
-    def __init__(self):
-        super().__init__()
+    from isar.scene.annotationmodel import AnimationAnnotation
+    target_types = [AnimationAnnotation]
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.animation_names = None
 
     def run(self):
-        animations = self.find_annotations(self.animation_names)
+        animations = self.find_annotations()
         if animations is not None and len(animations) != 0:
             for animation in animations:
                 animation.start()
 
 
 class StopAnimationAction(Action):
-    def __init__(self):
-        super().__init__()
+    from isar.scene.annotationmodel import AnimationAnnotation
+    target_types = [AnimationAnnotation]
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.animation_names = None
 
     def run(self):
-        animations = self.find_annotations(self.animation_names)
+        animations = self.find_annotations()
         if animations is not None and len(animations) != 0:
             for animation in animations:
                 animation.stop()
 
 
 class ParallelCompositeAction(Action):
-    def __init__(self):
-        super().__init__()
+    has_target = False
+    has_properties = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.actions = []
 
     def run(self):
@@ -309,10 +352,18 @@ class ParallelCompositeAction(Action):
             t = Thread(target=lambda a: self._action_service.perform_action(a), args=(action, ))
             t.start()
 
+    @classmethod
+    def update_action_properties_frame(cls, qt_frame):
+        # TODO:
+        pass
+
 
 class SequentialCompositeAction(Action):
-    def __init__(self):
-        super().__init__()
+    has_target = False
+    has_properties = True
+
+    def __init__(self, target=None):
+        super().__init__(target)
         self.actions = []
         self.time_between_actions = 1
 
@@ -324,6 +375,11 @@ class SequentialCompositeAction(Action):
         for action in self.actions:
             self._action_service.perform_action(action)
             time.sleep(self.time_between_actions)
+
+    @classmethod
+    def update_action_properties_frame(cls, qt_frame):
+        # TODO:
+        pass
 
 
 scene_action_types = {

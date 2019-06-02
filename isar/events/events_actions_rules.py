@@ -192,14 +192,36 @@ class EventsActionsRulesDialog(QDialog):
         self.action = None
         self.action_name = None
         self.action_name_text.setText("")
+        self.action_target_label.setText("... select action target(s) ...")
+        self.action_type = self.event_type_combo.itemData(index)
+
+        self.disable_all_action_target_selection_buttons()
+
+        self.update_action_properties_frame(self.action_type)
+        action_target_types = self.action_type.target_types
+        for target_type in action_target_types:
+            if target_type == Scene:
+                self.select_scene_action_target_btn.setEnabled(True)
+            elif target_type == PhysicalObject:
+                self.select_phys_obj_action_target_btn.setEnabled(True)
+            else:
+                self.select_annotation_action_target_btn.setEnabled(True)
 
         # TODO: reset other properites of action
 
-        self.action_type = self.action_type_combo.itemData(index)
-        self.update_action_properties_frame(self.action_type)
+        self.event_target = None
 
     def update_action_properties_frame(self, action_type):
-        logger.info("update_action_properties_frame")
+        if action_type.has_properties:
+            self.action_properties_frame.show()
+            action_type.update_event_properties_frame(action_type, self.action_properties_frame)
+        else:
+            self.action_properties_frame.hide()
+
+    def disable_all_action_target_selection_buttons(self):
+        self.select_scene_action_target_btn.setEnabled(False)
+        self.select_annotation_action_target_btn.setEnabled(False)
+        self.select_phys_obj_action_target_btn.setEnabled(False)
 
     def select_event_target_btn_clicked(self, target_type):
         if self.event_type is None:
