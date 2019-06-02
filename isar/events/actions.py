@@ -3,6 +3,7 @@ import time
 from threading import Thread
 
 from isar.scene import audioutil
+from isar.scene.scenemodel import Scene
 
 logger = logging.getLogger("isar.events.actions")
 
@@ -75,8 +76,10 @@ class Action:
 class ToggleAnnotationVisibilityAction(Action):
     """
     Toggles the visibility of multiple annotations.
-
     """
+    from isar.scene.annotationmodel import Annotation
+    target_types = [Annotation]
+
     def __init__(self):
         super().__init__()
         self.annotation_names = None
@@ -112,6 +115,8 @@ class ShowSceneAction(Action):
     """
     Must have a scene as its target
     """
+    target_types = [Scene]
+
     def __init__(self):
         super().__init__()
         self.scene_name = None
@@ -124,6 +129,9 @@ class NextSceneAction(Action):
     """
     Next scene in scene navigation sequence
     """
+
+    global_action_name = "Next Scene"
+
     def __init__(self):
         super().__init__()
 
@@ -135,6 +143,9 @@ class PreviousSceneAction(Action):
     """
     Previous scene in scene navigation sequence
     """
+
+    global_action_name = "Previous Scene"
+
     def __init__(self):
         super().__init__()
 
@@ -150,6 +161,9 @@ class BackSceneAction(Action):
     an action button calls the back action to return to S2. This is different from previous scene action, that
     refers to the previous scene in navigation flow, i.e. S1
     """
+
+    global_action_name = "Back Scene"
+
     def __init__(self):
         super().__init__()
 
@@ -312,14 +326,11 @@ class SequentialCompositeAction(Action):
             time.sleep(self.time_between_actions)
 
 
-action_types = {
+scene_action_types = {
     ToggleAnnotationVisibilityAction.__name__: ToggleAnnotationVisibilityAction,
     ShowAnnotationAction.__name__: ShowAnnotationAction,
     HideAnnotationAction.__name__: HideAnnotationAction,
     ShowSceneAction.__name__: ShowSceneAction,
-    NextSceneAction.__name__: NextSceneAction,
-    PreviousSceneAction.__name__: PreviousSceneAction,
-    BackSceneAction.__name__: BackSceneAction,
     StartTimerAction.__name__: StartTimerAction,
     StopTimerAction.__name__: StopTimerAction,
     ResetTimerAction.__name__: ResetTimerAction,
@@ -332,5 +343,14 @@ action_types = {
     ParallelCompositeAction.__name__: ParallelCompositeAction,
     SequentialCompositeAction.__name__: SequentialCompositeAction
 }
+
+
+global_action_types = {
+    NextSceneAction.__name__: NextSceneAction,
+    PreviousSceneAction.__name__: PreviousSceneAction,
+    BackSceneAction.__name__: BackSceneAction
+}
+
+
 
 

@@ -21,12 +21,12 @@ class SelectionService(Service):
         # ------------ Experimental ------------
         if isinstance(target, Annotation):
             if target.name == "lenna":
-                toggle_red_box_action = actionsservice.defined_actions[0]
+                toggle_red_box_action = self.actions_service.get_action_by_name("Toggle Red Box")
                 self.actions_service.perform_action(toggle_red_box_action)
 
         if isinstance(target, PhysicalObject):
             if target.name == "Pincers":
-                action = actionsservice.get_action_by_name("Play Pincers Audio")
+                action = self.actions_service.get_action_by_name("Play Pincers Audio")
                 self.actions_service.perform_action(action)
 
         # --------------------------------------

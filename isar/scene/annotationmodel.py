@@ -13,10 +13,11 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableMode
 from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel, QVBoxLayout, QSizePolicy
 
-from isar.events import actionsservice, eventmanager
+from isar.events import eventmanager
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
+
 
 logger = logging.getLogger("isar.scene.annotationmodel")
 
@@ -1189,9 +1190,12 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
             return boolean_combo
 
         elif isinstance(annotation_property, ActionAnnotationProperty):
+            from isar.services import servicemanager
+            from isar.services.servicemanager import ServiceNames
+            action_service = servicemanager.get_service(ServiceNames.ACTIONS_SERVICE)
             self.actions_combo_items = []
-            self.actions_combo_items.extend(actionsservice.defined_actions)
             self.actions_combo_items.append(None)
+            self.actions_combo_items.extend(action_service.get_available_actions())
 
             combo = QComboBox(parent)
             combo.clear()

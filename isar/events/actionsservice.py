@@ -4,16 +4,13 @@ import traceback
 from threading import Thread
 
 from isar.events.actions import ToggleAnnotationVisibilityAction, ShowAnnotationAction, HideAnnotationAction, \
-    ShowSceneAction, NextSceneAction, PreviousSceneAction, BackSceneAction, StartAudioAction, StartTimerAction, \
+    ShowSceneAction, StartAudioAction, StartTimerAction, \
     StopTimerAction, ResetTimerAction, StartAnimationAction, StopAnimationAction, ParallelCompositeAction, \
-    SequentialCompositeAction
-from isar.scene import audioutil
+    SequentialCompositeAction, global_action_types
 from isar.services.service import Service
 
+
 logger = logging.getLogger("isar.actionsservice")
-
-
-defined_actions = []
 
 """
 All the actions related to annotations, sound, video, timer, ... relate to the current scene. 
@@ -27,14 +24,11 @@ The annotations_model of the ActionsService (generally, whereever there is an an
 when scene is changed to another scene. (We probably need a SceneChangedEvent)
 -------------------------------------------------------------------------------------------------------------------
 
-
 """
 
 
-def get_action_by_name(name):
-    for action in defined_actions:
-        if action.name == name:
-            return action
+defined_actions = []
+global_actions = []
 
 
 class ActionsService(Service):
@@ -42,7 +36,7 @@ class ActionsService(Service):
         super().__init__(service_name)
         self.__annotations_model = None
         self.__scenes_model = None
-        self.scene_id = None
+        self.current_scene = None
 
     def set_annotations_model(self, annotations_model):
         self.__annotations_model = annotations_model
@@ -71,12 +65,31 @@ class ActionsService(Service):
             logger.error(exp)
             traceback.print_tb(exp.__traceback__)
 
+    def get_available_actions(self):
+        available_actions = []
+        # ---------------------------
+        # self.current_scene = self.__scenes_model.get_current_scene()
+        # available_actions.extend(self.current_scene.get_actions())
+        # ---------------------------
+
+        available_actions.extend(defined_actions)
+
+        # ---------------------------
+
+        available_actions.extend(global_actions)
+        return available_actions
+
+    def get_action_by_name(self, name):
+        available_actions = self.get_available_actions()
+        for action in available_actions:
+            if action.name == name:
+                return action
+
     def start(self):
         pass
 
     def stop(self):
         pass
-
 
 
 # ====================================================
@@ -91,6 +104,8 @@ def init_defined_actions():
 
     global defined_actions
     defined_actions.clear()
+
+    init_global_actions()
 
     toggle_red_box = ToggleAnnotationVisibilityAction()
     toggle_red_box.name = "Toggle Red Box"
@@ -131,18 +146,6 @@ def init_defined_actions():
     show_joke_scene.name = "Show Joke Scene"
     show_joke_scene.scene_name = "joke"
     defined_actions.append(show_joke_scene)
-
-    next_scene = NextSceneAction()
-    next_scene.name = "Next Scene"
-    defined_actions.append(next_scene)
-
-    prev_scene = PreviousSceneAction()
-    prev_scene.name = "Previous Scene"
-    defined_actions.append(prev_scene)
-
-    back_scene = BackSceneAction()
-    back_scene.name = "Back Scene"
-    defined_actions.append(back_scene)
 
     play_pincers_audio = StartAudioAction()
     play_pincers_audio.name = "Play Pincers Audio"
@@ -190,4 +193,13 @@ def init_defined_actions():
     defined_actions.append(hide_lenna_then_show_lenna_then_toggle_redcircle)
 
 
+def init_global_actions():
+    for action_class_name, action_type in global_action_types.items():
+        action = action_type()
+        action.name = action_type.global_action_name
+        global_actions.append(action)
 
+
+
+
+init_defined_actions()

@@ -183,7 +183,7 @@ class EventsActionsRulesDialog(QDialog):
             self.event_properties_frame.hide()
 
     def init_action_type_combo(self):
-        for ac_name, ac_type in actions.action_types.items():
+        for ac_name, ac_type in actions.scene_action_types.items():
             self.action_type_combo.addItem(ac_name, ac_type)
 
         self.action_type_combo.currentIndexChanged.connect(self.action_type_combo_current_index_changed)
