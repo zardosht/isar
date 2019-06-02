@@ -8,7 +8,7 @@ from PyQt5.QtGui import QPixmap, QMouseEvent, QDrag
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox, QInputDialog, QMainWindow
 
 from isar.camera.camera import CameraService
-from isar.events.event_actions_rules import EventsActionsRulesDialog
+from isar.events.events_actions_rules import EventsActionsRulesDialog
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import AnnotationPropertiesModel, AnnotationPropertyItemDelegate
 from isar.scene.annotationmodel import AnnotationsModel

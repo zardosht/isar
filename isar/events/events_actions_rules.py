@@ -13,7 +13,7 @@ from isar.scene.annotationmodel import Annotation
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
-logger = logging.getLogger("isar.scene.physicalobjecttool")
+logger = logging.getLogger("isar.scene.events_actions_rules")
 
 
 """
@@ -57,6 +57,7 @@ class EventsActionsRulesDialog(QDialog):
         self.action_name = None
         self.action = None
         self.scenes_combo_current_index_changed(0, "action_scenes_combo")
+        self.action_type_combo_current_index_changed(0)
 
         self.rules_scene = None
         self.rule = None
@@ -71,7 +72,10 @@ class EventsActionsRulesDialog(QDialog):
         self.init_event_type_combo()
         self.init_action_type_combo()
 
-        self.event_select_target_btn.clicked.connect(self.event_select_target_btn_clicked)
+        self.select_scene_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(Scene))
+        self.select_annotation_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(Annotation))
+        self.select_phys_obj_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(PhysicalObject))
+
         self.add_event_btn.clicked.connect(self.add_event_btn_clicked)
         self.remove_event_btn.clicked.connect(self.remove_event_btn_clicked)
 
@@ -117,6 +121,7 @@ class EventsActionsRulesDialog(QDialog):
             self.event = None
             self.event_type = None
             self.event_type_combo.setCurrentIndex(0)
+            self.event_type_combo_current_index_changed(0)
             self.event_target = None
             self.event_name = None
             self.event_name_text.setText("")
@@ -155,6 +160,20 @@ class EventsActionsRulesDialog(QDialog):
         self.event_target_label.setText("... select event target ...")
         self.event_type = self.event_type_combo.itemData(index)
         self.update_event_properties_frame(self.event_type)
+        event_target_types = self.event_type.target_types
+        self.disable_all_event_target_selection_buttons()
+        for target_type in event_target_types:
+            if target_type == Scene:
+                self.select_scene_event_target_btn.setEnabled(True)
+            elif target_type == PhysicalObject:
+                self.select_phys_obj_event_target_btn.setEnabled(True)
+            else:
+                self.select_annotation_event_target_btn.setEnabled(True)
+
+    def disable_all_event_target_selection_buttons(self):
+        self.select_scene_event_target_btn.setEnabled(False)
+        self.select_annotation_event_target_btn.setEnabled(False)
+        self.select_phys_obj_event_target_btn.setEnabled(False)
 
     def update_event_properties_frame(self, event_type):
         if event_type.has_properties:
@@ -182,12 +201,21 @@ class EventsActionsRulesDialog(QDialog):
     def update_action_properties_frame(self, action_type):
         logger.info("update_action_properties_frame")
 
-    def event_select_target_btn_clicked(self):
-        target = self.show_select_event_target_dialog()
-        if target is not None:
+    def select_event_target_btn_clicked(self, target_type):
+        if self.event_type is None:
+            logger.warning("self.event_type is None. Setting to default SelectionEvent")
+            self.event_type = SelectionEvent
+
+        if len(self.event_type.target_types) == 1:
+            target_type = self.event_type.target_types[0]
+
+        targets = self.show_select_target_dialog(target_type, self.event_type)
+
+        if targets is not None and len(targets) > 0:
+            target = targets[0]
             logger.info("received event target: {}".format(str(target)))
             self.event_target = target
-            self.event_name = "On_" + self.event_target.name + "_" +  self.event_type.__name__
+            self.event_name = "On_" + self.event_target.name + "_" + self.event_type.__name__
             self.event_name_text.setText(self.event_name)
             if isinstance(target, Scene):
                 self.event_target_label.setText(target.name)
@@ -196,16 +224,19 @@ class EventsActionsRulesDialog(QDialog):
         else:
             logger.warning("target is none")
 
-    def show_select_event_target_dialog(self):
-        target = None
+    def show_select_target_dialog(self, target_type,
+                                  event_type=None, action_type=None,
+                                  return_only_names=False, multiple_selection=False):
+        targets = None
         self.select_target_dialog.scene = self.events_scene
-        self.select_target_dialog.set_target_types(self.event_type, self.event_type.target_types)
+        self.select_target_dialog.set_target_types(target_type, event_type, action_type)
+        self.select_target_dialog.return_only_names = return_only_names
         self.select_target_dialog.setModal(True)
         self.select_target_dialog.exec()
         if self.select_target_dialog.result() == QDialog.Accepted:
-            target = self.select_target_dialog.get_event_target()
+            targets = self.select_target_dialog.get_targets()
 
-        return target
+        return targets
 
     def init_models(self):
         self.events_model = ItemsModel(ItemsModel.EVENTS)
