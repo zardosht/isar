@@ -7,7 +7,7 @@ import threading
 import numpy as np
 
 from isar.events import eventmanager
-from isar.events.eventmanager import SelectionEvent
+from isar.events.events import SelectionEvent
 from isar.scene import sceneutil
 from isar.services.service import Service
 
@@ -125,10 +125,16 @@ class SelectionStickService(Service):
                     self.annotation_name = annotation_name
                     self.annotation_position = annotation.position.get_value()
                     if annotation.name not in self.event_timers_annotation:
-                        self.event_timers_annotation[annotation_name] = time.time()
+                        self.event_timers_annotation[annotation_name] = [time.time(), False]
                     else:
-                        first = self.event_timers_annotation[annotation_name]
-                        if time.time() - first > SelectionEvent.trigger_interval:
+                        first = self.event_timers_annotation[annotation_name][0]
+                        triggered = self.event_timers_annotation[annotation_name][1]
+                        time_diff = time.time() - first
+                        if time_diff > SelectionEvent.trigger_interval:
+                            if not triggered:
+                                self.fire_selection_event(annotation)
+                                self.event_timers_annotation[annotation_name][1] = True
+                        elif time_diff > SelectionEvent.repeat_interval:
                             self.fire_selection_event(annotation)
                             del self.event_timers_annotation[annotation_name]
 

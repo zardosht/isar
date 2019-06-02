@@ -307,7 +307,7 @@ if __name__ == "__main__":
     f8()
 
     # img = cv2.imread("tmp_files/tmp_image.jpg")
-    # cv2.imshow("aa", img)
+    # cv2.imshow("tmp_package", img)
     # cv2.waitKey()
     # cv2.destroyAllWindows()
 

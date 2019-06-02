@@ -14,8 +14,6 @@ from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget
     QPushButton, QLabel, QVBoxLayout, QSizePolicy
 
 from isar.events import actionsservice, eventmanager
-from isar.events.eventmanager import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -173,6 +171,18 @@ class AnnotationsModel(QAbstractListModel):
         else:
             return ()
 
+    def get_all_annotations_by_type(self, t):
+        all_annotations = self.get_all_annotations()
+        if t == Annotation:
+            return all_annotations
+        else:
+            result = []
+            for annotation in all_annotations:
+                if isinstance(annotation, t):
+                    result.append(annotation)
+
+            return result
+
     def get_annotation_by_name(self, name):
         for annotation in self.get_all_annotations():
             if annotation.name == name:
@@ -226,6 +236,7 @@ class Annotation:
 
         # TODO: For later if we want to draw annotations based on their selection state.
         self.is_selected = False
+        self.is_selectable = False
 
     def set_position(self, position):
         # must be implemented by subclasses if needed.
@@ -458,12 +469,17 @@ class ImageAnnotation(Annotation):
         self.keep_aspect_ratio = BooleanAnnotationProperty("Keep Aspect Ratio", True, self)
         self.properties.append(self.keep_aspect_ratio)
 
+        self.is_selectable = True
+
     def intersects_with_point(self, point):
         position = self.position.get_value()
         width = self.width.get_value()
         height = self.height.get_value()
         return position[0] <= point[0] <= position[0] + width and \
                position[1] <= point[1] <= position[1] + height
+
+    def reset_runtime_state(self):
+        self.is_selectable = True
 
 
 class VideoAnnotation(Annotation):
@@ -551,6 +567,8 @@ class ActionButtonAnnotation(RectangleAnnotation):
         self.on_select_action = ActionAnnotationProperty("On Select", None, self)
         self.properties.append(self.on_select_action)
 
+        self.is_selectable = True
+
     def intersects_with_point(self, point):
         position = self.position.get_value()
         if position is None:
@@ -560,6 +578,9 @@ class ActionButtonAnnotation(RectangleAnnotation):
         height = self.height.get_value()
         return (position[0] - int(width / 2)) <= point[0] <= (position[0] + int(width / 2)) and \
                (position[1] - int(height / 2)) <= point[1] <= (position[1] + int(height / 2))
+
+    def reset_runtime_state(self):
+        self.is_selectable = True
 
     def on_select(self):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
@@ -930,26 +951,21 @@ class TimerThread(Thread):
 
             self.timer_annotation.current_time += 1
             if (self.timer_annotation.current_time % self.timer_annotation.tick_interval.get_value()) == 0:
-                timer_tick_event = TimerTickEvent(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_tick_event)
+                eventmanager.fire_timer_tick_event(self.timer_annotation, self.timer_annotation.current_time)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_1.get_value():
-                timer_timeout1_event = TimerTimeout1Event(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_timeout1_event)
+                eventmanager.fire_timer_timeout1_event(self.timer_annotation, self.timer_annotation.current_time)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_2.get_value():
-                timer_timeout2_event = TimerTimeout2Event(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_timeout2_event)
+                eventmanager.fire_timer_timeout2_event(self.timer_annotation, self.timer_annotation.current_time)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_3.get_value():
-                timer_timeout3_event = TimerTimeout3Event(self.timer_annotation, self.timer_annotation.current_time)
-                eventmanager.fire_event(timer_timeout3_event)
+                eventmanager.fire_timer_timeout3_event(self.timer_annotation, self.timer_annotation.current_time)
 
             time.sleep(1)
 
         if not stopped_before_finish:
-            timer_finished_event = TimerFinishedEvent(self.timer_annotation)
-            eventmanager.fire_event(timer_finished_event)
+            eventmanager.fire_timer_finished_event(self.timer_annotation)
 
     def stop(self):
         self.stop_event.set()
@@ -987,12 +1003,10 @@ class CheckboxAnnotation(Annotation):
         self.checked.set_value(not was_checked)
         if not was_checked:
             # the checkbox is now checked
-            checked_event = CheckboxCheckedEvent(self)
-            eventmanager.fire_event(checked_event)
+            eventmanager.fire_checkbox_checked_event(self)
         else:
             # the checkbox is now unchecked
-            unchecked_event = CheckboxUncheckedEvent(self)
-            eventmanager.fire_event(unchecked_event)
+            eventmanager.fire_checkbox_unchecked_event(self)
 
 
 class RelationshipAnnotation(Annotation):
@@ -1478,3 +1492,4 @@ class ActionAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         self._value = value
         return True
+

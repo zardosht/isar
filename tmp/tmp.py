@@ -1,24 +1,46 @@
-import sys
-
-from PyQt5.QtWidgets import QApplication, QComboBox
 
 
-def combo_current_index_changed(index, combo_name):
-    print(index)
-    print(combo.itemData(index))
-    print(combo_name)
 
 
-app = QApplication(sys.argv)
-combo = QComboBox()
-combo.addItem("A", object())
-combo.addItem("B", object())
-combo.addItem("C", object())
-combo.currentIndexChanged.connect(lambda index: combo_current_index_changed(index, "ABCCombo"))
-combo.show()
-app.exec()
 
-
+# # ============================================================
+#
+# from tmp_package.tmp1 import A
+#
+#
+# class CheckboxEvent:
+#     target_type = A
+#
+#     def __init__(self):
+#         pass
+#
+#     def fire(self):
+#         print("fired ", self)
+#
+#
+# # ============================================================
+#
+# import sys
+#
+# from PyQt5.QtWidgets import QApplication, QComboBox
+#
+#
+# def combo_current_index_changed(index, combo_name):
+#     print(index)
+#     print(combo.itemData(index))
+#     print(combo_name)
+#
+#
+# app = QApplication(sys.argv)
+# combo = QComboBox()
+# combo.addItem("A", object())
+# combo.addItem("B", object())
+# combo.addItem("C", object())
+# combo.currentIndexChanged.connect(lambda index: combo_current_index_changed(index, "ABCCombo"))
+# combo.show()
+# app.exec()
+#
+#
 # # ============================================================
 # from threading import Thread
 #
@@ -238,7 +260,7 @@ app.exec()
 #
 #
 #
-# def aa():
+# def tmp_package():
 #    v1_marker = np.array([[447., 117.],
 #        [501.,  115.],
 #        [502.,  169.],
@@ -296,7 +318,7 @@ app.exec()
 #
 # phys_obj_predictions = {}
 #
-# phys_obj_predictions["aa"] = [1, 2, 3]
+# phys_obj_predictions["tmp_package"] = [1, 2, 3]
 # phys_obj_predictions["bb"] = [4, 5, 6]
 #
 # for key in phys_obj_predictions:
