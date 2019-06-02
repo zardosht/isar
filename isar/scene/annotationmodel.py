@@ -1492,3 +1492,4 @@ class ActionAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         self._value = value
         return True
+

@@ -8,6 +8,7 @@ from isar.events import actionsservice, events
 from isar.events.actionsservice import Action
 from isar.events.events import SelectionEvent, Event
 from isar.events.rulesmanager import Rule
+from isar.events.select_target_dialog import SelectTargetDialog
 from isar.scene.annotationmodel import Annotation
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -41,7 +42,7 @@ class EventsActionsRulesDialog(QDialog):
         self.init_ui()
         self.init_models()
 
-        self.select_event_target_dialog = SelectTargetDialog(self.scenes_model, parent=self)
+        self.select_target_dialog = SelectTargetDialog(self.scenes_model, parent=self)
 
         self.events_scene = None
         self.event_type = None
@@ -115,7 +116,7 @@ class EventsActionsRulesDialog(QDialog):
 
             self.event = None
             self.event_type = None
-            self.event_type_combo_current_index_changed(0)
+            self.event_type_combo.setCurrentIndex(0)
             self.event_target = None
             self.event_name = None
             self.event_name_text.setText("")
@@ -158,7 +159,7 @@ class EventsActionsRulesDialog(QDialog):
     def update_event_properties_frame(self, event_type):
         if event_type.has_properties:
             self.event_properties_frame.show()
-            event_type.update_event_properties_frame(self.event_properties_frame)
+            event_type.update_event_properties_frame(event_type, self.event_properties_frame)
         else:
             self.event_properties_frame.hide()
 
@@ -197,12 +198,12 @@ class EventsActionsRulesDialog(QDialog):
 
     def show_select_event_target_dialog(self):
         target = None
-        self.select_event_target_dialog.scene = self.events_scene
-        self.select_event_target_dialog.set_target_types(self.event_type, self.event_type.target_types)
-        self.select_event_target_dialog.setModal(True)
-        self.select_event_target_dialog.exec()
-        if self.select_event_target_dialog.result() == QDialog.Accepted:
-            target = self.select_event_target_dialog.get_event_target()
+        self.select_target_dialog.scene = self.events_scene
+        self.select_target_dialog.set_target_types(self.event_type, self.event_type.target_types)
+        self.select_target_dialog.setModal(True)
+        self.select_target_dialog.exec()
+        if self.select_target_dialog.result() == QDialog.Accepted:
+            target = self.select_target_dialog.get_event_target()
 
         return target
 
@@ -300,99 +301,5 @@ class ItemsModel(QAbstractListModel):
 
         item = items[row]
         return self.createIndex(row, 0, item)
-
-
-class SelectTargetDialog(QDialog):
-    SCENES_TAB = 0
-    ANNOTATIONS_TAB = 1
-    PHYS_OBJS_TAB = 2
-
-    def __init__(self, scenes_model, parent=None):
-        super().__init__(parent)
-
-        self.scene = None
-        self.scenes_model = scenes_model
-        self.scenes_list = None
-        self.annotations_list = None
-        self.phys_objs_list = None
-
-        # the selected item in lists
-        self.current_text = None
-        self.event_target = None
-
-        self.setup_ui()
-
-    def set_target_types(self, event_type, target_types):
-        if self.scene is None:
-            logger.warning("The scene is not set for select event target dialog. Return.")
-            return
-
-        self.scenes_list.clear()
-        self.annotations_list.clear()
-        self.phys_objs_list.clear()
-
-        if len(target_types) == 1:
-            target_type = target_types[0]
-            if issubclass(target_type, Annotation):
-                all_scene_annotations = self.scene.get_all_annotations()
-                for annotation in all_scene_annotations:
-                    if isinstance(annotation, target_type):
-                        self.annotations_list.addItem(annotation.name)
-
-                self.tabWidget.setTabEnabled(SelectTargetDialog.SCENES_TAB, False);
-                self.tabWidget.setTabEnabled(SelectTargetDialog.ANNOTATIONS_TAB, True);
-                self.tabWidget.setTabEnabled(SelectTargetDialog.PHYS_OBJS_TAB, False);
-            elif target_type == Scene:
-                scenes = self.scenes_model.get_all_scenes()
-                for scene in scenes:
-                    self.scenes_list.addItem(scene.name)
-
-                self.tabWidget.setTabEnabled(SelectTargetDialog.SCENES_TAB, True);
-                self.tabWidget.setTabEnabled(SelectTargetDialog.ANNOTATIONS_TAB, False);
-                self.tabWidget.setTabEnabled(SelectTargetDialog.PHYS_OBJS_TAB, False);
-            elif target_type == PhysicalObject:
-                phys_objs = self.scene.get_physical_objects()
-                for phys_obj in phys_objs:
-                    self.phys_objs_list.addItem(phys_obj.name)
-
-                self.tabWidget.setTabEnabled(SelectTargetDialog.SCENES_TAB, False);
-                self.tabWidget.setTabEnabled(SelectTargetDialog.ANNOTATIONS_TAB, False);
-                self.tabWidget.setTabEnabled(SelectTargetDialog.PHYS_OBJS_TAB, True);
-        elif len(target_types) == 2:
-            all_scene_annotations = self.scene.get_all_annotations()
-            for annotation in all_scene_annotations:
-                if event_type == SelectionEvent:
-                    if annotation.is_selectable:
-                        self.annotations_list.addItem(annotation.name)
-                else:
-                    self.annotations_list.addItem(annotation.name)
-
-            phys_objs = self.scene.get_physical_objects()
-            for phys_obj in phys_objs:
-                self.phys_objs_list.addItem(phys_obj.name)
-
-            self.tabWidget.setTabEnabled(SelectTargetDialog.SCENES_TAB, False);
-            self.tabWidget.setTabEnabled(SelectTargetDialog.ANNOTATIONS_TAB, True);
-            self.tabWidget.setTabEnabled(SelectTargetDialog.PHYS_OBJS_TAB, True);
-
-    def get_event_target(self):
-        if self.tabWidget.currentIndex() == SelectTargetDialog.SCENES_TAB:
-            self.event_target = self.event_target = self.scenes_model.get_scene_by_name(self.current_text)
-        elif self.tabWidget.currentIndex() == SelectTargetDialog.ANNOTATIONS_TAB:
-            self.event_target = self.scene.get_annotation_by_name(self.current_text)
-        else:
-            self.event_target = self.scene.get_physical_object_by_name(self.current_text)
-
-        return self.event_target
-
-    def target_list_current_text_changed(self, current_text):
-        self.current_text = current_text
-
-    def setup_ui(self):
-        uic.loadUi("isar/ui/select_event_target_dialog.ui", self)
-        self.scenes_list.currentTextChanged.connect(self.target_list_current_text_changed)
-        self.annotations_list.currentTextChanged.connect(self.target_list_current_text_changed)
-        self.phys_objs_list.currentTextChanged.connect(self.target_list_current_text_changed)
-
 
 

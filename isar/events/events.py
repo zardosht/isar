@@ -15,8 +15,8 @@ class Event:
         self.name = None
         self.target = target
 
-    @staticmethod
-    def update_event_properties_frame(qt_frame):
+    @classmethod
+    def update_event_properties_frame(cls, qt_frame):
         pass
 
 

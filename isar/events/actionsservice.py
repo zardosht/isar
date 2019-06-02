@@ -75,6 +75,10 @@ class ActionsService(Service):
 
 
 class Action:
+    # if an action has extra properties, it must set this to true,
+    # and give an implementation for update_action_properties_frame(qt_frame)
+    has_properties = False
+
     def __init__(self):
         self.name = "action"
         self.annotations_model = None
