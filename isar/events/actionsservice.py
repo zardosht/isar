@@ -320,7 +320,7 @@ class StopVideoAction(Action):
         pass
 
 
-class StartAnimationAction(Action):
+class StartAnimationsAction(Action):
     def __init__(self):
         super().__init__()
         self.animation_names = None
@@ -332,7 +332,7 @@ class StartAnimationAction(Action):
                 animation.start()
 
 
-class StopAnimationAction(Action):
+class StopAnimationsAction(Action):
     def __init__(self):
         super().__init__()
         self.animation_names = None
@@ -386,8 +386,8 @@ action_types = {
     StopAudioAction.__name__: StopAudioAction,
     StartVideoAction.__name__: StartVideoAction,
     StopVideoAction.__name__: StopVideoAction,
-    StartAnimationAction.__name__: StartAnimationAction,
-    StopAnimationAction.__name__: StopAnimationAction,
+    StartAnimationsAction.__name__: StartAnimationsAction,
+    StopAnimationsAction.__name__: StopAnimationsAction,
     ParallelCompositeAction.__name__: ParallelCompositeAction,
     SequentialCompositeAction.__name__: SequentialCompositeAction
 }
@@ -477,12 +477,12 @@ def init_defined_actions():
     reset_timer1.timer_name = "timer1"
     defined_actions.append(reset_timer1)
 
-    start_fly_animation_1 = StartAnimationAction()
+    start_fly_animation_1 = StartAnimationsAction()
     start_fly_animation_1.name = "Start Fly Animation 1"
     start_fly_animation_1.animation_names = ["fly_animation1", "fly_animation2"]
     defined_actions.append(start_fly_animation_1)
 
-    stop_fly_animation_1 = StopAnimationAction()
+    stop_fly_animation_1 = StopAnimationsAction()
     stop_fly_animation_1.name = "Stop Fly Animation 1"
     stop_fly_animation_1.animation_names = ["fly_animation1", "fly_animation2"]
     defined_actions.append(stop_fly_animation_1)
