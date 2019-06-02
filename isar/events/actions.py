@@ -156,7 +156,7 @@ class PreviousSceneAction(Action):
 class BackSceneAction(Action):
     """
     Back scene. This is added for the cases where user views a scene that is not part of the
-    defined navigation. Imagine for example a navigation flow consists of [S1, S2, S3]
+    defined navigation flow. Imagine for example a navigation flow consists of [S1, S2, S3]
     for S2 we have a scene H1 that shows help, and is shown using an action button. On the help scene (H1),
     an action button calls the back action to return to S2. This is different from previous scene action, that
     refers to the previous scene in navigation flow, i.e. S1

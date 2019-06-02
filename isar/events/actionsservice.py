@@ -1,7 +1,5 @@
 import logging
-import time
 import traceback
-from threading import Thread
 
 from isar.events.actions import ToggleAnnotationVisibilityAction, ShowAnnotationAction, HideAnnotationAction, \
     ShowSceneAction, StartAudioAction, StartTimerAction, \
@@ -18,12 +16,12 @@ Only scene actions (show scene, next scene, previous scene) deal with another sc
 
 The names of the annotations are unique inside the scene. 
 
+
 ------------ nonesense... because the __scene attribute of the annotations_model is automatically changed ---------
 
 The annotations_model of the ActionsService (generally, whereever there is an annotations_model) should be updated
 when scene is changed to another scene. (We probably need a SceneChangedEvent)
 -------------------------------------------------------------------------------------------------------------------
-
 """
 
 
@@ -200,6 +198,6 @@ def init_global_actions():
         global_actions.append(action)
 
 
-
-
 init_defined_actions()
+
+
