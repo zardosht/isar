@@ -5,7 +5,7 @@ from PyQt5.QtCore import QAbstractListModel, QModelIndex
 from PyQt5.QtWidgets import QDialog, QListWidget, QLabel, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QWidget
 
 from isar.events import actionsservice, events, actions
-from isar.events.actions import Action
+from isar.events.actions import Action, ToggleAnnotationVisibilityAction
 from isar.events.events import SelectionEvent, Event
 from isar.events.rulesmanager import Rule
 from isar.events.select_target_dialog import SelectTargetDialog
@@ -54,6 +54,7 @@ class EventsActionsRulesDialog(QDialog):
 
         self.actions_scene = None
         self.action_type = None
+        self.action_target = None
         self.action_name = None
         self.action = None
         self.scenes_combo_current_index_changed(0, "action_scenes_combo")
@@ -72,9 +73,19 @@ class EventsActionsRulesDialog(QDialog):
         self.init_event_type_combo()
         self.init_action_type_combo()
 
-        self.select_scene_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(Scene))
-        self.select_annotation_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(Annotation))
-        self.select_phys_obj_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(PhysicalObject))
+        self.select_scene_event_target_btn.clicked.connect(
+            lambda: self.select_event_target_btn_clicked(Scene))
+        self.select_annotation_event_target_btn.clicked.connect(
+            lambda: self.select_event_target_btn_clicked(Annotation))
+        self.select_phys_obj_event_target_btn.clicked.connect(
+            lambda: self.select_event_target_btn_clicked(PhysicalObject))
+
+        self.select_scene_action_target_btn.clicked.connect(
+            lambda: self.select_action_target_btn_clicked(Scene))
+        self.select_annotation_action_target_btn.clicked.connect(
+            lambda: self.select_action_target_btn_clicked(Annotation))
+        self.select_phys_obj_action_target_btn.clicked.connect(
+            lambda: self.select_action_target_btn_clicked(PhysicalObject))
 
         self.add_event_btn.clicked.connect(self.add_event_btn_clicked)
         self.remove_event_btn.clicked.connect(self.remove_event_btn_clicked)
@@ -178,7 +189,7 @@ class EventsActionsRulesDialog(QDialog):
     def update_event_properties_frame(self, event_type):
         if event_type.has_properties:
             self.event_properties_frame.show()
-            event_type.update_event_properties_frame(event_type, self.event_properties_frame)
+            event_type.update_event_properties_frame(self.event_properties_frame)
         else:
             self.event_properties_frame.hide()
 
@@ -193,7 +204,7 @@ class EventsActionsRulesDialog(QDialog):
         self.action_name = None
         self.action_name_text.setText("")
         self.action_target_label.setText("... select action target(s) ...")
-        self.action_type = self.event_type_combo.itemData(index)
+        self.action_type = self.action_type_combo.itemData(index)
 
         self.disable_all_action_target_selection_buttons()
 
@@ -209,12 +220,10 @@ class EventsActionsRulesDialog(QDialog):
 
         # TODO: reset other properites of action
 
-        self.event_target = None
-
     def update_action_properties_frame(self, action_type):
         if action_type.has_properties:
             self.action_properties_frame.show()
-            action_type.update_event_properties_frame(action_type, self.action_properties_frame)
+            action_type.update_action_properties_frame(self.action_properties_frame)
         else:
             self.action_properties_frame.hide()
 
@@ -222,6 +231,32 @@ class EventsActionsRulesDialog(QDialog):
         self.select_scene_action_target_btn.setEnabled(False)
         self.select_annotation_action_target_btn.setEnabled(False)
         self.select_phys_obj_action_target_btn.setEnabled(False)
+
+    def select_action_target_btn_clicked(self, target_type):
+        if self.action_type is None:
+            logger.warning("self.action_type is None. Setting to default ToggleAnnotationVisibilityAction")
+            self.action_type = ToggleAnnotationVisibilityAction
+
+        if len(self.action_type.target_types) == 1:
+            target_type = self.action_type.target_types[0]
+
+        targets = self.show_select_target_dialog(target_type,
+                                                 action_type=self.action_type,
+                                                 return_only_names=True)
+
+        if targets is not None and len(targets) > 0:
+            if len(targets) == 1:
+                self.action_target = targets[0]
+                self.action_target_label.setText(self.actions_scene.name + "." + self.action_target)
+            else:
+                self.action_target = targets
+                self.action_target_label.setText(str([self.actions_scene.name + "." + target for target in targets]))
+
+            logger.info("received action target: {}".format(str(self.action_target)))
+            self.action_name = self.action_type.__name__ + "_for_" + str(self.action_target)
+            self.action_name_text.setText(self.action_name)
+        else:
+            logger.warning("target is none")
 
     def select_event_target_btn_clicked(self, target_type):
         if self.event_type is None:
@@ -231,7 +266,7 @@ class EventsActionsRulesDialog(QDialog):
         if len(self.event_type.target_types) == 1:
             target_type = self.event_type.target_types[0]
 
-        targets = self.show_select_target_dialog(target_type, self.event_type)
+        targets = self.show_select_target_dialog(target_type, event_type=self.event_type)
 
         if targets is not None and len(targets) > 0:
             target = targets[0]
@@ -248,7 +283,7 @@ class EventsActionsRulesDialog(QDialog):
 
     def show_select_target_dialog(self, target_type,
                                   event_type=None, action_type=None,
-                                  return_only_names=False, multiple_selection=False):
+                                  return_only_names=False):
         targets = None
         self.select_target_dialog.scene = self.events_scene
         self.select_target_dialog.set_target_types(target_type, event_type, action_type)

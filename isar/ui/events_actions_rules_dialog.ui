@@ -22,7 +22,7 @@
       </font>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="events_tab">
       <property name="font">
@@ -339,6 +339,16 @@
           <property name="bottomMargin">
            <number>0</number>
           </property>
+          <item row="6" column="0" colspan="5">
+           <widget class="QLabel" name="action_target_label">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;... select action targets ...&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_13">
             <property name="text">
@@ -360,7 +370,17 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0" colspan="4">
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Scene</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0" colspan="5">
            <widget class="QFrame" name="action_properties_frame">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
@@ -384,27 +404,7 @@
             </layout>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>Scene</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QPushButton" name="select_scene_action_target_btn">
-            <property name="text">
-             <string>Scene ...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="3">
-           <widget class="QLineEdit" name="action_name_text"/>
-          </item>
-          <item row="9" column="0" colspan="4">
+          <item row="9" column="0" colspan="5">
            <spacer name="verticalSpacer_6">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -417,26 +417,17 @@
             </property>
            </spacer>
           </item>
-          <item row="3" column="3">
-           <widget class="QComboBox" name="action_type_combo"/>
+          <item row="7" column="0">
+           <widget class="QPushButton" name="select_scene_action_target_btn">
+            <property name="text">
+             <string>Scene ...</string>
+            </property>
+           </widget>
           </item>
           <item row="7" column="1">
            <widget class="QPushButton" name="select_annotation_action_target_btn">
             <property name="text">
              <string>Annotation ...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QComboBox" name="action_scenes_combo"/>
-          </item>
-          <item row="6" column="0" colspan="4">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;... select action targets ...&lt;/p&gt;&lt;p&gt;... another action target ...&lt;/p&gt;&lt;p&gt;... and another one ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -446,6 +437,15 @@
              <string>Physical Object ...</string>
             </property>
            </widget>
+          </item>
+          <item row="4" column="1" colspan="4">
+           <widget class="QLineEdit" name="action_name_text"/>
+          </item>
+          <item row="3" column="1" colspan="4">
+           <widget class="QComboBox" name="action_type_combo"/>
+          </item>
+          <item row="2" column="1" colspan="4">
+           <widget class="QComboBox" name="action_scenes_combo"/>
           </item>
          </layout>
         </widget>
