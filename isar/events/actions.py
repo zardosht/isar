@@ -37,42 +37,42 @@ class Action:
         self.__init__()
         self.__dict__.update(state)
 
-    def find_annotations(self):
-        if self.target is None:
-            logger.error("target is none!")
-            return []
-
-        if self.annotations_model is None:
-            logger.error("AnnotationsModel is none!")
-            return []
-
-        annotations = []
-        if type(self.target) == list:
-            for annotation_name in self.target:
-                annotation = self.annotations_model.get_annotation_by_name(annotation_name)
-                if annotation is None:
-                    logger.error("Could not find an annotation with name: {}".format(annotation_name))
-                    continue
-                else:
-                    annotations.append(annotation)
-
-            return annotations
-        else:
-            return self.find_annotation(self.target)
-
-    def find_annotation(self, target):
-        if target is None:
-            logger.error("annotation_name is none!")
-            return None
-
-        if self.annotations_model is None:
-            logger.error("AnnotationsModel is none!")
-            return None
-
-        annotation = self.annotations_model.get_annotation_by_name(target)
-        if annotation is None:
-            logger.error("Could not find an annotation with name: {}".format(target))
-        return annotation
+    # def find_annotations(self):
+    #     if self.target is None:
+    #         logger.error("target is none!")
+    #         return []
+    #
+    #     if self.annotations_model is None:
+    #         logger.error("AnnotationsModel is none!")
+    #         return []
+    #
+    #     annotations = []
+    #     if type(self.target) == list:
+    #         for annotation_name in self.target:
+    #             annotation = self.annotations_model.get_annotation_by_name(annotation_name)
+    #             if annotation is None:
+    #                 logger.error("Could not find an annotation with name: {}".format(annotation_name))
+    #                 continue
+    #             else:
+    #                 annotations.append(annotation)
+    #
+    #         return annotations
+    #     else:
+    #         return self.find_annotation(self.target)
+    #
+    # def find_annotation(self, target):
+    #     if target is None:
+    #         logger.error("annotation_name is none!")
+    #         return None
+    #
+    #     if self.annotations_model is None:
+    #         logger.error("AnnotationsModel is none!")
+    #         return None
+    #
+    #     annotation = self.annotations_model.get_annotation_by_name(target)
+    #     if annotation is None:
+    #         logger.error("Could not find an annotation with name: {}".format(target))
+    #     return annotation
 
     @classmethod
     def update_action_properties_frame(cls, qt_frame):
@@ -90,8 +90,15 @@ class ToggleAnnotationVisibilityAction(Action):
         super().__init__(target)
 
     def run(self):
-        annotations = self.find_annotations()
-        for annotation in annotations:
+        if self.target is None:
+            logger.warning("self.target is None. Return")
+            return
+
+        if type(self.target) != list:
+            logger.warning("self.target is not a list. Return")
+            return
+
+        for annotation in self.target:
             is_visible = annotation.show.get_value()
             annotation.show.set_value(not is_visible)
 
@@ -101,8 +108,15 @@ class ShowAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__(target)
 
     def run(self):
-        annotations = self.find_annotations()
-        for annotation in annotations:
+        if self.target is None:
+            logger.warning("self.target is None. Return")
+            return
+
+        if type(self.target) != list:
+            logger.warning("self.target is not a list. Return")
+            return
+
+        for annotation in self.target:
             annotation.show.set_value(True)
 
 
@@ -111,8 +125,15 @@ class HideAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__(target)
 
     def run(self):
-        annotations = self.find_annotations()
-        for annotation in annotations:
+        if self.target is None:
+            logger.warning("self.target is None. Return")
+            return
+
+        if type(self.target) != list:
+            logger.warning("self.target is not a list. Return")
+            return
+
+        for annotation in self.target:
             annotation.show.set_value(False)
 
 
@@ -127,10 +148,14 @@ class ShowSceneAction(Action):
         super().__init__(target)
 
     def run(self):
-        if type(self.target) == str:
-            self.scenes_model.show_scene(self.scene_name)
+        if self.target is None:
+            logger.error("self.target is None. Return.")
+            return
+
+        if type(self.target) == Scene:
+            self.scenes_model.show_scene(self.target.name)
         else:
-            logger.warning("scene name is invalid: {}", str(self.target))
+            logger.error("self.target is not a Scene.")
 
 
 class NextSceneAction(Action):
@@ -185,15 +210,21 @@ class StartTimerAction(Action):
     """
     from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
+
     has_single_target = True
 
     def __init__(self, target=None):
         super().__init__(target)
 
     def run(self):
-        timer = self.find_annotations()
-        if timer is not None:
-            timer.start()
+        if self.target is None:
+            logger.error("self.target is None. Return.")
+            return
+
+        if type(self.target) == StartTimerAction.target_types[0]:
+            self.target.start()
+        else:
+            logger.error("self.target is not TimerAnnotation.")
 
 
 class StopTimerAction(Action):
@@ -206,12 +237,16 @@ class StopTimerAction(Action):
 
     def __init__(self, target=None):
         super().__init__(target)
-        self.timer_name = None
 
     def run(self):
-        timer = self.find_annotations()
-        if timer is not None:
-            timer.stop()
+        if self.target is None:
+            logger.error("self.target is None. Return.")
+            return
+
+        if type(self.target) == StopTimerAction.target_types[0]:
+            self.target.stop()
+        else:
+            logger.error("self.target is not TimerAnnotation.")
 
 
 class ResetTimerAction(Action):
@@ -227,9 +262,14 @@ class ResetTimerAction(Action):
         self.timer_name = None
 
     def run(self):
-        timer = self.find_annotations()
-        if timer is not None:
-            timer.reset()
+        if self.target is None:
+            logger.error("self.target is None. Return.")
+            return
+
+        if type(self.target) == ResetTimerAction.target_types[0]:
+            self.target.reset()
+        else:
+            logger.error("self.target is not TimerAnnotation.")
 
 
 class StartAudioAction(Action):
@@ -245,14 +285,17 @@ class StartAudioAction(Action):
         self.annotation_name = None
 
     def run(self):
-        annotation = self.find_annotations()
-        if annotation is None:
-            logger.error("Target annotation is None")
+        if self.target is None:
+            logger.error("self.target is None. Return.")
             return
 
-        audio_file_path = annotation.audio_path.get_value()
-        loop = annotation.loop_playback.get_value()
-        audioutil.play(audio_file_path, loop)
+        if type(self.target) == StartAudioAction.target_types[0]:
+            annotation = self.target
+            audio_file_path = annotation.audio_path.get_value()
+            loop = annotation.loop_playback.get_value()
+            audioutil.play(audio_file_path, loop)
+        else:
+            logger.error("self.target is not AudioAnnotation.")
 
 
 class StopAudioAction(Action):
@@ -268,13 +311,16 @@ class StopAudioAction(Action):
         self.annotation_name = None
 
     def run(self):
-        annotation = self.find_annotations()
-        if annotation is None:
-            logger.error("Target annotation is None")
+        if self.target is None:
+            logger.error("self.target is None. Return.")
             return
 
-        audio_file_path = annotation.audio_path.get_value()
-        audioutil.stop(audio_file_path)
+        if type(self.target) == StopAudioAction.target_types[0]:
+            annotation = self.target
+            audio_file_path = annotation.audio_path.get_value()
+            audioutil.stop(audio_file_path)
+        else:
+            logger.error("self.target is not AudioAnnotation.")
 
 
 class StartVideoAction(Action):
@@ -318,10 +364,16 @@ class StartAnimationAction(Action):
         self.animation_names = None
 
     def run(self):
-        animations = self.find_annotations()
-        if animations is not None and len(animations) != 0:
-            for animation in animations:
-                animation.start()
+        if self.target is None:
+            logger.warning("self.target is None. Return")
+            return
+
+        if type(self.target) != list:
+            logger.warning("self.target is not a list. Return")
+            return
+
+        for animation in self.target:
+            animation.start()
 
 
 class StopAnimationAction(Action):
@@ -333,10 +385,16 @@ class StopAnimationAction(Action):
         self.animation_names = None
 
     def run(self):
-        animations = self.find_annotations()
-        if animations is not None and len(animations) != 0:
-            for animation in animations:
-                animation.stop()
+        if self.target is None:
+            logger.warning("self.target is None. Return")
+            return
+
+        if type(self.target) != list:
+            logger.warning("self.target is not a list. Return")
+            return
+
+        for animation in self.target:
+            animation.stop()
 
 
 class ParallelCompositeAction(Action):

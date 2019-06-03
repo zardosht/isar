@@ -174,7 +174,7 @@ class PhysicalObjectsModel(QAbstractListModel):
 
 class PhysicalObject:
     def __init__(self):
-        self.name = ""
+        self.name = "name"
         self.template_image_path = ""
         self.template_image = None
 
@@ -285,4 +285,9 @@ class PhysicalObject:
         else:
             return x <= point[0] <= x + width * scene_scale_factor[0] and \
                    y <= point[1] <= y + height * scene_scale_factor[1]
+
+    def __str__(self):
+        return self.name
+
+
 

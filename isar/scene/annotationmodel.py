@@ -294,6 +294,9 @@ class Annotation:
         # The value of these attributes are persisted. They must be reset however, when the project is loaded.
         self.is_selected = False
 
+    def __str__(self):
+        return self.id
+
 
 """
 Text

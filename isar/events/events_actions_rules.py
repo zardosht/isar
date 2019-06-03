@@ -237,26 +237,32 @@ class EventsActionsRulesDialog(QDialog):
             logger.warning("self.action_type is None. Setting to default ToggleAnnotationVisibilityAction")
             self.action_type = ToggleAnnotationVisibilityAction
 
-        if len(self.action_type.target_types) == 1:
-            target_type = self.action_type.target_types[0]
-
         targets = self.show_select_target_dialog(target_type,
-                                                 action_type=self.action_type,
-                                                 return_only_names=True)
+                                                 self.actions_scene,
+                                                 action_type=self.action_type)
 
         if targets is not None and len(targets) > 0:
-            if len(targets) == 1:
+            if self.action_type.has_single_target:
                 self.action_target = targets[0]
-                self.action_target_label.setText(self.actions_scene.name + "." + self.action_target)
+                if isinstance(self.action_target, Annotation):
+                    self.action_target_label.setText(self.actions_scene.name + "." + self.action_target.name)
+                else:
+                    self.action_target_label.setText(self.action_target.name)
+
             else:
                 self.action_target = targets
-                self.action_target_label.setText(str([self.actions_scene.name + "." + target for target in targets]))
+                self.action_target_label.setText(str([self.actions_scene.name + "." + target.name for target in targets]))
 
             logger.info("received action target: {}".format(str(self.action_target)))
-            self.action_name = self.action_type.__name__ + "_for_" + str(self.action_target)
+            if type(self.action_target) == list:
+                self.action_name = self.action_type.__name__ + "_for_" + \
+                                   str([str(target) for target in self.action_target])
+            else:
+                self.action_name = self.action_type.__name__ + "_for_" + str(self.action_target)
+
             self.action_name_text.setText(self.action_name)
         else:
-            logger.warning("target is none")
+            logger.warning("targets is none")
 
     def select_event_target_btn_clicked(self, target_type):
         if self.event_type is None:
@@ -266,7 +272,7 @@ class EventsActionsRulesDialog(QDialog):
         if len(self.event_type.target_types) == 1:
             target_type = self.event_type.target_types[0]
 
-        targets = self.show_select_target_dialog(target_type, event_type=self.event_type)
+        targets = self.show_select_target_dialog(target_type, self.events_scene, event_type=self.event_type)
 
         if targets is not None and len(targets) > 0:
             target = targets[0]
@@ -281,13 +287,11 @@ class EventsActionsRulesDialog(QDialog):
         else:
             logger.warning("target is none")
 
-    def show_select_target_dialog(self, target_type,
-                                  event_type=None, action_type=None,
-                                  return_only_names=False):
+    def show_select_target_dialog(self, target_type, scene,
+                                  event_type=None, action_type=None):
         targets = None
-        self.select_target_dialog.scene = self.events_scene
+        self.select_target_dialog.scene = scene
         self.select_target_dialog.set_target_types(target_type, event_type, action_type)
-        self.select_target_dialog.return_only_names = return_only_names
         self.select_target_dialog.setModal(True)
         self.select_target_dialog.exec()
         if self.select_target_dialog.result() == QDialog.Accepted:

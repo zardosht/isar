@@ -448,6 +448,9 @@ class Scene:
 
         return cloned_scene
 
+    def __str__(self):
+        return self.name
+
 
 def create_project(parent_dir, project_name):
     global current_project

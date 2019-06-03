@@ -1,7 +1,7 @@
 import logging
 
-from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog
+from PyQt5 import uic, QtCore
+from PyQt5.QtWidgets import QDialog, QListWidgetItem
 
 from isar.events.events import SelectionEvent
 from isar.scene.annotationmodel import Annotation
@@ -21,12 +21,8 @@ class SelectTargetDialog(QDialog):
         self.scenes_model = scenes_model
         self.targets_list = None
 
-        self.return_only_names = False
-
         # the selected item in lists
-        self.current_text = None
         self.__targets = []
-        self.__target_names = []
 
         self.setup_ui()
 
@@ -45,39 +41,37 @@ class SelectTargetDialog(QDialog):
                 if isinstance(annotation, target_type):
                     if event_type == SelectionEvent:
                         if annotation.is_selectable:
-                            self.targets_list.addItem(annotation.name)
+                            lw_item = self.create_list_widget_item(annotation.name, annotation)
+                            self.targets_list.addItem(lw_item)
                     else:
-                        self.targets_list.addItem(annotation.name)
+                        lw_item = self.create_list_widget_item(annotation.name, annotation)
+                        self.targets_list.addItem(lw_item)
 
         elif target_type == Scene:
             scenes = self.scenes_model.get_all_scenes()
             for scene in scenes:
-                self.targets_list.addItem(scene.name)
+                lw_item = self.create_list_widget_item(scene.name, scene)
+                self.targets_list.addItem(lw_item)
 
         elif target_type == PhysicalObject:
             phys_objs = self.scene.get_physical_objects()
             for phys_obj in phys_objs:
-                self.targets_list.addItem(phys_obj.name)
+                lw_item = self.create_list_widget_item(phys_obj.name, phys_obj)
+                self.targets_list.addItem(lw_item)
+
+    @staticmethod
+    def create_list_widget_item(text, data):
+        lw_item = QListWidgetItem(text)
+        lw_item.setData(QtCore.Qt.UserRole, data)
+        return lw_item
 
     def get_targets(self):
-        self.__targets.clear()
-        if self.return_only_names:
-            return self.__target_names
-        else:
-            for target_name in self.__target_names:
-                if self.target_type == Scene:
-                    self.__targets.append(self.scenes_model.get_scene_by_name(target_name))
-                elif self.target_type == PhysicalObject:
-                    self.__targets.append(self.scene.get_physical_object_by_name(target_name))
-                else:
-                    self.__targets.append(self.scene.get_annotation_by_name(target_name))
-
-            return self.__targets
+        return self.__targets
 
     def targets_list_selection_changed(self):
-        self.__target_names.clear()
+        self.__targets.clear()
         for item in self.targets_list.selectedItems():
-            self.__target_names.append(item.text())
+            self.__targets.append(item.data(QtCore.Qt.UserRole))
 
     def setup_ui(self):
         uic.loadUi("isar/ui/select_target_dialog.ui", self)
