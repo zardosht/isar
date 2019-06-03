@@ -3,6 +3,7 @@ import logging
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 
+from isar.events.actions import Action
 from isar.events.events import SelectionEvent
 from isar.scene.annotationmodel import Annotation
 from isar.scene.physicalobjectmodel import PhysicalObject
@@ -57,6 +58,12 @@ class SelectTargetDialog(QDialog):
             phys_objs = self.scene.get_physical_objects()
             for phys_obj in phys_objs:
                 lw_item = self.create_list_widget_item(phys_obj.name, phys_obj)
+                self.targets_list.addItem(lw_item)
+
+        elif target_type == Action:
+            actions = self.scene.get_actions()
+            for action in actions:
+                lw_item = self.create_list_widget_item(action.name, action)
                 self.targets_list.addItem(lw_item)
 
     @staticmethod

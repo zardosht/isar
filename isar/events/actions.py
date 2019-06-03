@@ -2,6 +2,8 @@ import logging
 import time
 from threading import Thread
 
+from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QDialog, QListWidget, QLabel
+
 from isar.scene import audioutil
 from isar.scene.scenemodel import Scene
 
@@ -37,47 +39,6 @@ class Action:
     def __setstate__(self, state):
         self.__init__()
         self.__dict__.update(state)
-
-    # def find_annotations(self):
-    #     if self.target is None:
-    #         logger.error("target is none!")
-    #         return []
-    #
-    #     if self.annotations_model is None:
-    #         logger.error("AnnotationsModel is none!")
-    #         return []
-    #
-    #     annotations = []
-    #     if type(self.target) == list:
-    #         for annotation_name in self.target:
-    #             annotation = self.annotations_model.get_annotation_by_name(annotation_name)
-    #             if annotation is None:
-    #                 logger.error("Could not find an annotation with name: {}".format(annotation_name))
-    #                 continue
-    #             else:
-    #                 annotations.append(annotation)
-    #
-    #         return annotations
-    #     else:
-    #         return self.find_annotation(self.target)
-    #
-    # def find_annotation(self, target):
-    #     if target is None:
-    #         logger.error("annotation_name is none!")
-    #         return None
-    #
-    #     if self.annotations_model is None:
-    #         logger.error("AnnotationsModel is none!")
-    #         return None
-    #
-    #     annotation = self.annotations_model.get_annotation_by_name(target)
-    #     if annotation is None:
-    #         logger.error("Could not find an annotation with name: {}".format(target))
-    #     return annotation
-
-    @classmethod
-    def update_action_properties_frame(cls, qt_frame):
-        pass
 
 
 class ToggleAnnotationVisibilityAction(Action):
@@ -398,6 +359,42 @@ class StopAnimationAction(Action):
             animation.stop()
 
 
+class CompositeAction(Action):
+    actions = []
+
+    def __init__(self, target=None):
+        super().__init__(target)
+
+    @classmethod
+    def update_action_properties_frame(cls, scene, select_target_dialog, qt_frame):
+        layout = qt_frame.layout()
+        select_actions_btn = QPushButton()
+        select_actions_btn.setText("Select Actions ...")
+        layout.addWidget(select_actions_btn)
+
+        actions_label = QLabel()
+        actions_label.setWordWrap(True)
+        layout.addWidget(actions_label)
+
+        select_actions_btn.clicked.connect(lambda:
+                                           CompositeAction.show_select_target_dialog(
+                                               scene, select_target_dialog, actions_label))
+
+    @classmethod
+    def show_select_target_dialog(cls, scene, select_target_dialog, actions_label):
+        CompositeAction.actions = None
+        select_target_dialog.scene = scene
+        select_target_dialog.set_target_types(Action)
+        select_target_dialog.setModal(True)
+        select_target_dialog.exec()
+        if select_target_dialog.result() == QDialog.Accepted:
+            CompositeAction.actions = select_target_dialog.get_targets()
+            text = ""
+            for action in CompositeAction.actions:
+                text += action.name + "\n"
+            actions_label.setText(text)
+
+
 class ParallelCompositeAction(Action):
     has_target = False
     has_properties = True
@@ -412,9 +409,16 @@ class ParallelCompositeAction(Action):
             t.start()
 
     @classmethod
-    def update_action_properties_frame(cls, qt_frame):
-        # TODO:
-        pass
+    def update_action_properties_frame(cls, scene, select_target_dialog, qt_frame):
+        CompositeAction.update_action_properties_frame(scene, select_target_dialog, qt_frame)
+
+    @classmethod
+    def reset_properties(cls):
+        CompositeAction.actions = []
+
+    @classmethod
+    def set_properties(cls, instance):
+        instance.actions = CompositeAction.actions
 
 
 class SequentialCompositeAction(Action):
@@ -436,10 +440,16 @@ class SequentialCompositeAction(Action):
             time.sleep(self.time_between_actions)
 
     @classmethod
-    def update_action_properties_frame(cls, qt_frame):
-        # TODO:
-        pass
+    def update_action_properties_frame(cls, scene, select_target_dialog, qt_frame):
+        CompositeAction.update_action_properties_frame(scene, select_target_dialog, qt_frame)
 
+    @classmethod
+    def reset_properties(cls):
+        CompositeAction.actions = []
+
+    @classmethod
+    def set_properties(cls, instance):
+        instance.actions = CompositeAction.actions
 
 scene_action_types = {
     ToggleAnnotationVisibilityAction.__name__: ToggleAnnotationVisibilityAction,

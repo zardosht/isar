@@ -101,26 +101,30 @@ class EventsActionsRulesDialog(QDialog):
         self.rule_name_text.textChanged.connect(self.rule_name_text_changed)
 
     def add_action_btn_clicked(self):
-        if self.action_target is None:
-            logger.error("self.action_target is None. Return.")
-            return
+        if self.action_type.has_target:
+            if self.action_target is None:
+                logger.error("self.action_target is None. Return.")
+                return
+
+            if self.action_type.has_single_target:
+                if type(self.action_target) not in self.action_type.target_types:
+                    logger.error("Action target not matching target type of the action. Return.")
+                    return
+            else:
+                if type(self.action_target) != list:
+                    logger.error("Action target not matching target type of the action. Return.")
+                    return
 
         if self.actions_scene is None:
             logger.error("self.actions_scene is None. Return.")
-
-        if self.action_type.has_single_target:
-            if type(self.action_target) not in self.action_type.target_types:
-                logger.error("Action target not matching target type of the action. Return.")
-                return
-        else:
-            if type(self.action_target) != list:
-                logger.error("Action target not matching target type of the action. Return.")
-                return
 
         if self.action is None:
             self.action = self.action_type(self.action_target)
             self.action.name = self.action_name
             self.action.scene_id = self.actions_scene.name
+            if self.action_type.has_properties:
+                self.action_type.set_properties(self.action)
+
             self.actions_model.add_item(self.action)
 
     def event_name_text_changed(self, text):
@@ -249,33 +253,42 @@ class EventsActionsRulesDialog(QDialog):
         for ac_name, ac_type in actions.scene_action_types.items():
             self.action_type_combo.addItem(ac_name, ac_type)
 
+        for ac_name, ac_type in actions.global_action_types.items():
+            self.action_type_combo.addItem(ac_name, ac_type)
+
         self.action_type_combo.currentIndexChanged.connect(self.action_type_combo_current_index_changed)
 
     def action_type_combo_current_index_changed(self, index):
         self.action = None
         self.action_name = None
         self.action_name_text.setText("")
+        self.action_target_label.show()
         self.action_target_label.setText("... select action target(s) ...")
         self.action_type = self.action_type_combo.itemData(index)
 
         self.disable_all_action_target_selection_buttons()
 
         self.update_action_properties_frame(self.action_type)
-        action_target_types = self.action_type.target_types
-        for target_type in action_target_types:
-            if target_type == Scene:
-                self.select_scene_action_target_btn.setEnabled(True)
-            elif target_type == PhysicalObject:
-                self.select_phys_obj_action_target_btn.setEnabled(True)
-            else:
-                self.select_annotation_action_target_btn.setEnabled(True)
 
-        # TODO: reset other properites of action
+        if self.action_type.has_target:
+            action_target_types = self.action_type.target_types
+            for target_type in action_target_types:
+                if target_type == Scene:
+                    self.select_scene_action_target_btn.setEnabled(True)
+                elif target_type == PhysicalObject:
+                    self.select_phys_obj_action_target_btn.setEnabled(True)
+                else:
+                    self.select_annotation_action_target_btn.setEnabled(True)
+        else:
+            self.action_target_label.hide()
 
     def update_action_properties_frame(self, action_type):
         if action_type.has_properties:
             self.action_properties_frame.show()
-            action_type.update_action_properties_frame(self.action_properties_frame)
+            action_type.update_action_properties_frame(self.actions_scene,
+                                                       self.select_target_dialog,
+                                                       self.action_properties_frame)
+            action_type.reset_properties()
         else:
             self.action_properties_frame.hide()
 
