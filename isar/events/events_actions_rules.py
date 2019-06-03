@@ -61,6 +61,7 @@ class EventsActionsRulesDialog(QDialog):
         self.action_type_combo_current_index_changed(0)
 
         self.rules_scene = None
+        self.rule_name = None
         self.rule = None
         self.scenes_combo_current_index_changed(0, "rule_scenes_combo")
 
@@ -89,6 +90,57 @@ class EventsActionsRulesDialog(QDialog):
 
         self.add_event_btn.clicked.connect(self.add_event_btn_clicked)
         self.remove_event_btn.clicked.connect(self.remove_event_btn_clicked)
+        self.event_name_text.textChanged.connect(self.event_name_text_changed)
+        
+        self.add_action_btn.clicked.connect(self.add_action_btn_clicked)
+        self.remove_action_btn.clicked.connect(self.remove_action_btn_clicked)
+        self.action_name_text.textChanged.connect(self.action_name_text_changed)
+        
+        self.add_rule_btn.clicked.connect(self.add_rule_btn_clicked)
+        self.remove_rule_btn.clicked.connect(self.remove_rule_btn_clicked)
+        self.rule_name_text.textChanged.connect(self.rule_name_text_changed)
+
+    def add_action_btn_clicked(self):
+        if self.action_target is None:
+            logger.error("self.action_target is None. Return.")
+            return
+
+        if self.actions_scene is None:
+            logger.error("self.actions_scene is None. Return.")
+
+        if self.action_type.has_single_target:
+            if type(self.action_target) not in self.action_type.target_types:
+                logger.error("Action target not matching target type of the action. Return.")
+                return
+        else:
+            if type(self.action_target) != list:
+                logger.error("Action target not matching target type of the action. Return.")
+                return
+
+        if self.action is None:
+            self.action = self.action_type(self.action_target)
+            self.action.name = self.action_name
+            self.action.scene_id = self.actions_scene.name
+            self.actions_model.add_item(self.action)
+
+    def event_name_text_changed(self, text):
+        self.event_name = text
+        
+    def action_name_text_changed(self, text):
+        self.action_name = text
+        
+    def rule_name_text_changed(self, text):
+        self.rule_name = text
+
+    def remove_action_btn_clicked(self):
+        index = self.actions_list.selectionModel().currentIndex()
+        self.actions_model.remove_item(index)
+
+    def add_rule_btn_clicked(self):
+        pass
+
+    def remove_rule_btn_clicked(self):
+        pass
 
     def add_event_btn_clicked(self):
         if self.event_target is None:
@@ -237,6 +289,9 @@ class EventsActionsRulesDialog(QDialog):
             logger.warning("self.action_type is None. Setting to default ToggleAnnotationVisibilityAction")
             self.action_type = ToggleAnnotationVisibilityAction
 
+        if len(self.action_type.target_types) == 1:
+            target_type = self.action_type.target_types[0]
+
         targets = self.show_select_target_dialog(target_type,
                                                  self.actions_scene,
                                                  action_type=self.action_type)
@@ -254,13 +309,14 @@ class EventsActionsRulesDialog(QDialog):
                 self.action_target_label.setText(str([self.actions_scene.name + "." + target.name for target in targets]))
 
             logger.info("received action target: {}".format(str(self.action_target)))
-            if type(self.action_target) == list:
-                self.action_name = self.action_type.__name__ + "_for_" + \
-                                   str([str(target) for target in self.action_target])
-            else:
-                self.action_name = self.action_type.__name__ + "_for_" + str(self.action_target)
+            if self.action_name is None or self.action_name == "":
+                if type(self.action_target) == list:
+                    self.action_name = self.action_type.__name__ + "_for_" + \
+                                       str([str(target) for target in self.action_target])
+                else:
+                    self.action_name = self.action_type.__name__ + "_for_" + str(self.action_target)
 
-            self.action_name_text.setText(self.action_name)
+                self.action_name_text.setText(self.action_name)
         else:
             logger.warning("targets is none")
 
@@ -278,7 +334,8 @@ class EventsActionsRulesDialog(QDialog):
             target = targets[0]
             logger.info("received event target: {}".format(str(target)))
             self.event_target = target
-            self.event_name = "On_" + self.event_target.name + "_" + self.event_type.__name__
+            if self.event_name is None or self.event_name == "":
+                self.event_name = "On_" + self.event_target.name + "_" + self.event_type.__name__
             self.event_name_text.setText(self.event_name)
             if isinstance(target, Scene):
                 self.event_target_label.setText(target.name)

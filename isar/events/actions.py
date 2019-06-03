@@ -17,6 +17,7 @@ class Action:
 
     def __init__(self, target=None):
         self.name = "action"
+        self.scene_id = None
         self.target = target
         self.annotations_model = None
         self.scenes_model = None
