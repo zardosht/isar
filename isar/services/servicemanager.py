@@ -6,6 +6,7 @@ from isar.camera.camera import CameraService
 from isar.events import eventmanager
 from isar.events.actionsservice import ActionsService
 from isar.events.events import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
+from isar.events.rulesservice import RulesService
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
 from isar.tracking import objectdetection
@@ -26,6 +27,7 @@ class ServiceNames(Enum):
     SELECTION_SERVICE = 5
     ACTIONS_SERVICE = 6
     TIMER_SERVICE = 7
+    RULES_SERVICE = 8
 
 
 def start_services():
@@ -56,17 +58,15 @@ def start_services():
 
         selection_service = SelectionService(ServiceNames.SELECTION_SERVICE)
         selection_service.actions_service = actions_service
-        eventmanager.register_listener(SelectionEvent.__name__, selection_service)
         __services[ServiceNames.SELECTION_SERVICE] = selection_service
 
         timer_service = TimerService(ServiceNames.TIMER_SERVICE)
         timer_service.actions_service = actions_service
-        eventmanager.register_listener(TimerTickEvent.__name__, timer_service)
-        eventmanager.register_listener(TimerFinishedEvent.__name__, timer_service)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, timer_service)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, timer_service)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, timer_service)
         __services[ServiceNames.SELECTION_SERVICE] = timer_service
+
+        rules_service = RulesService(ServiceNames.RULES_SERVICE)
+        rules_service.actions_servie = actions_service
+        __services[ServiceNames.RULES_SERVICE] = rules_service
 
     except Exception as exp:
         logger.error(exp)

@@ -4,10 +4,10 @@ from PyQt5 import uic, Qt, QtCore
 from PyQt5.QtCore import QAbstractListModel, QModelIndex
 from PyQt5.QtWidgets import QDialog, QListWidget, QLabel, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QWidget
 
-from isar.events import actionsservice, events, actions
+from isar.events import events, actions
 from isar.events.actions import Action, ToggleAnnotationVisibilityAction
 from isar.events.events import SelectionEvent, Event
-from isar.events.rulesmanager import Rule
+from isar.events.rules import Rule
 from isar.events.select_target_dialog import SelectTargetDialog
 from isar.scene.annotationmodel import Annotation
 from isar.scene.physicalobjectmodel import PhysicalObject
@@ -62,6 +62,8 @@ class EventsActionsRulesDialog(QDialog):
 
         self.rules_scene = None
         self.rule_name = None
+        self.rule_event = None
+        self.rule_action = None
         self.rule = None
         self.scenes_combo_current_index_changed(0, "rule_scenes_combo")
 
@@ -95,7 +97,10 @@ class EventsActionsRulesDialog(QDialog):
         self.add_action_btn.clicked.connect(self.add_action_btn_clicked)
         self.remove_action_btn.clicked.connect(self.remove_action_btn_clicked)
         self.action_name_text.textChanged.connect(self.action_name_text_changed)
-        
+
+        self.select_rule_event_btn.clicked.connect(self.select_rule_event_btn_clicked)
+        self.select_rule_action_btn.clicked.connect(self.select_rule_action_btn_clicked)
+
         self.add_rule_btn.clicked.connect(self.add_rule_btn_clicked)
         self.remove_rule_btn.clicked.connect(self.remove_rule_btn_clicked)
         self.rule_name_text.textChanged.connect(self.rule_name_text_changed)
@@ -141,10 +146,29 @@ class EventsActionsRulesDialog(QDialog):
         self.actions_model.remove_item(index)
 
     def add_rule_btn_clicked(self):
-        pass
+        ;lkj s;dlfkj ;dlfkj ;dlfjk a;sldfjk a;lsdfjk a;sldfjk a;sldfjk a;sldfjk a;sldfjk
 
     def remove_rule_btn_clicked(self):
-        pass
+        index = self.rules_list.selectionModel().currentIndex()
+        self.rules_model.remove_item(index)
+
+    def select_rule_event_btn_clicked(self):
+        if self.rules_scene is None:
+            logger.error("self.rules_scene is None. Return.")
+            return
+
+        selected_events = self.show_select_target_dialog(Event, self.rules_scene)
+        if selected_events is not None and len(selected_events) > 0:
+            self.rule_action = selected_events[0]
+
+    def select_rule_action_btn_clicked(self):
+        if self.rules_scene is None:
+            logger.error("self.rules_scene is None. Return.")
+            return
+
+        selected_actions = self.show_select_target_dialog(Action, self.rules_scene)
+        if selected_actions is not None and len(selected_actions) > 0:
+            self.rule_action = selected_actions[0]
 
     def add_event_btn_clicked(self):
         if self.event_target is None:
@@ -210,7 +234,9 @@ class EventsActionsRulesDialog(QDialog):
             self.rules_model.current_scene = scene
             self.rules_scene = scene
             self.rule_name_text.setText("")
+            self.rule_event = None
             self.rule_event_name_label.setText(".... event name ...")
+            self.rule_action = None
             self.rule_action_name_label.setText("... action name ...")
 
     def init_event_type_combo(self):
@@ -319,7 +345,8 @@ class EventsActionsRulesDialog(QDialog):
 
             else:
                 self.action_target = targets
-                self.action_target_label.setText(str([self.actions_scene.name + "." + target.name for target in targets]))
+                self.action_target_label.setText(
+                    str([self.actions_scene.name + "." + target.name for target in targets]))
 
             logger.info("received action target: {}".format(str(self.action_target)))
             if self.action_name is None or self.action_name == "":
@@ -451,6 +478,7 @@ class ItemsModel(QAbstractListModel):
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
 
+        items = []
         if self.current_scene is not None:
             if self.item_type == ItemsModel.EVENTS:
                 items = self.current_scene.get_events()
@@ -461,7 +489,7 @@ class ItemsModel(QAbstractListModel):
         else:
             logger.warning("current_scene is None!")
 
-        item = items[row]
+        item = None
+        if len(items) > row:
+            item = items[row]
         return self.createIndex(row, 0, item)
-
-

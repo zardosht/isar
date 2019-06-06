@@ -64,16 +64,13 @@ class ActionsService(Service):
             traceback.print_tb(exp.__traceback__)
 
     def get_available_actions(self):
+        # TODO: it must be filed in the class. This class must be notified whenever the current scene in changed
+        #
+        # TODO: add notification mechanism for scene_changed in ScenesModel. The ScenesModel should
+        #  notify listeners whenever the current scene is changed.
         available_actions = []
-        # ---------------------------
         self.current_scene = self.__scenes_model.get_current_scene()
         available_actions.extend(self.current_scene.get_actions())
-        # ---------------------------
-        #
-        # available_actions.extend(defined_actions)
-        #
-        # ---------------------------
-
         available_actions.extend(global_actions)
         return available_actions
 
@@ -88,109 +85,6 @@ class ActionsService(Service):
 
     def stop(self):
         pass
-
-
-# ====================================================
-# ========= initializint defined actions   ===========
-# ========= This must be read from project ===========
-# ====================================================
-
-
-def init_defined_actions():
-    pass
-
-    # TODO: This will be read from the prorject. During the scene definition, the user defines actions.
-    #  They are persisted with project.
-
-    # global defined_actions
-    # defined_actions.clear()
-    #
-    # init_global_actions()
-    #
-    # annotation_names = ["red_box"]
-    # toggle_red_box = ToggleAnnotationVisibilityAction(annotation_names)
-    # toggle_red_box.name = "Toggle Red Box"
-    # defined_actions.append(toggle_red_box)
-    #
-    # annotation_names = ["red_circle"]
-    # toggle_red_circle = ToggleAnnotationVisibilityAction(annotation_names)
-    # toggle_red_circle.name = "Toggle Red Circle"
-    # defined_actions.append(toggle_red_circle)
-    #
-    # annotation_names = ["help_text1", "help_text2"]
-    # toggle_help = ToggleAnnotationVisibilityAction(annotation_names)
-    # toggle_help.name = "Toggle Help"
-    # defined_actions.append(toggle_help)
-    #
-    # annotation_names = ["lenna"]
-    # show_lenna = ShowAnnotationAction(annotation_names)
-    # show_lenna.name = "Show Lenna"
-    # defined_actions.append(show_lenna)
-    #
-    # annotation_names = ["lenna"]
-    # hide_lenna = HideAnnotationAction(annotation_names)
-    # hide_lenna.name = "Hide Lenna"
-    # defined_actions.append(hide_lenna)
-    #
-    # scene_name = "Scene1"
-    # show_scene1 = ShowSceneAction(scene_name)
-    # show_scene1.name = "Show Scene1"
-    # defined_actions.append(show_scene1)
-    #
-    # scene_name = "help"
-    # show_help_scene = ShowSceneAction(scene_name)
-    # show_help_scene.name = "Show Help Scene"
-    # defined_actions.append(show_help_scene)
-    #
-    # scene_name = "joke"
-    # show_joke_scene = ShowSceneAction(scene_name)
-    # show_joke_scene.name = "Show Joke Scene"
-    # defined_actions.append(show_joke_scene)
-    #
-    # annotation_name = "pincers_audio"
-    # play_pincers_audio = StartAudioAction(annotation_name)
-    # play_pincers_audio.name = "Play Pincers Audio"
-    # defined_actions.append(play_pincers_audio)
-    #
-    # timer_name = "timer1"
-    # start_timer1 = StartTimerAction(timer_name)
-    # start_timer1.name = "Start Timer 1"
-    # defined_actions.append(start_timer1)
-    #
-    # timer_name = "timer1"
-    # stop_timer1 = StopTimerAction(timer_name)
-    # stop_timer1.name = "Stop Timer 1"
-    # defined_actions.append(stop_timer1)
-    #
-    # timer_name = "timer1"
-    # reset_timer1 = ResetTimerAction(timer_name)
-    # reset_timer1.name = "Reset Timer 1"
-    # defined_actions.append(reset_timer1)
-    #
-    # animation_names = ["fly_animation1", "fly_animation2"]
-    # start_fly_animation_1 = StartAnimationAction(animation_names)
-    # start_fly_animation_1.name = "Start Fly Animation 1"
-    # defined_actions.append(start_fly_animation_1)
-    #
-    # animation_names = ["fly_animation1", "fly_animation2"]
-    # stop_fly_animation_1 = StopAnimationAction(animation_names)
-    # stop_fly_animation_1.name = "Stop Fly Animation 1"
-    # defined_actions.append(stop_fly_animation_1)
-
-    # start_timer1_and_play_pincers_audio = ParallelCompositeAction()
-    # start_timer1_and_play_pincers_audio.name = "Start Timer 1 AND Play Pincers Audio"
-    # start_timer1_and_play_pincers_audio.actions = [start_timer1, play_pincers_audio]
-    # defined_actions.append(start_timer1_and_play_pincers_audio)
-    #
-    # hide_lenna_then_show_lenna = SequentialCompositeAction()
-    # hide_lenna_then_show_lenna.name = "Hide lenna THEN Show lenna"
-    # hide_lenna_then_show_lenna.actions = [hide_lenna, show_lenna]
-    # defined_actions.append(hide_lenna_then_show_lenna)
-    #
-    # hide_lenna_then_show_lenna_then_toggle_redcircle = SequentialCompositeAction()
-    # hide_lenna_then_show_lenna_then_toggle_redcircle.name = "hide_lenna_then_show_lenna_then_toggle_redcircle"
-    # hide_lenna_then_show_lenna_then_toggle_redcircle.actions = [hide_lenna, show_lenna, toggle_red_circle]
-    # defined_actions.append(hide_lenna_then_show_lenna_then_toggle_redcircle)
 
 
 def init_global_actions():

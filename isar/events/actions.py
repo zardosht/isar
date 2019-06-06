@@ -451,6 +451,7 @@ class SequentialCompositeAction(Action):
     def set_properties(cls, instance):
         instance.actions = CompositeAction.actions
 
+
 scene_action_types = {
     ToggleAnnotationVisibilityAction.__name__: ToggleAnnotationVisibilityAction,
     ShowAnnotationAction.__name__: ShowAnnotationAction,

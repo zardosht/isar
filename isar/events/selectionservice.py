@@ -1,7 +1,8 @@
 import threading
 import logging
 
-from isar.events import actionsservice
+from isar.events import eventmanager
+from isar.events.events import SelectionEvent
 from isar.scene.annotationmodel import Annotation, ActionButtonAnnotation
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.services.service import Service
@@ -14,6 +15,8 @@ class SelectionService(Service):
         super().__init__(service_name)
         self.annotations_model = None
         self.actions_service = None
+
+        eventmanager.register_listener(SelectionEvent.__name__, self)
 
     def on_event(self, selection_event):
         target = selection_event.target

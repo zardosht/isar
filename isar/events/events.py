@@ -24,6 +24,18 @@ class Event:
     def update_event_properties_frame(cls, qt_frame):
         pass
 
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+
+        if self.scene_id != other.scene_id:
+            return False
+
+        if self.name != other.name:
+            return False
+
+        return self.target.name == other.target.name
+
 
 class SelectionEvent(Event):
     from isar.scene.annotationmodel import Annotation
@@ -130,6 +142,7 @@ class SceneShownEvent(Event):
 event_types = {
     SelectionEvent.__name__: SelectionEvent,
     CheckboxCheckedEvent.__name__: CheckboxCheckedEvent,
+    CheckboxUncheckedEvent.__name__: CheckboxUncheckedEvent,
     TimerFinishedEvent.__name__: TimerFinishedEvent,
     TimerTimeout1Event.__name__: TimerTimeout1Event,
     TimerTimeout2Event.__name__: TimerTimeout2Event,

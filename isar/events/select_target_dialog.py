@@ -4,7 +4,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QListWidgetItem
 
 from isar.events.actions import Action
-from isar.events.events import SelectionEvent
+from isar.events.events import SelectionEvent, Event
 from isar.scene.annotationmodel import Annotation
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -66,6 +66,12 @@ class SelectTargetDialog(QDialog):
                 lw_item = self.create_list_widget_item(action.name, action)
                 self.targets_list.addItem(lw_item)
 
+        elif target_type == Event:
+            events = self.scene.get_events()
+            for event in events:
+                lw_item = self.create_list_widget_item(event.name, event)
+                self.targets_list.addItem(lw_item)
+
     @staticmethod
     def create_list_widget_item(text, data):
         lw_item = QListWidgetItem(text)
@@ -83,6 +89,3 @@ class SelectTargetDialog(QDialog):
     def setup_ui(self):
         uic.loadUi("isar/ui/select_target_dialog.ui", self)
         self.targets_list.itemSelectionChanged.connect(self.targets_list_selection_changed)
-
-
-
