@@ -22,7 +22,7 @@
       </font>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="events_tab">
       <property name="font">
@@ -641,7 +641,7 @@
               </widget>
              </item>
              <item row="4" column="2">
-              <widget class="QPushButton" name="rule_select_action_btn">
+              <widget class="QPushButton" name="select_rule_action_btn">
                <property name="text">
                 <string>Select ...</string>
                </property>
@@ -665,7 +665,7 @@
               </widget>
              </item>
              <item row="3" column="2">
-              <widget class="QPushButton" name="rule_select_event_btn">
+              <widget class="QPushButton" name="select_rule_event_btn">
                <property name="text">
                 <string>Select ...</string>
                </property>
