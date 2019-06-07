@@ -146,7 +146,33 @@ class EventsActionsRulesDialog(QDialog):
         self.actions_model.remove_item(index)
 
     def add_rule_btn_clicked(self):
-        ;lkj s;dlfkj ;dlfkj ;dlfjk a;sldfjk a;lsdfjk a;sldfjk a;sldfjk a;sldfjk a;sldfjk
+        if self.rule_event is None:
+            logger.error("self.rule_event is None. Return.")
+            return
+        
+        if self.rule_action is None:
+            logger.error("self.rule_action is None. Return.")
+            return
+
+        if self.rule_name is None or len(self.rule_name) == 0:
+            logger.error("self.rule_name is None or empty. Return.")
+            return
+
+        if self.rule is None:
+            self.rule = Rule()
+            self.rule.scene = self.rules_scene
+            self.rule.name = self.rule_name
+            self.rule.event = self.rule_event
+            self.rule.action = self.rule_action
+            self.rules_model.add_item(self.rule)
+
+            self.rule = None
+            self.rule_name = None
+            self.rule_name_text.setText("")
+            self.rule_event = None
+            self.rule_event_name_label.setText("... select event ...")
+            self.rule_action = None
+            self.rule_action_name_label.setText("... select action ...")
 
     def remove_rule_btn_clicked(self):
         index = self.rules_list.selectionModel().currentIndex()
@@ -159,7 +185,10 @@ class EventsActionsRulesDialog(QDialog):
 
         selected_events = self.show_select_target_dialog(Event, self.rules_scene)
         if selected_events is not None and len(selected_events) > 0:
-            self.rule_action = selected_events[0]
+            self.rule_event = selected_events[0]
+            self.rule_event_name_label.setText(self.rule_event.name)
+            if self.rule_action is not None:
+                self.rule_name_text.setText("{}__{}".format(self.rule_event.name, self.rule_action.name))
 
     def select_rule_action_btn_clicked(self):
         if self.rules_scene is None:
@@ -169,6 +198,9 @@ class EventsActionsRulesDialog(QDialog):
         selected_actions = self.show_select_target_dialog(Action, self.rules_scene)
         if selected_actions is not None and len(selected_actions) > 0:
             self.rule_action = selected_actions[0]
+            self.rule_action_name_label.setText(self.rule_action.name)
+            if self.rule_event is not None:
+                self.rule_name_text.setText("{}__{}".format(self.rule_event.name, self.rule_action.name))
 
     def add_event_btn_clicked(self):
         if self.event_target is None:

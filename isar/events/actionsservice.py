@@ -1,6 +1,7 @@
 import logging
 import traceback
 
+from isar.events import actions
 from isar.events.actions import ToggleAnnotationVisibilityAction, ShowAnnotationAction, HideAnnotationAction, \
     ShowSceneAction, StartAudioAction, StartTimerAction, \
     StopTimerAction, ResetTimerAction, StartAnimationAction, StopAnimationAction, ParallelCompositeAction, \
@@ -43,9 +44,16 @@ class ActionsService(Service):
         self.__scenes_model = scenes_model
 
     def perform_action(self, action):
+
         if action is None:
-            logger.warning("Action is None.")
+            logger.error("Action is None. Return")
             return
+
+        self.current_scene = self.__scenes_model.get_current_scene()
+        if type(action) not in actions.global_action_types:
+            if action.scene_id != self.current_scene.name:
+                logger.error("action.scene_id is not the same as self.current_scene.name. Return.")
+                return
 
         if action.annotations_model is None:
             action.annotations_model = self.__annotations_model
@@ -64,7 +72,7 @@ class ActionsService(Service):
             traceback.print_tb(exp.__traceback__)
 
     def get_available_actions(self):
-        # TODO: it must be filed in the class. This class must be notified whenever the current scene in changed
+        # TODO: it must be filled in the class. This class must be notified whenever the current scene in changed
         #
         # TODO: add notification mechanism for scene_changed in ScenesModel. The ScenesModel should
         #  notify listeners whenever the current scene is changed.

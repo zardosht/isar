@@ -701,6 +701,7 @@ class SelectionTool(AnnotationTool):
 
     def mouse_press_event(self, camera_view, event):
         self.annotation = None
+        self.phys_obj = None
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
@@ -709,10 +710,22 @@ class SelectionTool(AnnotationTool):
                 self.annotation = annotation
                 break
 
+        current_scene = self.annotations_model.get_current_scene()
+        scene_phys_objs = current_scene.get_physical_objects()
+        for phys_obj in scene_phys_objs:
+            if phys_obj.collides_with_point((img_x, img_y), self.scene_scale_factor):
+                self.phys_obj = phys_obj
+
     def mouse_release_event(self, camera_view, event):
+        from isar.events.events import SelectionEvent
         if self.annotation is not None:
-            from isar.events.events import SelectionEvent
-            eventmanager.fire_event(SelectionEvent(self.annotation))
+            selection_event = SelectionEvent(self.annotation)
+            selection_event.scene_id = self.annotations_model.get_current_scene().name
+            eventmanager.fire_event(selection_event)
+        elif self.phys_obj is not None:
+            selection_event = SelectionEvent(self.phys_obj)
+            selection_event.scene_id = self.annotations_model.get_current_scene().name
+            eventmanager.fire_event(selection_event)
 
 
 class AudioAnnotationTool(AnnotationTool):

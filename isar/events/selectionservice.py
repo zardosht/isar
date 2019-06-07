@@ -20,6 +20,7 @@ class SelectionService(Service):
 
     def on_event(self, selection_event):
         target = selection_event.target
+        logger.info("SelectionEvent on {}".format(str(target)))
 
         # ------------ Experimental ------------
         if isinstance(target, Annotation):

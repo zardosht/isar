@@ -151,10 +151,10 @@ class SelectionStickService(Service):
     def stop(self):
         self._stop_event.set()
 
-    @staticmethod
-    def fire_selection_event(target):
+    def fire_selection_event(self, target):
         logger.info("Fire SelectionEvent on: " + str(target))
         selection_event = SelectionEvent(target)
+        selection_event.scene_id = self.__annotations_model.get_current_scene().name
         eventmanager.fire_event(selection_event)
 
     def draw_current_rect(self, img, camera_projector_homography=None, scene_homography=None):
@@ -214,8 +214,8 @@ class SelectionStickService(Service):
     def set_physical_objects_model(self, phm):
         self.__physical_objects_model = phm
 
-    def set_annotations_model(self, phm):
-        self.__annotations_model = phm
+    def set_annotations_model(self, annot_model):
+        self.__annotations_model = annot_model
 
 
 

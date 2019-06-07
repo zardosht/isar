@@ -31,9 +31,6 @@ class Event:
         if self.scene_id != other.scene_id:
             return False
 
-        if self.name != other.name:
-            return False
-
         return self.target.name == other.target.name
 
 

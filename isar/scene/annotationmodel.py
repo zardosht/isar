@@ -212,6 +212,9 @@ class AnnotationsModel(QAbstractListModel):
         else:
             return ()
 
+    def get_current_scene(self):
+        return self.__scene
+
 
 class Annotation:
     def __init__(self):
@@ -944,6 +947,7 @@ class TimerThread(Thread):
     def __init__(self, timer_annotation):
         super().__init__()
         self.timer_annotation = timer_annotation
+        self.scene = self.timer_annotation.scene
         self.stop_event = Event()
 
     def run(self):
@@ -955,21 +959,29 @@ class TimerThread(Thread):
 
             self.timer_annotation.current_time += 1
             if (self.timer_annotation.current_time % self.timer_annotation.tick_interval.get_value()) == 0:
-                eventmanager.fire_timer_tick_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_tick_event(self.timer_annotation,
+                                                   self.timer_annotation.current_time,
+                                                   self.scene.name)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_1.get_value():
-                eventmanager.fire_timer_timeout1_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_timeout1_event(self.timer_annotation,
+                                                       self.timer_annotation.current_time,
+                                                       self.scene.name)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_2.get_value():
-                eventmanager.fire_timer_timeout2_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_timeout2_event(self.timer_annotation,
+                                                       self.timer_annotation.current_time,
+                                                       self.scene.name)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_3.get_value():
-                eventmanager.fire_timer_timeout3_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_timeout3_event(self.timer_annotation,
+                                                       self.timer_annotation.current_time,
+                                                       self.scene.name)
 
             time.sleep(1)
 
         if not stopped_before_finish:
-            eventmanager.fire_timer_finished_event(self.timer_annotation)
+            eventmanager.fire_timer_finished_event(self.timer_annotation, self.scene.name)
 
     def stop(self):
         self.stop_event.set()
@@ -1007,10 +1019,10 @@ class CheckboxAnnotation(Annotation):
         self.checked.set_value(not was_checked)
         if not was_checked:
             # the checkbox is now checked
-            eventmanager.fire_checkbox_checked_event(self)
+            eventmanager.fire_checkbox_checked_event(self, self.scene.name)
         else:
             # the checkbox is now unchecked
-            eventmanager.fire_checkbox_unchecked_event(self)
+            eventmanager.fire_checkbox_unchecked_event(self, self.scene.name)
 
 
 class RelationshipAnnotation(Annotation):
