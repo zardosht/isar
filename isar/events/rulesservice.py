@@ -22,8 +22,10 @@ class RulesService(Service):
     def set_scenes_model(self, scenes_model):
         self.__scenes_model = scenes_model
 
+    def set_current_scene(self, current_scene):
+        self.current_scene = current_scene
+
     def on_event(self, event):
-        self.current_scene = self.__scenes_model.get_current_scene()
         if self.current_scene is None:
             logger.error("self.scene is None. Return.")
             return

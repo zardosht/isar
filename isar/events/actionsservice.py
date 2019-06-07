@@ -44,7 +44,6 @@ class ActionsService(Service):
         self.__scenes_model = scenes_model
 
     def perform_action(self, action):
-
         if action is None:
             logger.error("Action is None. Return")
             return
@@ -72,10 +71,6 @@ class ActionsService(Service):
             traceback.print_tb(exp.__traceback__)
 
     def get_available_actions(self):
-        # TODO: it must be filled in the class. This class must be notified whenever the current scene in changed
-        #
-        # TODO: add notification mechanism for scene_changed in ScenesModel. The ScenesModel should
-        #  notify listeners whenever the current scene is changed.
         available_actions = []
         self.current_scene = self.__scenes_model.get_current_scene()
         available_actions.extend(self.current_scene.get_actions())
@@ -87,6 +82,9 @@ class ActionsService(Service):
         for action in available_actions:
             if action.name == name:
                 return action
+
+    def set_current_scene(self, current_scene):
+        self.current_scene = current_scene
 
     def start(self):
         pass

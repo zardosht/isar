@@ -29,14 +29,6 @@ class Rule:
             logger.error("self.actionsservice is None. Return.")
             return
 
-        if self._actionsservice.current_scene is None:
-            # TODO: this must be fixed
-            #  when notification mechanism for scene_changed in ScenesModel. The ScenesModel should
-            #  notify listeners whenever the current scene is changed. The actionsservice.current_scene
-            #  should not be set from here.
-            logger.warning("self.actionsservice.current_scene was None. Setting to self.scene.")
-            self._actionsservice.current_scene = self.scene
-
         if self._actionsservice.current_scene != self.scene:
             logger.error("self.actionsservice.current_scene not the same as self.scene. Return.")
             return

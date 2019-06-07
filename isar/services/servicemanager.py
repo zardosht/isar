@@ -65,7 +65,7 @@ def start_services():
         __services[ServiceNames.SELECTION_SERVICE] = timer_service
 
         rules_service = RulesService(ServiceNames.RULES_SERVICE)
-        rules_service.actions_servie = actions_service
+        rules_service.actions_service = actions_service
         __services[ServiceNames.RULES_SERVICE] = rules_service
 
     except Exception as exp:
@@ -84,3 +84,16 @@ def stop_services():
 
 def get_service(service_name):
     return __services[service_name]
+
+
+def current_scene_changed(current_scene):
+    for service in __services.values():
+        if getattr(service, "set_current_scene", None) is not None:
+            service.set_current_scene(current_scene)
+
+
+def on_project_loaded():
+    # Services can re-initialize for the new project
+    for service in __services.values():
+        if getattr(service, "on_project_loaded", None) is not None:
+            service.on_project_loaded()

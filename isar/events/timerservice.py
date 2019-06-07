@@ -14,6 +14,7 @@ class TimerService(Service):
     def __init__(self, service_name):
         super().__init__(service_name)
         self.actions_service = None
+        self.current_scene = None
 
         eventmanager.register_listener(TimerTickEvent.__name__, self)
         eventmanager.register_listener(TimerFinishedEvent.__name__, self)
@@ -46,6 +47,9 @@ class TimerService(Service):
             logger.info("Timer {} timeout3.".format(target.name))
 
         # --------------------------------------
+
+    def set_current_scene(self, current_scene):
+        self.current_scene = current_scene
 
     def stop(self):
         pass

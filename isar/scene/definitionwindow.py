@@ -116,10 +116,16 @@ class SceneDefinitionWindow(QMainWindow):
         scenes_model = self.scenes_list.model()
         scenes_model.set_current_scene(current_index)
 
+    @staticmethod
+    def project_loaded():
+        servicemanager.on_project_loaded()
+
     def current_scene_changed(self):
         scenes_model = self.scenes_list.model()
         current_index = scenes_model.find_index(scenes_model.get_current_scene())
         self.scenes_list.setCurrentIndex(current_index)
+
+        servicemanager.current_scene_changed(self.scenes_model.get_current_scene())
 
         self.annotations_list.model().set_scene(scenes_model.get_current_scene())
         self.camera_view.set_annotations_model(self.annotations_list.model())
@@ -298,6 +304,7 @@ class SceneDefinitionWindow(QMainWindow):
         self.scenes_list.setModel(self.scenes_model)
         current_scene = self.scenes_list.model().get_current_scene()
         self.scenes_model.scene_changed.connect(self.current_scene_changed)
+        self.scenes_model.project_loaded.connect(self.project_loaded)
 
         self.physical_objects_model = PhysicalObjectsModel()
         self.physical_objects_model.set_scene(current_scene)

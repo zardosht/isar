@@ -15,6 +15,7 @@ class SelectionService(Service):
         super().__init__(service_name)
         self.annotations_model = None
         self.actions_service = None
+        self.current_scene = None
 
         eventmanager.register_listener(SelectionEvent.__name__, self)
 
@@ -43,6 +44,9 @@ class SelectionService(Service):
         if isinstance(target, ActionButtonAnnotation):
             action = target.on_select_action.get_value()
             self.actions_service.perform_action(action)
+
+    def set_current_scene(self, current_scene):
+        self.current_scene = current_scene
 
     def stop(self):
         pass
