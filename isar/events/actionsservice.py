@@ -50,7 +50,7 @@ class ActionsService(Service):
             return
 
         self.current_scene = self.__scenes_model.get_current_scene()
-        if type(action) not in actions.global_action_types:
+        if action.__class__.__name__ not in actions.global_action_types:
             if action.scene_id != self.current_scene.name:
                 logger.error("action.scene_id is not the same as self.current_scene.name. Return.")
                 return
