@@ -46,9 +46,9 @@ class SelectionEvent(Event):
     as the user moves the selection tool on top of different annotations and objects 
     """
 
-    repeat_interval = 1
+    repeat_interval = 100000000
     """
-    Interval between repeated sending of the event. 
+    Interval between repeated sending of the event. SelectionEvent is not repeatable, i.e. interval = 100000000 
     """
 
     pass
@@ -160,6 +160,8 @@ class SceneShownEvent(Event):
 
 
 class HandOnTopEvent(SelectionEvent):
+    trigger_interval = 0.2
+    repeat_interval = 0.5
     pass
 
 

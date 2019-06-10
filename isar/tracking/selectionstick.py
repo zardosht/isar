@@ -44,7 +44,11 @@ class SelectionStickService(Service):
         self._current_rect = None
         self._physical_objects_model = None
         self._annotations_model = None
+
         self.MARKER_ID = 5
+
+        self.trigger_interval = SelectionEvent.trigger_interval
+        self.repeat_interval = SelectionEvent.repeat_interval
 
         self.drawing_color = (255, 0, 255)
         self.object_name = None
@@ -112,12 +116,12 @@ class SelectionStickService(Service):
                         triggered = self.event_timers_phys_obj[phys_obj_name][1]
                         time_diff = time.time() - last
 
-                        if time_diff > SelectionEvent.trigger_interval:
+                        if time_diff > self.trigger_interval:
                             if not triggered:
                                 self.fire_event(phys_obj)
                                 self.event_timers_phys_obj[phys_obj_name][1] = True
 
-                        if time_diff > SelectionEvent.repeat_interval:
+                        if time_diff > self.repeat_interval:
                             self.fire_event(phys_obj)
                             self.event_timers_phys_obj[phys_obj_name][0] = time.time()
                             # del self.event_timers_phys_obj[phys_obj]
@@ -141,12 +145,12 @@ class SelectionStickService(Service):
                         last = self.event_timers_annotation[annotation_name][0]
                         triggered = self.event_timers_annotation[annotation_name][1]
                         time_diff = time.time() - last
-                        if time_diff > SelectionEvent.trigger_interval:
+                        if time_diff > self.trigger_interval:
                             if not triggered:
                                 self.fire_event(annotation)
                                 self.event_timers_annotation[annotation_name][1] = True
 
-                        if time_diff > SelectionEvent.repeat_interval:
+                        if time_diff > self.repeat_interval:
                             self.fire_event(annotation)
                             self.event_timers_annotation[annotation_name][0] = time.time()
                             # del self.event_timers_annotation[annotation_name]

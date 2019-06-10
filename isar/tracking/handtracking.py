@@ -1,6 +1,7 @@
 import logging
 
 from isar.events import eventmanager
+from isar.events.events import HandOnTopEvent
 from isar.tracking.selectionstick import SelectionStickService
 
 logger = logging.getLogger("isar.handtracking")
@@ -10,6 +11,8 @@ class HandTrackingService(SelectionStickService):
     def __init__(self, service_name):
         super().__init__(service_name)
         self.MARKER_ID = 3
+        self.trigger_interval = HandOnTopEvent.trigger_interval
+        self.repeat_interval = HandOnTopEvent.repeat_interval
 
     def fire_event(self, target):
         logger.info("Fire HandOnTopEvent on: " + str(target))
