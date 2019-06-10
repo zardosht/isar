@@ -42,6 +42,7 @@ class SceneDefinitionWindow(QMainWindow):
 
         self._object_detection_service = None
         self._selection_stick_service: SelectionStickService = None
+        self._hand_tracking_service = None
         self.setup_object_detection_service()
 
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
@@ -293,6 +294,7 @@ class SceneDefinitionWindow(QMainWindow):
     def setup_object_detection_service(self):
         self._object_detection_service = servicemanager.get_service(ServiceNames.OBJECT_DETECTION)
         self._selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
+        self._hand_tracking_service = servicemanager.get_service(ServiceNames.HAND_TRACKING_SERVICE)
 
     def setup_timer(self):
         self._timer = QTimer()
@@ -324,6 +326,9 @@ class SceneDefinitionWindow(QMainWindow):
         self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)
         self._selection_stick_service.set_annotations_model(self.annotations_model)
 
+        self._hand_tracking_service.set_physical_objects_model(self.physical_objects_model)
+        self._hand_tracking_service.set_annotations_model(self.annotations_model)
+
         selection_service = servicemanager.get_service(ServiceNames.SELECTION_SERVICE)
         selection_service.annotations_model = self.annotations_model
 
@@ -352,6 +357,8 @@ class SceneDefinitionWindow(QMainWindow):
             logger.warning("Scene size is not initialized.")
 
         self._selection_stick_service.camera_img = camera_frame.raw_image
+        self._hand_tracking_service.camera_img = camera_frame.raw_image
+
         self.camera_view.set_camera_frame(camera_frame)
 
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()

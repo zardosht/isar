@@ -23,19 +23,6 @@ class SelectionService(Service):
         target = selection_event.target
         logger.info("SelectionEvent on {}".format(str(target)))
 
-        # ------------ Experimental ------------
-        if isinstance(target, Annotation):
-            if target.name == "lenna":
-                toggle_red_box_action = self.actions_service.get_action_by_name("Toggle Red Box")
-                self.actions_service.perform_action(toggle_red_box_action)
-
-        if isinstance(target, PhysicalObject):
-            if target.name == "Pincers":
-                action = self.actions_service.get_action_by_name("Play Pincers Audio")
-                self.actions_service.perform_action(action)
-
-        # --------------------------------------
-
         on_select = getattr(target, "on_select", None)
         if on_select is not None and callable(on_select):
             t = threading.Thread(target=target.on_select)
@@ -50,5 +37,3 @@ class SelectionService(Service):
 
     def stop(self):
         pass
-
-

@@ -36,6 +36,7 @@ logger = logging.getLogger("isar.selectionstick")
 
 
 class SelectionStickService(Service):
+
     def __init__(self, service_name=None):
         super().__init__(service_name)
         self._stop_event = threading.Event()
@@ -43,6 +44,7 @@ class SelectionStickService(Service):
         self.__current_rect = None
         self.__physical_objects_model = None
         self.__annotations_model = None
+        self.MARKER_ID = 5
 
         self.drawing_color = (255, 0, 255)
         self.object_name = None
@@ -71,7 +73,7 @@ class SelectionStickService(Service):
 
             index = -1
             for i, marker_id in enumerate(marker_ids):
-                if marker_id == 5:
+                if marker_id == self.MARKER_ID:
                     index = i
 
             if index != -1:
@@ -104,12 +106,19 @@ class SelectionStickService(Service):
                     self.object_name = phys_obj_name
 
                     if phys_obj_name not in self.event_timers_phys_obj:
-                        self.event_timers_phys_obj[phys_obj_name] = time.time()
+                        self.event_timers_phys_obj[phys_obj_name] = [time.time(), False]
                     else:
-                        first = self.event_timers_phys_obj[phys_obj_name]
-                        if time.time() - first > SelectionEvent.trigger_interval:
-                            self.fire_selection_event(phys_obj)
-                            del self.event_timers_phys_obj[phys_obj_name]
+                        first = self.event_timers_phys_obj[phys_obj_name][0]
+                        triggered = self.event_timers_phys_obj[phys_obj_name][1]
+                        time_diff = time.time() - first
+
+                        if time_diff > SelectionEvent.trigger_interval:
+                            if not triggered:
+                                self.fire_event(phys_obj)
+                                self.event_timers_phys_obj[phys_obj_name][1] = True
+                        elif time_diff > SelectionEvent.repeat_interval:
+                            self.fire_event(phys_obj)
+                            del self.event_timers_phys_obj[phys_obj]
 
                     break
 
@@ -132,10 +141,10 @@ class SelectionStickService(Service):
                         time_diff = time.time() - first
                         if time_diff > SelectionEvent.trigger_interval:
                             if not triggered:
-                                self.fire_selection_event(annotation)
+                                self.fire_event(annotation)
                                 self.event_timers_annotation[annotation_name][1] = True
                         elif time_diff > SelectionEvent.repeat_interval:
-                            self.fire_selection_event(annotation)
+                            self.fire_event(annotation)
                             del self.event_timers_annotation[annotation_name]
 
             if not collides_with_annotation:
@@ -151,7 +160,7 @@ class SelectionStickService(Service):
     def stop(self):
         self._stop_event.set()
 
-    def fire_selection_event(self, target):
+    def fire_event(self, target):
         logger.info("Fire SelectionEvent on: " + str(target))
         selection_event = SelectionEvent(target)
         selection_event.scene_id = self.__annotations_model.get_current_scene().name

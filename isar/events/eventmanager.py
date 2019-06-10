@@ -1,7 +1,7 @@
 import logging
 
 from isar.events.events import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent, SelectionEvent
+    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent, SelectionEvent, HandOnTopEvent
 
 logger = logging.getLogger("isar.eventmanager")
 
@@ -73,6 +73,12 @@ def fire_selection_event(target, scene_id):
     selection_event = SelectionEvent(target)
     selection_event.scene_id = scene_id
     fire_event(selection_event)
+
+
+def fire_hand_on_top_event(target, scene_id):
+    hand_on_top_event = HandOnTopEvent(target)
+    hand_on_top_event.scene_id = scene_id
+    fire_event(hand_on_top_event)
 
 
 

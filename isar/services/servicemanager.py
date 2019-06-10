@@ -10,6 +10,7 @@ from isar.events.rulesservice import RulesService
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
 from isar.tracking import objectdetection
+from isar.tracking.handtracking import HandTrackingService
 from isar.tracking.objectdetection import ObjectDetectionService
 from isar.tracking.selectionstick import SelectionStickService
 
@@ -25,14 +26,15 @@ class ServiceNames(Enum):
     PROJECTOR = 3
     SELECTION_STICK = 4
     SELECTION_SERVICE = 5
-    ACTIONS_SERVICE = 6
-    TIMER_SERVICE = 7
-    RULES_SERVICE = 8
+    HAND_TRACKING_SERVICE = 6
+    ACTIONS_SERVICE = 7
+    TIMER_SERVICE = 8
+    RULES_SERVICE = 9
 
 
 def start_services():
     try:
-        camera1_service = CameraService(ServiceNames.CAMERA1, 2)
+        camera1_service = CameraService(ServiceNames.CAMERA1, 1)
         camera1_service.start()
         __services[ServiceNames.CAMERA1] = camera1_service
     except Exception as exp:
@@ -59,6 +61,10 @@ def start_services():
         selection_service = SelectionService(ServiceNames.SELECTION_SERVICE)
         selection_service.actions_service = actions_service
         __services[ServiceNames.SELECTION_SERVICE] = selection_service
+
+        hand_tracking_service = HandTrackingService(ServiceNames.HAND_TRACKING_SERVICE)
+        hand_tracking_service.start()
+        __services[ServiceNames.HAND_TRACKING_SERVICE] = hand_tracking_service
 
         timer_service = TimerService(ServiceNames.TIMER_SERVICE)
         timer_service.actions_service = actions_service

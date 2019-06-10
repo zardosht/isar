@@ -15,6 +15,8 @@ class Event:
     # each type of event must define its target types.
     target_types = None
 
+    has_multiple_targets = False
+
     def __init__(self, target):
         self.scene_id = None
         self.name = None
@@ -68,6 +70,15 @@ class CheckboxUncheckedEvent(Event):
         super().__init__(target)
 
 
+class CheckboxGroupChecked(Event):
+    from isar.scene.annotationmodel import CheckboxAnnotation
+    target_types = [CheckboxAnnotation]
+    has_multiple_targets = True
+
+    # TODO: implement
+    pass
+
+
 class TimerFinishedEvent(Event):
     from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
@@ -115,24 +126,40 @@ class TimerTickEvent(Event):
 class PhysicalObjectAppearedEvent(Event):
     target_types = [PhysicalObject]
 
+    # TODO: implement
     pass
 
 
 class PhysicalObjectDisappearedEvent(Event):
     target_types = [PhysicalObject]
 
+    # TODO: implement
     pass
 
 
 class PhysicalObjectPickedEvent(Event):
     target_types = [PhysicalObject]
 
+    # TODO: implement
+    pass
+
+
+class PhysicalObjectGroupAppeared(Event):
+    target_types = [PhysicalObject]
+    has_multiple_targets = True
+
+    # TODO: implement
     pass
 
 
 class SceneShownEvent(Event):
     target_types = [Scene]
 
+    # TODO: implement
+    pass
+
+
+class HandOnTopEvent(SelectionEvent):
     pass
 
 
