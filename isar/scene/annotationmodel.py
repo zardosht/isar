@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import shutil
 import time
@@ -17,7 +18,6 @@ from isar.events import eventmanager
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
-
 
 logger = logging.getLogger("isar.scene.annotationmodel")
 
@@ -304,7 +304,7 @@ class Annotation:
 """
 Text
 Arrow
-SelectBox
+Checkbox
 Line
 Circle
 Rectangle
@@ -427,6 +427,15 @@ class RectangleAnnotation(Annotation):
         self.height = IntAnnotationProperty("Height", 5, self)
         self.properties.append(self.height)
 
+        self.is_selectable = True
+
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        width = self.width.get_value()
+        height = self.height.get_value()
+        return position[0] - int(width / 2) <= point[0] <= position[0] + int(width / 2) and \
+            position[1] - int(height / 2) <= point[1] <= position[1] + int(height / 2)
+
 
 class CircleAnnotation(Annotation):
     MINIMUM_RADIUS = 5
@@ -446,6 +455,8 @@ class CircleAnnotation(Annotation):
         self.thickness = IntAnnotationProperty("Thickness", 3, self)
         self.properties.append(self.thickness)
 
+        self.is_selectable = True
+
     def set_position(self, position):
         self.position._value = position
         self.center._value = position
@@ -455,6 +466,11 @@ class CircleAnnotation(Annotation):
         self.center._value = center
         self.position._value = center
         return True
+
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        distance = math.sqrt(math.pow((point[0] - position[0]), 2.0) + math.pow((point[0] - position[0]), 2.0))
+        return distance <= self.radius.get_value()
 
 
 class ImageAnnotation(Annotation):
@@ -700,7 +716,8 @@ class AnimationThread(Thread):
     def __init__(self, animation_annotation):
         super().__init__()
         self.animation_annotation = animation_annotation
-        self.image_positions = numpy.add(self.animation_annotation.line_positions, self.animation_annotation.position.get_value())
+        self.image_positions = numpy.add(self.animation_annotation.line_positions,
+                                         self.animation_annotation.position.get_value())
         self.stop_event = Event()
         self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
         self.loop_direction = False
@@ -769,7 +786,7 @@ class AudioAnnotation(Annotation):
         width = self.icon_size.get_value()
         height = self.icon_size.get_value()
         return position[0] <= point[0] <= position[0] + width and \
-            position[1] <= point[1] <= position[1] + height
+               position[1] <= point[1] <= position[1] + height
 
     def reset_runtime_state(self):
         super().reset_runtime_state()
@@ -816,7 +833,8 @@ class TimerAnnotation(Annotation):
         self.properties.append(self.show_as_chart)
 
         # if True will show as HH:MM:SS, otherwise simply the duration tick
-        self.show_as_fraction = BooleanAnnotationProperty("Show as Fraction", True, self, self.set_show_as_fraction.__name__)
+        self.show_as_fraction = BooleanAnnotationProperty("Show as Fraction", True, self,
+                                                          self.set_show_as_fraction.__name__)
         self.properties.append(self.show_as_fraction)
 
         self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
@@ -1008,7 +1026,7 @@ class CheckboxAnnotation(Annotation):
         width = self.size.get_value()
         height = self.size.get_value()
         return position[0] <= point[0] <= position[0] + width and \
-            position[1] <= point[1] <= position[1] + height
+               position[1] <= point[1] <= position[1] + height
 
     def on_select(self):
         # TODO: Actually the toggling of play mode upon selection should happen
@@ -1511,4 +1529,3 @@ class ActionAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         self._value = value
         return True
-
