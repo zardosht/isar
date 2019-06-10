@@ -77,7 +77,8 @@ class ProjectorView(QtWidgets.QWidget):
 
         height, width, bpc = scene_image_warpped.shape
         bpl = bpc * width
-        self.image = QtGui.QImage(scene_image_warpped.data, width, height, bpl, QtGui.QImage.Format_RGB888)
+        self.image = QtGui.QImage(scene_image_warpped.data, width, height, bpl, QtGui.QImage.Format_RGB888).rgbSwapped()
+        # self.image = QtGui.QImage(scene_image_warpped.data, width, height, bpl, QtGui.QImage.Format_)
         self.setMinimumSize(self.image.size())
         logger.debug("Image size: %s", self.image.size())
         self.update()
@@ -191,7 +192,7 @@ class ProjectorView(QtWidgets.QWidget):
         reprojected_points = reprojected_points.squeeze()
         test_chessboard_image = projector_img.copy()
         for reprojected_point in reprojected_points:
-            cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (0, 0, 255), 2)
+            cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (255, 0, 0), 2)
 
         self.set_scene_image(test_chessboard_image)
         time.sleep(5)
