@@ -13,5 +13,5 @@ class HandTrackingService(SelectionStickService):
 
     def fire_event(self, target):
         logger.info("Fire HandOnTopEvent on: " + str(target))
-        scene_id = self.__annotations_model.get_current_scene().name
+        scene_id = self._annotations_model.get_current_scene().name
         eventmanager.fire_hand_on_top_event(target, scene_id)

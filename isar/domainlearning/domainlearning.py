@@ -4,11 +4,10 @@ import time
 
 from PyQt5 import QtCore, uic
 from PyQt5.QtCore import QItemSelectionModel, QTimer, Qt
-from PyQt5.QtWidgets import QHBoxLayout, QFileDialog, QWidget, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 from isar.camera.camera import CameraService
 from isar.projection.projector import ProjectorView
 from isar.scene.annotationmodel import AnnotationsModel
-from isar.scene.cameraview import CameraView
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
@@ -50,7 +49,7 @@ class DomainLearningWindow(QMainWindow):
 
     def setup_ui(self):
         uic.loadUi("isar/ui/domain_learning.ui", self)
- 
+
     def setup_projector_view(self, screen_id):
         self.projector_view = ProjectorView(self.projector_view, screen_id, self._camera_service)
         self.projector_view.setWindowFlag(Qt.Window)
@@ -108,13 +107,11 @@ class DomainLearningWindow(QMainWindow):
         for po_s in self._object_detection_service.get_physical_objects().values():
             all_physical_obj.extend(po_s)
         self.physical_objects_model.set_all_physical_objects(all_physical_obj)
-        self.camera_view.set_physical_objects_model(self.physical_objects_model)
         self.projector_view.set_physical_objects_model(self.physical_objects_model)
         # self.objects_view.setModel(physical_objects_model)
 
         self.annotations_model = AnnotationsModel()
         self.annotations_model.set_scene(current_scene)
-        self.camera_view.set_annotations_model(self.annotations_model)
         self.projector_view.set_physical_objects_model(self.physical_objects_model)
 
         self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)
@@ -152,7 +149,6 @@ class DomainLearningWindow(QMainWindow):
 
         self.annotations_model.set_scene(self.scenes_model.get_current_scene())
         self.physical_objects_model.set_scene(self.scenes_model.get_current_scene())
-        self.camera_view.set_annotations_model(self.annotations_model)
         self.projector_view.set_annotations_model(self.annotations_model)
 
         servicemanager.current_scene_changed(self.scenes_model.get_current_scene())
