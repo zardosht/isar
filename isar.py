@@ -41,7 +41,12 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     scene_defintion = input("Scene Definition (y/n)? ")
-    servicemanager.start_services()
+
+    all_services_initialized = servicemanager.start_services()
+    if not all_services_initialized:
+        logger.error("Could not intialize services. Return.")
+        return
+
     if scene_defintion == "y":
         isar.application_mode = ApplicationMode.AUTHORING
         scene_def_window = SceneDefinitionWindow()

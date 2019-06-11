@@ -34,12 +34,14 @@ class ServiceNames(Enum):
 
 def start_services():
     try:
-        camera1_service = CameraService(ServiceNames.CAMERA1, 1)
+        camera1_service = CameraService(ServiceNames.CAMERA1, 2)
         camera1_service.start()
         __services[ServiceNames.CAMERA1] = camera1_service
     except Exception as exp:
-        logger.error(exp)
+        logger.error("Could not initialize camera service. Return.")
+        logger.error("Please check the camera is connected and working.")
         traceback.print_tb(exp.__traceback__)
+        return False
 
     try:
         objectdetection.init()
@@ -77,6 +79,8 @@ def start_services():
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
+
+    return True
 
 
 def stop_services():
