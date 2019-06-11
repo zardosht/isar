@@ -51,6 +51,7 @@ def start_services():
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
+        return False
 
     try:
         actions_service = ActionsService(ServiceNames.ACTIONS_SERVICE)
@@ -79,6 +80,7 @@ def start_services():
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
+        return False
 
     return True
 
