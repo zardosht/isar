@@ -77,8 +77,10 @@ class ProjectorView(QtWidgets.QWidget):
 
         height, width, bpc = scene_image_warpped.shape
         bpl = bpc * width
-        self.image = QtGui.QImage(scene_image_warpped.data, width, height, bpl, QtGui.QImage.Format_RGB888).rgbSwapped()
-        # self.image = QtGui.QImage(scene_image_warpped.data, width, height, bpl, QtGui.QImage.Format_)
+
+        rgb_scene_image_warpped = cv2.cvtColor(scene_image_warpped, cv2.COLOR_BGR2RGB)
+        self.image = QtGui.QImage(rgb_scene_image_warpped.data, width, height, bpl, QtGui.QImage.Format_RGB888)
+
         self.setMinimumSize(self.image.size())
         logger.debug("Image size: %s", self.image.size())
         self.update()
