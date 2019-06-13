@@ -5,22 +5,60 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
+from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise
 from isar.scene.annotationmodel import CurveAnnotation
 from isar.scene.scenemodel import ScenesModel
 
 
-class HandSkillExercisePath(QWizard):
+class HandSkillExercisePathUI(QWizard):
 
     def __init__(self):
         super().__init__()
-        self.setup_ui(self)
-        self.setup_signals()
+        self.exercise = FollowThePathExercise()
         self.scenes_model = ScenesModel()
         self.__scenes = None
+        self.setup_ui(self)
+        self.setup_signals()
+        self.setup_constraints()
 
     def setup_signals(self):
         self.pushButton_loadProject.clicked.connect(self.pushButton_loadProject_clicked)
         self.pushButton_selectScene.clicked.connect(self.pushButton_selectScene_clicked)
+        self.button(QWizard.FinishButton).clicked.connect(self.finishButton_clicked)
+
+    def finishButton_clicked(self):
+        # TODO: not so efficient to add again the objects, should be refactored
+        if self.comboBox_feedback.currentText() == "Error":
+            self.exercise.feedback.add_to_evaluation_list(self.exercise.error)
+
+        if self.comboBox_feedback.currentText() == "Time":
+            self.exercise.feedback.add_to_evaluation_list(self.exercise.time)
+
+        if self.comboBox_feedback.currentText() == "Weighted combination":
+            self.exercise.feedback.add_to_evaluation_list(self.exercise.error)
+            self.exercise.feedback.add_to_evaluation_list(self.exercise.time)
+
+        self.exercise.feedback.set_good((int(self.lineEdit_goodFrom.text()),int(self.lineEdit_goodTo.text())))
+        self.exercise.feedback.set_average((int(self.lineEdit_averageFrom.text()),int(self.lineEdit_averageTo.text())))
+        self.exercise.feedback.set_bad((int(self.lineEdit_badFrom.text()),int(self.lineEdit_badTo.text())))
+
+        self.save_exercise()
+        print("Finish!")
+
+    def save_exercise(self):
+        # TODO: drop as Json
+        parent_dir = QFileDialog.getExistingDirectory()
+        if parent_dir is None or parent_dir == "":
+            return
+
+        # TODO: add field for naming the exercise
+        project_name = self.lineEdit_projectName.text()
+
+        save_path = os.path.join(parent_dir, "TEST.json")
+
+        frozen = jsonpickle.encode(self.exercise)
+        with open(str(save_path), "w") as f:
+            f.write(frozen)
 
     def pushButton_loadProject_clicked(self):
         print("load button clicked")
@@ -57,7 +95,20 @@ class HandSkillExercisePath(QWizard):
         index = self.listWidget_scenes.currentIndex()
         selected = index.data()
         self.lineEdit_selectedScenes.setText(selected)
+        for scene in self.__scenes:
+            if scene.name == selected:
+                self.exercise.set_scene(scene)
 
+    def setup_constraints(self):
+        # TODO: add constraints at the end
+        # self.scene.registerField("lineEdit_selectedScenes*", self.lineEdit_selectedScenes)
+        # self.target_value.registerField("lineEdit_weighted*", self.lineEdit_weighted)
+        # self.feedback.registerField("lineEdit_badTo*", self.lineEdit_badTo)
+
+        self.lineEdit_projectName.setEnabled(False)
+        self.lineEdit_selectedScenes.setEnabled(False)
+        self.pushButton_selectScene.setEnabled(False)
+        self.lineEdit_weighted.setEnabled(False)
 
     def setup_ui(self, Wizard):
         Wizard.setObjectName("Wizard")
@@ -196,14 +247,6 @@ class HandSkillExercisePath(QWizard):
         self.lineEdit_badTo.setObjectName("lineEdit_badTo")
         self.gridLayout_3.addWidget(self.lineEdit_badTo, 3, 4, 1, 1)
         Wizard.addPage(self.feedback)
-
-        self.scene.registerField("lineEdit_selectedScenes*", self.lineEdit_selectedScenes)
-        self.target_value.registerField("lineEdit_weighted*", self.lineEdit_weighted)
-        self.feedback.registerField("lineEdit_badTo*", self.lineEdit_badTo)
-
-        self.lineEdit_projectName.setEnabled(False)
-        self.lineEdit_selectedScenes.setEnabled(False)
-        self.pushButton_selectScene.setEnabled(False)
 
         self.retranslate_ui(Wizard)
         QtCore.QMetaObject.connectSlotsByName(Wizard)
