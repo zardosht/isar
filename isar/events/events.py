@@ -15,6 +15,8 @@ class Event:
     # each type of event must define its target types.
     target_types = None
 
+    has_multiple_targets = False
+
     def __init__(self, target):
         self.scene_id = None
         self.name = None
@@ -23,6 +25,15 @@ class Event:
     @classmethod
     def update_event_properties_frame(cls, qt_frame):
         pass
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+
+        if self.scene_id != other.scene_id:
+            return False
+
+        return self.target.name == other.target.name
 
 
 class SelectionEvent(Event):
@@ -35,9 +46,9 @@ class SelectionEvent(Event):
     as the user moves the selection tool on top of different annotations and objects 
     """
 
-    repeat_interval = 1
+    repeat_interval = 100000000
     """
-    Interval between repeated sending of the event. 
+    Interval between repeated sending of the event. SelectionEvent is not repeatable, i.e. interval = 100000000 
     """
 
     pass
@@ -57,6 +68,15 @@ class CheckboxUncheckedEvent(Event):
 
     def __init__(self, target):
         super().__init__(target)
+
+
+class CheckboxGroupChecked(Event):
+    from isar.scene.annotationmodel import CheckboxAnnotation
+    target_types = [CheckboxAnnotation]
+    has_multiple_targets = True
+
+    # TODO: implement
+    pass
 
 
 class TimerFinishedEvent(Event):
@@ -106,30 +126,49 @@ class TimerTickEvent(Event):
 class PhysicalObjectAppearedEvent(Event):
     target_types = [PhysicalObject]
 
+    # TODO: implement
     pass
 
 
 class PhysicalObjectDisappearedEvent(Event):
     target_types = [PhysicalObject]
 
+    # TODO: implement
     pass
 
 
 class PhysicalObjectPickedEvent(Event):
     target_types = [PhysicalObject]
 
+    # TODO: implement
+    pass
+
+
+class PhysicalObjectGroupAppeared(Event):
+    target_types = [PhysicalObject]
+    has_multiple_targets = True
+
+    # TODO: implement
     pass
 
 
 class SceneShownEvent(Event):
     target_types = [Scene]
 
+    # TODO: implement
+    pass
+
+
+class HandOnTopEvent(SelectionEvent):
+    trigger_interval = 0.2
+    repeat_interval = 0.5
     pass
 
 
 event_types = {
     SelectionEvent.__name__: SelectionEvent,
     CheckboxCheckedEvent.__name__: CheckboxCheckedEvent,
+    CheckboxUncheckedEvent.__name__: CheckboxUncheckedEvent,
     TimerFinishedEvent.__name__: TimerFinishedEvent,
     TimerTimeout1Event.__name__: TimerTimeout1Event,
     TimerTimeout2Event.__name__: TimerTimeout2Event,

@@ -1,4 +1,17 @@
 
+Defining Domain learning exercises: 
+
+* All is possible with current setup. No need for separate UI. 
+* Two kind of exercises: Multiple choice, and choose or select physical object
+* For multiple choice, we show the text of question, and the different options. Each option has an associated checkbox. The author can define actions that should happen whenever a check box is selected.
+ 
+
+
+
+
+
+==============================
+
 
 * when defining an action, the user first selects the scene. If the action is ShowScene  then that scene is the target scene. If the action is an annotation related action, then only annotations on the selected scene can be selected as target of the action. The name of the scene (which is unique) is also saved in the action for sanity check. 
 
@@ -13,13 +26,13 @@
 
 =====================
 
-* Compare Scene Action: has the current scene, and another selected scene as argument. Has two action attributes for both cases “identical” and “different”. Compares both scenes, and performs the identical action in case both scenes are equal, or different action, if the scenes are different. For example the identical action could be “show positive feedback annotation”, or the different action could be “show negative feedback scene” or “highlight the differences action”
+* [don't need it] Compare Scene Action: has the current scene, and another selected scene as argument. Has two action attributes for both cases “identical” and “different”. Compares both scenes, and performs the identical action in case both scenes are equal, or different action, if the scenes are different. For example the identical action could be “show positive feedback annotation”, or the different action could be “show negative feedback scene” or “highlight the differences action”
 
 * we definitely need the composite action for composition of actions: two sequence operators AND and THEN. The AND operator performs the actions in parallel. The THEN operator performs them in after one another. (Performing sequentially: a for loop on the actions with time.sleep(1) in between; Performing parallel, a for loop that starts a thread for each action)
 
 * Wait Action (waits for the given time) 
 
-* Hight Scene Differences Action: takes scenes, and highlights their differences. 
+* [don't need it] Highlight Scene Differences Action: takes scenes, and highlights their differences. 
 
 
 =====================

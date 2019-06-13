@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import shutil
 import time
@@ -13,7 +14,7 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableMode
 from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel, QVBoxLayout, QSizePolicy
 
-from isar.events import actionsservice, eventmanager
+from isar.events import eventmanager
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
@@ -211,6 +212,9 @@ class AnnotationsModel(QAbstractListModel):
         else:
             return ()
 
+    def get_current_scene(self):
+        return self.__scene
+
 
 class Annotation:
     def __init__(self):
@@ -293,11 +297,14 @@ class Annotation:
         # The value of these attributes are persisted. They must be reset however, when the project is loaded.
         self.is_selected = False
 
+    def __str__(self):
+        return self.id
+
 
 """
 Text
 Arrow
-SelectBox
+Checkbox
 Line
 Circle
 Rectangle
@@ -420,6 +427,15 @@ class RectangleAnnotation(Annotation):
         self.height = IntAnnotationProperty("Height", 5, self)
         self.properties.append(self.height)
 
+        self.is_selectable = True
+
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        width = self.width.get_value()
+        height = self.height.get_value()
+        return position[0] - int(width / 2) <= point[0] <= position[0] + int(width / 2) and \
+            position[1] - int(height / 2) <= point[1] <= position[1] + int(height / 2)
+
 
 class CircleAnnotation(Annotation):
     MINIMUM_RADIUS = 5
@@ -439,6 +455,8 @@ class CircleAnnotation(Annotation):
         self.thickness = IntAnnotationProperty("Thickness", 3, self)
         self.properties.append(self.thickness)
 
+        self.is_selectable = True
+
     def set_position(self, position):
         self.position._value = position
         self.center._value = position
@@ -448,6 +466,11 @@ class CircleAnnotation(Annotation):
         self.center._value = center
         self.position._value = center
         return True
+
+    def intersects_with_point(self, point):
+        position = self.position.get_value()
+        distance = math.sqrt(math.pow((point[0] - position[0]), 2.0) + math.pow((point[0] - position[0]), 2.0))
+        return distance <= self.radius.get_value()
 
 
 class ImageAnnotation(Annotation):
@@ -693,7 +716,8 @@ class AnimationThread(Thread):
     def __init__(self, animation_annotation):
         super().__init__()
         self.animation_annotation = animation_annotation
-        self.image_positions = numpy.add(self.animation_annotation.line_positions, self.animation_annotation.position.get_value())
+        self.image_positions = numpy.add(self.animation_annotation.line_positions,
+                                         self.animation_annotation.position.get_value())
         self.stop_event = Event()
         self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
         self.loop_direction = False
@@ -762,7 +786,7 @@ class AudioAnnotation(Annotation):
         width = self.icon_size.get_value()
         height = self.icon_size.get_value()
         return position[0] <= point[0] <= position[0] + width and \
-            position[1] <= point[1] <= position[1] + height
+               position[1] <= point[1] <= position[1] + height
 
     def reset_runtime_state(self):
         super().reset_runtime_state()
@@ -809,7 +833,8 @@ class TimerAnnotation(Annotation):
         self.properties.append(self.show_as_chart)
 
         # if True will show as HH:MM:SS, otherwise simply the duration tick
-        self.show_as_fraction = BooleanAnnotationProperty("Show as Fraction", True, self, self.set_show_as_fraction.__name__)
+        self.show_as_fraction = BooleanAnnotationProperty("Show as Fraction", True, self,
+                                                          self.set_show_as_fraction.__name__)
         self.properties.append(self.show_as_fraction)
 
         self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
@@ -940,6 +965,7 @@ class TimerThread(Thread):
     def __init__(self, timer_annotation):
         super().__init__()
         self.timer_annotation = timer_annotation
+        self.scene = self.timer_annotation.scene
         self.stop_event = Event()
 
     def run(self):
@@ -951,21 +977,29 @@ class TimerThread(Thread):
 
             self.timer_annotation.current_time += 1
             if (self.timer_annotation.current_time % self.timer_annotation.tick_interval.get_value()) == 0:
-                eventmanager.fire_timer_tick_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_tick_event(self.timer_annotation,
+                                                   self.timer_annotation.current_time,
+                                                   self.scene.name)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_1.get_value():
-                eventmanager.fire_timer_timeout1_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_timeout1_event(self.timer_annotation,
+                                                       self.timer_annotation.current_time,
+                                                       self.scene.name)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_2.get_value():
-                eventmanager.fire_timer_timeout2_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_timeout2_event(self.timer_annotation,
+                                                       self.timer_annotation.current_time,
+                                                       self.scene.name)
 
             if self.timer_annotation.current_time == self.timer_annotation.timeout_3.get_value():
-                eventmanager.fire_timer_timeout3_event(self.timer_annotation, self.timer_annotation.current_time)
+                eventmanager.fire_timer_timeout3_event(self.timer_annotation,
+                                                       self.timer_annotation.current_time,
+                                                       self.scene.name)
 
             time.sleep(1)
 
         if not stopped_before_finish:
-            eventmanager.fire_timer_finished_event(self.timer_annotation)
+            eventmanager.fire_timer_finished_event(self.timer_annotation, self.scene.name)
 
     def stop(self):
         self.stop_event.set()
@@ -992,7 +1026,7 @@ class CheckboxAnnotation(Annotation):
         width = self.size.get_value()
         height = self.size.get_value()
         return position[0] <= point[0] <= position[0] + width and \
-            position[1] <= point[1] <= position[1] + height
+               position[1] <= point[1] <= position[1] + height
 
     def on_select(self):
         # TODO: Actually the toggling of play mode upon selection should happen
@@ -1003,10 +1037,10 @@ class CheckboxAnnotation(Annotation):
         self.checked.set_value(not was_checked)
         if not was_checked:
             # the checkbox is now checked
-            eventmanager.fire_checkbox_checked_event(self)
+            eventmanager.fire_checkbox_checked_event(self, self.scene.name)
         else:
             # the checkbox is now unchecked
-            eventmanager.fire_checkbox_unchecked_event(self)
+            eventmanager.fire_checkbox_unchecked_event(self, self.scene.name)
 
 
 class RelationshipAnnotation(Annotation):
@@ -1189,9 +1223,12 @@ class AnnotationPropertyItemDelegate(QStyledItemDelegate):
             return boolean_combo
 
         elif isinstance(annotation_property, ActionAnnotationProperty):
+            from isar.services import servicemanager
+            from isar.services.servicemanager import ServiceNames
+            action_service = servicemanager.get_service(ServiceNames.ACTIONS_SERVICE)
             self.actions_combo_items = []
-            self.actions_combo_items.extend(actionsservice.defined_actions)
             self.actions_combo_items.append(None)
+            self.actions_combo_items.extend(action_service.get_available_actions())
 
             combo = QComboBox(parent)
             combo.clear()
@@ -1492,4 +1529,3 @@ class ActionAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         self._value = value
         return True
-

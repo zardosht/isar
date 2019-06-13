@@ -23,6 +23,9 @@ cam_proj_homography = None
 
 ANNOTATION_ID_SEPARATOR = "."
 
+SCENE_TOP_LEFT_MARKER_ID = 0
+SCENE_BOTTOM_RIGHT_MARKER_ID = 1
+
 
 class RefFrame(NamedTuple):
     x: float
@@ -95,6 +98,9 @@ def get_qimage_from_np_image(np_image):
 
 
 def mouse_coordinates_to_image_coordinates(x, y, camera_view_size, image_size):
+    if image_size is None:
+        return x, y
+
     x_scale = image_size.width / camera_view_size.width
     y_scale = image_size.height / camera_view_size.height
     return int(x * x_scale), int(y * y_scale)
@@ -209,9 +215,9 @@ def compute_scene_rect(camera_frame, cam_proj_homography=None):
     top_left_marker_index = -1   # that's the marker with id 0
     bottom_right_marker_index = -1  # that's the marker with id 1
     for idx, marker_id in enumerate(marker_ids):
-        if marker_id == 0:
+        if marker_id == SCENE_TOP_LEFT_MARKER_ID:
             top_left_marker_index = idx
-        if marker_id == 1:
+        if marker_id == SCENE_BOTTOM_RIGHT_MARKER_ID:
             bottom_right_marker_index = idx
 
     if top_left_marker_index == -1 or bottom_right_marker_index == -1:

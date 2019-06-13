@@ -1,7 +1,8 @@
 import threading
 import logging
 
-from isar.events import actionsservice
+from isar.events import eventmanager
+from isar.events.events import SelectionEvent
 from isar.scene.annotationmodel import Annotation, ActionButtonAnnotation
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.services.service import Service
@@ -14,22 +15,13 @@ class SelectionService(Service):
         super().__init__(service_name)
         self.annotations_model = None
         self.actions_service = None
+        self.current_scene = None
+
+        eventmanager.register_listener(SelectionEvent.__name__, self)
 
     def on_event(self, selection_event):
         target = selection_event.target
-
-        # ------------ Experimental ------------
-        if isinstance(target, Annotation):
-            if target.name == "lenna":
-                toggle_red_box_action = actionsservice.defined_actions[0]
-                self.actions_service.perform_action(toggle_red_box_action)
-
-        if isinstance(target, PhysicalObject):
-            if target.name == "Pincers":
-                action = actionsservice.get_action_by_name("Play Pincers Audio")
-                self.actions_service.perform_action(action)
-
-        # --------------------------------------
+        logger.info("SelectionEvent on {}".format(str(target)))
 
         on_select = getattr(target, "on_select", None)
         if on_select is not None and callable(on_select):
@@ -40,7 +32,8 @@ class SelectionService(Service):
             action = target.on_select_action.get_value()
             self.actions_service.perform_action(action)
 
+    def set_current_scene(self, current_scene):
+        self.current_scene = current_scene
+
     def stop(self):
         pass
-
-

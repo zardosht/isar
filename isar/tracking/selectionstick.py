@@ -36,13 +36,19 @@ logger = logging.getLogger("isar.selectionstick")
 
 
 class SelectionStickService(Service):
+
     def __init__(self, service_name=None):
         super().__init__(service_name)
         self._stop_event = threading.Event()
         self.camera_img = None
-        self.__current_rect = None
-        self.__physical_objects_model = None
-        self.__annotations_model = None
+        self._current_rect = None
+        self._physical_objects_model = None
+        self._annotations_model = None
+
+        self.MARKER_ID = 5
+
+        self.trigger_interval = SelectionEvent.trigger_interval
+        self.repeat_interval = SelectionEvent.repeat_interval
 
         self.drawing_color = (255, 0, 255)
         self.object_name = None
@@ -66,18 +72,18 @@ class SelectionStickService(Service):
 
             marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(self.camera_img, sceneutil.aruco_dictionary)
             if marker_ids is None:
-                self.__current_rect = None
+                self._current_rect = None
                 continue
 
             index = -1
             for i, marker_id in enumerate(marker_ids):
-                if marker_id == 5:
+                if marker_id == self.MARKER_ID:
                     index = i
 
             if index != -1:
-                self.__current_rect = marker_corners[index].reshape(4, 2)
+                self._current_rect = marker_corners[index].reshape(4, 2)
             else:
-                self.__current_rect = None
+                self._current_rect = None
 
     def _start_event_detection(self):
         # get the center of marker rect
@@ -86,7 +92,7 @@ class SelectionStickService(Service):
         # check the colliding objects, if more that three seconds colliding, then fire event.
 
         while not self._stop_event.is_set():
-            if self.__current_rect is None:
+            if self._current_rect is None:
                 continue
 
             center_point = self.get_center_point(in_image_coordinates=True)
@@ -96,7 +102,7 @@ class SelectionStickService(Service):
             center_in_scene = sceneutil.camera_coord_to_scene_coord(center_point)
 
             collides_with_object = False
-            for phys_obj in self.__physical_objects_model.get_scene_physical_objects():
+            for phys_obj in self._physical_objects_model.get_scene_physical_objects():
                 if phys_obj.collides_with_point(center_in_scene, sceneutil.scene_scale_factor_c):
                     phys_obj_name = phys_obj.name
                     collides_with_object = True
@@ -104,12 +110,21 @@ class SelectionStickService(Service):
                     self.object_name = phys_obj_name
 
                     if phys_obj_name not in self.event_timers_phys_obj:
-                        self.event_timers_phys_obj[phys_obj_name] = time.time()
+                        self.event_timers_phys_obj[phys_obj_name] = [time.time(), False]
                     else:
-                        first = self.event_timers_phys_obj[phys_obj_name]
-                        if time.time() - first > SelectionEvent.trigger_interval:
-                            self.fire_selection_event(phys_obj)
-                            del self.event_timers_phys_obj[phys_obj_name]
+                        last = self.event_timers_phys_obj[phys_obj_name][0]
+                        triggered = self.event_timers_phys_obj[phys_obj_name][1]
+                        time_diff = time.time() - last
+
+                        if time_diff > self.trigger_interval:
+                            if not triggered:
+                                self.fire_event(phys_obj)
+                                self.event_timers_phys_obj[phys_obj_name][1] = True
+
+                        if time_diff > self.repeat_interval:
+                            self.fire_event(phys_obj)
+                            self.event_timers_phys_obj[phys_obj_name][0] = time.time()
+                            # del self.event_timers_phys_obj[phys_obj]
 
                     break
 
@@ -117,7 +132,7 @@ class SelectionStickService(Service):
                 self.event_timers_phys_obj.clear()
 
             collides_with_annotation = False
-            for annotation in self.__annotations_model.get_all_annotations():
+            for annotation in self._annotations_model.get_all_annotations():
                 if annotation.intersects_with_point(center_in_scene):
                     collides_with_annotation = True
                     self.drawing_color = (0, 0, 255)
@@ -127,16 +142,18 @@ class SelectionStickService(Service):
                     if annotation.name not in self.event_timers_annotation:
                         self.event_timers_annotation[annotation_name] = [time.time(), False]
                     else:
-                        first = self.event_timers_annotation[annotation_name][0]
+                        last = self.event_timers_annotation[annotation_name][0]
                         triggered = self.event_timers_annotation[annotation_name][1]
-                        time_diff = time.time() - first
-                        if time_diff > SelectionEvent.trigger_interval:
+                        time_diff = time.time() - last
+                        if time_diff > self.trigger_interval:
                             if not triggered:
-                                self.fire_selection_event(annotation)
+                                self.fire_event(annotation)
                                 self.event_timers_annotation[annotation_name][1] = True
-                        elif time_diff > SelectionEvent.repeat_interval:
-                            self.fire_selection_event(annotation)
-                            del self.event_timers_annotation[annotation_name]
+
+                        if time_diff > self.repeat_interval:
+                            self.fire_event(annotation)
+                            self.event_timers_annotation[annotation_name][0] = time.time()
+                            # del self.event_timers_annotation[annotation_name]
 
             if not collides_with_annotation:
                 self.event_timers_annotation.clear()
@@ -151,14 +168,14 @@ class SelectionStickService(Service):
     def stop(self):
         self._stop_event.set()
 
-    @staticmethod
-    def fire_selection_event(target):
+    def fire_event(self, target):
         logger.info("Fire SelectionEvent on: " + str(target))
         selection_event = SelectionEvent(target)
+        selection_event.scene_id = self._annotations_model.get_current_scene().name
         eventmanager.fire_event(selection_event)
 
     def draw_current_rect(self, img, camera_projector_homography=None, scene_homography=None):
-        current_rect = self.__current_rect
+        current_rect = self._current_rect
         if current_rect is not None:
             if camera_projector_homography is not None:
                 projected_points = cv2.perspectiveTransform(np.array([[current_rect[0], current_rect[2]]]), camera_projector_homography).squeeze()
@@ -195,10 +212,10 @@ class SelectionStickService(Service):
                 cv2.putText(img, self.annotation_name, (v1[0], v1[1] - 10), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
 
     def get_current_rect(self):
-        return self.__current_rect
+        return self._current_rect
 
     def get_center_point(self, in_image_coordinates=True):
-        rect = self.__current_rect
+        rect = self._current_rect
         if rect is None:
             return None
 
@@ -212,10 +229,10 @@ class SelectionStickService(Service):
             return sceneutil.camera_coord_to_scene_coord(center)
 
     def set_physical_objects_model(self, phm):
-        self.__physical_objects_model = phm
+        self._physical_objects_model = phm
 
-    def set_annotations_model(self, phm):
-        self.__annotations_model = phm
+    def set_annotations_model(self, annot_model):
+        self._annotations_model = annot_model
 
 
 

@@ -38,11 +38,8 @@ def create_chessboard_image(width, height):
 
 
 def create_dummy_projector_image(projector_width, projector_height, scene_rect):
-    # TODO: This some how needs rework. Define a scene_size attribute for the scene.
-    # TODO: The tabel scene_size will be defined using markers. Then you only need to render all
-    # dummy_scene_image = np.zero((height, width, 3), np.uint8)
     width, height = scene_rect[2], scene_rect[3]
-    dummy_scene_image = sceneutil.create_empty_image((projector_width, projector_height), (0, 0, 255))
+    dummy_scene_image = sceneutil.create_empty_image((projector_width, projector_height), (255, 0, 0))
 
     vertex1 = (scene_rect[0], scene_rect[1])
     vertex2 = (scene_rect[0] + width, scene_rect[1] + height)

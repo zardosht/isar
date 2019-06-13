@@ -6,9 +6,11 @@ from isar.camera.camera import CameraService
 from isar.events import eventmanager
 from isar.events.actionsservice import ActionsService
 from isar.events.events import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
+from isar.events.rulesservice import RulesService
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
 from isar.tracking import objectdetection
+from isar.tracking.handtracking import HandTrackingService
 from isar.tracking.objectdetection import ObjectDetectionService
 from isar.tracking.selectionstick import SelectionStickService
 
@@ -24,8 +26,10 @@ class ServiceNames(Enum):
     PROJECTOR = 3
     SELECTION_STICK = 4
     SELECTION_SERVICE = 5
-    ACTIONS_SERVICE = 6
-    TIMER_SERVICE = 7
+    HAND_TRACKING_SERVICE = 6
+    ACTIONS_SERVICE = 7
+    TIMER_SERVICE = 8
+    RULES_SERVICE = 9
 
 
 def start_services():
@@ -34,8 +38,10 @@ def start_services():
         camera1_service.start()
         __services[ServiceNames.CAMERA1] = camera1_service
     except Exception as exp:
-        logger.error(exp)
+        logger.error("Could not initialize camera service. Return.")
+        logger.error("Please check the camera is connected and working.")
         traceback.print_tb(exp.__traceback__)
+        return False
 
     try:
         objectdetection.init()
@@ -45,6 +51,7 @@ def start_services():
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
+        return False
 
     try:
         actions_service = ActionsService(ServiceNames.ACTIONS_SERVICE)
@@ -56,21 +63,26 @@ def start_services():
 
         selection_service = SelectionService(ServiceNames.SELECTION_SERVICE)
         selection_service.actions_service = actions_service
-        eventmanager.register_listener(SelectionEvent.__name__, selection_service)
         __services[ServiceNames.SELECTION_SERVICE] = selection_service
+
+        hand_tracking_service = HandTrackingService(ServiceNames.HAND_TRACKING_SERVICE)
+        hand_tracking_service.start()
+        __services[ServiceNames.HAND_TRACKING_SERVICE] = hand_tracking_service
 
         timer_service = TimerService(ServiceNames.TIMER_SERVICE)
         timer_service.actions_service = actions_service
-        eventmanager.register_listener(TimerTickEvent.__name__, timer_service)
-        eventmanager.register_listener(TimerFinishedEvent.__name__, timer_service)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, timer_service)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, timer_service)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, timer_service)
         __services[ServiceNames.SELECTION_SERVICE] = timer_service
+
+        rules_service = RulesService(ServiceNames.RULES_SERVICE)
+        rules_service.actions_service = actions_service
+        __services[ServiceNames.RULES_SERVICE] = rules_service
 
     except Exception as exp:
         logger.error(exp)
         traceback.print_tb(exp.__traceback__)
+        return False
+
+    return True
 
 
 def stop_services():
@@ -84,3 +96,16 @@ def stop_services():
 
 def get_service(service_name):
     return __services[service_name]
+
+
+def current_scene_changed(current_scene):
+    for service in __services.values():
+        if getattr(service, "set_current_scene", None) is not None:
+            service.set_current_scene(current_scene)
+
+
+def on_project_loaded():
+    # Services can re-initialize for the new project
+    for service in __services.values():
+        if getattr(service, "on_project_loaded", None) is not None:
+            service.on_project_loaded()

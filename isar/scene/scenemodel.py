@@ -7,7 +7,6 @@ import jsonpickle
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
-from isar.events import actionsservice
 from isar.scene import sceneutil
 
 logger = logging.getLogger("isar.scene.scenemodel")
@@ -28,35 +27,36 @@ current_project: Project = None
 class ScenesModel(QAbstractListModel):
     editCompleted = QtCore.pyqtSignal(str)
     scene_changed = QtCore.pyqtSignal()
+    project_loaded = QtCore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
-        self.scenes = [Scene("Scene1")]
-        self.__current_scene = self.scenes[0]
+        self.__scenes = [Scene("Scene1")]
+        self.__current_scene = self.__scenes[0]
         self.scene_size = None
-        self.back_scene_nav_stack = [self.scenes[0].name]
+        self.back_scene_nav_stack = [self.__scenes[0].name]
         self.default_scene_navigation_flow = None
         self.defined_scene_navigation_flow = None
 
     def rowCount(self, parent):
-        return len(self.scenes)
+        return len(self.__scenes)
 
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
-            return self.scenes[index.row()].name
+            return self.__scenes[index.row()].name
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
-            new_name = self.scenes[index.row()].name
+            new_name = self.__scenes[index.row()].name
             try:
-                taken_names = [scene.name for scene in self.scenes]
+                taken_names = [scene.name for scene in self.__scenes]
                 if sceneutil.is_valid_name(str(value), taken_names):
                     new_name = str(value)
             except Exception as e:
                 print("Error editing scene name", e)
                 return False
 
-            self.scenes[index.row()].name = new_name
+            self.__scenes[index.row()].name = new_name
             self.default_scene_navigation_flow = self.get_ordered_scene_ids()
             self.editCompleted.emit(new_name)
 
@@ -65,7 +65,7 @@ class ScenesModel(QAbstractListModel):
     def find_index(self, scn):
         idx = -1
         try:
-            idx = self.scenes.index(scn)
+            idx = self.__scenes.index(scn)
         except ValueError:
             logger.warning("Scene not found")
 
@@ -78,12 +78,12 @@ class ScenesModel(QAbstractListModel):
     def new_scene(self, at_index):
         self.beginInsertRows(QModelIndex(), at_index.row(), at_index.row())
         self.insertRow(at_index.row())
-        scene_name = "Scene" + str(len(self.scenes) + 1)
+        scene_name = "Scene" + str(len(self.__scenes) + 1)
         new_scene = Scene(scene_name)
 
         index = at_index.row() + 1
-        if index <= len(self.scenes):
-            self.scenes.insert(index, new_scene)
+        if index <= len(self.__scenes):
+            self.__scenes.insert(index, new_scene)
 
         qmodel_index = self.createIndex(index, index)
         self.set_current_scene(qmodel_index)
@@ -91,7 +91,7 @@ class ScenesModel(QAbstractListModel):
         self.endInsertRows()
 
     def clone_scene(self, selected_index):
-        if len(self.scenes) <= selected_index.row():
+        if len(self.__scenes) <= selected_index.row():
             return
 
         self.beginInsertRows(QModelIndex(), selected_index.row(), selected_index.row())
@@ -99,24 +99,24 @@ class ScenesModel(QAbstractListModel):
 
         cloned_scene = self.__current_scene.clone()
 
-        self.scenes.insert(selected_index.row() + 1, cloned_scene)
+        self.__scenes.insert(selected_index.row() + 1, cloned_scene)
         self.default_scene_navigation_flow = self.get_ordered_scene_ids()
         self.endInsertRows()
 
     def delete_scene(self, selected_index):
-        if len(self.scenes) == 1:    # keep at least one scene
+        if len(self.__scenes) == 1:    # keep at least one scene
             return
 
         index = selected_index.row()
-        if len(self.scenes) <= index:
+        if len(self.__scenes) <= index:
             return
 
-        scene_to_delete = self.scenes[index]
+        scene_to_delete = self.__scenes[index]
         self.back_scene_nav_stack = [scene_name
                                      for scene_name in self.back_scene_nav_stack
                                      if scene_name != scene_to_delete.name]
 
-        del self.scenes[index]
+        del self.__scenes[index]
         self.removeRow(index)
 
         if index == 0:
@@ -128,7 +128,7 @@ class ScenesModel(QAbstractListModel):
 
     def update_view(self, index):
         if index is None:
-            if self.scenes is not None:
+            if self.__scenes is not None:
                 index = self.createIndex(0, 0)
                 self.set_current_scene(index)
             self.endResetModel()
@@ -141,7 +141,7 @@ class ScenesModel(QAbstractListModel):
         self.__current_scene.update_po_annotations_dict()
 
         # then change the current scene to new index
-        self.__current_scene = self.scenes[selected_index.row()]
+        self.__current_scene = self.__scenes[selected_index.row()]
 
         # in the new current scene, make all py
         self.__current_scene.update_po_annotations()
@@ -159,13 +159,13 @@ class ScenesModel(QAbstractListModel):
 
     def move_scene_down(self, selected_index):
         index = selected_index.row()
-        if index >= len(self.scenes) - 1:
+        if index >= len(self.__scenes) - 1:
             return
 
-        if index + 1 >= len(self.scenes):
+        if index + 1 >= len(self.__scenes):
             return
 
-        self.scenes[index + 1], self.scenes[index] = self.scenes[index], self.scenes[index + 1]
+        self.__scenes[index + 1], self.__scenes[index] = self.__scenes[index], self.__scenes[index + 1]
         self.default_scene_navigation_flow = self.get_ordered_scene_ids()
 
         self.set_current_scene(self.createIndex(index + 1, index + 1))
@@ -177,7 +177,7 @@ class ScenesModel(QAbstractListModel):
         if index == 0:
             return
 
-        self.scenes[index - 1], self.scenes[index] = self.scenes[index], self.scenes[index - 1]
+        self.__scenes[index - 1], self.__scenes[index] = self.__scenes[index], self.__scenes[index - 1]
         self.default_scene_navigation_flow = self.get_ordered_scene_ids()
 
         self.set_current_scene(self.createIndex(index - 1, index - 1))
@@ -189,15 +189,15 @@ class ScenesModel(QAbstractListModel):
 
     def get_ordered_scene_ids(self):
         result = []
-        for scene in self.scenes:
+        for scene in self.__scenes:
             result.append(scene.name)
         return result
 
     def get_all_scenes(self):
-        return tuple(self.scenes)
+        return tuple(self.__scenes)
 
     def get_scene_by_name(self, name):
-        for scene in self.scenes:
+        for scene in self.__scenes:
             if scene.name == name:
                 return scene
 
@@ -207,7 +207,7 @@ class ScenesModel(QAbstractListModel):
         return self.__current_scene
 
     def show_scene(self, scene_name):
-        for idx, scene in enumerate(self.scenes):
+        for idx, scene in enumerate(self.__scenes):
             if scene.name == scene_name:
                 index = self.createIndex(idx, 0)
                 self.set_current_scene(index)
@@ -264,10 +264,10 @@ class ScenesModel(QAbstractListModel):
 
         save_path = os.path.join(current_project.base_path, current_project.name + ".json")
 
-        for scene in self.scenes:
+        for scene in self.__scenes:
             scene.update_po_annotations_dict()
 
-        current_project.scenes = self.scenes
+        current_project.scenes = self.__scenes
         if self.defined_scene_navigation_flow is not None:
             current_project.scene_navigation = self.defined_scene_navigation_flow
 
@@ -283,20 +283,18 @@ class ScenesModel(QAbstractListModel):
             frozen = f.read()
             self.beginResetModel()
             current_project = jsonpickle.decode(frozen)
-            self.scenes = current_project.scenes
-            for scene in self.scenes:
+            self.__scenes = current_project.scenes
+            for scene in self.__scenes:
                 scene.reset_runtime_state()
 
             self.defined_scene_navigation_flow = current_project.scene_navigation
+            self.project_loaded.emit()
+
             self.default_scene_navigation_flow = self.get_ordered_scene_ids()
-
-            # TODO: should it be called here? or somewhere else?
-            actionsservice.init_defined_actions()
-
             self.back_scene_nav_stack.clear()
             # for scene in self.scenes:
             #     self.scene_navigation.append(scene.name)
-            self.show_scene(self.scenes[0].name)
+            self.show_scene(self.__scenes[0].name)
 
             self.endResetModel()
 
@@ -448,6 +446,9 @@ class Scene:
         #  the user must define the events, actions, and rules for the cloned scene again.
 
         return cloned_scene
+
+    def __str__(self):
+        return self.name
 
 
 def create_project(parent_dir, project_name):

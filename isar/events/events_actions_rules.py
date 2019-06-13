@@ -4,10 +4,10 @@ from PyQt5 import uic, Qt, QtCore
 from PyQt5.QtCore import QAbstractListModel, QModelIndex
 from PyQt5.QtWidgets import QDialog, QListWidget, QLabel, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QWidget
 
-from isar.events import actionsservice, events, actions
-from isar.events.actions import Action
+from isar.events import events, actions
+from isar.events.actions import Action, ToggleAnnotationVisibilityAction
 from isar.events.events import SelectionEvent, Event
-from isar.events.rulesmanager import Rule
+from isar.events.rules import Rule
 from isar.events.select_target_dialog import SelectTargetDialog
 from isar.scene.annotationmodel import Annotation
 from isar.scene.physicalobjectmodel import PhysicalObject
@@ -54,12 +54,16 @@ class EventsActionsRulesDialog(QDialog):
 
         self.actions_scene = None
         self.action_type = None
+        self.action_target = None
         self.action_name = None
         self.action = None
         self.scenes_combo_current_index_changed(0, "action_scenes_combo")
         self.action_type_combo_current_index_changed(0)
 
         self.rules_scene = None
+        self.rule_name = None
+        self.rule_event = None
+        self.rule_action = None
         self.rule = None
         self.scenes_combo_current_index_changed(0, "rule_scenes_combo")
 
@@ -72,12 +76,131 @@ class EventsActionsRulesDialog(QDialog):
         self.init_event_type_combo()
         self.init_action_type_combo()
 
-        self.select_scene_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(Scene))
-        self.select_annotation_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(Annotation))
-        self.select_phys_obj_event_target_btn.clicked.connect(lambda: self.select_event_target_btn_clicked(PhysicalObject))
+        self.select_scene_event_target_btn.clicked.connect(
+            lambda: self.select_event_target_btn_clicked(Scene))
+        self.select_annotation_event_target_btn.clicked.connect(
+            lambda: self.select_event_target_btn_clicked(Annotation))
+        self.select_phys_obj_event_target_btn.clicked.connect(
+            lambda: self.select_event_target_btn_clicked(PhysicalObject))
+
+        self.select_scene_action_target_btn.clicked.connect(
+            lambda: self.select_action_target_btn_clicked(Scene))
+        self.select_annotation_action_target_btn.clicked.connect(
+            lambda: self.select_action_target_btn_clicked(Annotation))
+        self.select_phys_obj_action_target_btn.clicked.connect(
+            lambda: self.select_action_target_btn_clicked(PhysicalObject))
 
         self.add_event_btn.clicked.connect(self.add_event_btn_clicked)
         self.remove_event_btn.clicked.connect(self.remove_event_btn_clicked)
+        self.event_name_text.textChanged.connect(self.event_name_text_changed)
+        
+        self.add_action_btn.clicked.connect(self.add_action_btn_clicked)
+        self.remove_action_btn.clicked.connect(self.remove_action_btn_clicked)
+        self.action_name_text.textChanged.connect(self.action_name_text_changed)
+
+        self.select_rule_event_btn.clicked.connect(self.select_rule_event_btn_clicked)
+        self.select_rule_action_btn.clicked.connect(self.select_rule_action_btn_clicked)
+
+        self.add_rule_btn.clicked.connect(self.add_rule_btn_clicked)
+        self.remove_rule_btn.clicked.connect(self.remove_rule_btn_clicked)
+        self.rule_name_text.textChanged.connect(self.rule_name_text_changed)
+
+    def add_action_btn_clicked(self):
+        if self.action_type.has_target:
+            if self.action_target is None:
+                logger.error("self.action_target is None. Return.")
+                return
+
+            if self.action_type.has_single_target:
+                if type(self.action_target) not in self.action_type.target_types:
+                    logger.error("Action target not matching target type of the action. Return.")
+                    return
+            else:
+                if type(self.action_target) != list:
+                    logger.error("Action target not matching target type of the action. Return.")
+                    return
+
+        if self.actions_scene is None:
+            logger.error("self.actions_scene is None. Return.")
+
+        if self.action is None:
+            self.action = self.action_type(self.action_target)
+            self.action.name = self.action_name
+            self.action.scene_id = self.actions_scene.name
+            if self.action_type.has_properties:
+                self.action_type.set_properties(self.action)
+
+            self.actions_model.add_item(self.action)
+
+    def event_name_text_changed(self, text):
+        self.event_name = text
+        
+    def action_name_text_changed(self, text):
+        self.action_name = text
+        
+    def rule_name_text_changed(self, text):
+        self.rule_name = text
+
+    def remove_action_btn_clicked(self):
+        index = self.actions_list.selectionModel().currentIndex()
+        self.actions_model.remove_item(index)
+
+    def add_rule_btn_clicked(self):
+        if self.rule_event is None:
+            logger.error("self.rule_event is None. Return.")
+            return
+        
+        if self.rule_action is None:
+            logger.error("self.rule_action is None. Return.")
+            return
+
+        if self.rule_name is None or len(self.rule_name) == 0:
+            logger.error("self.rule_name is None or empty. Return.")
+            return
+
+        if self.rule is None:
+            self.rule = Rule()
+            self.rule.scene = self.rules_scene
+            self.rule.name = self.rule_name
+            self.rule.event = self.rule_event
+            self.rule.action = self.rule_action
+            self.rules_model.add_item(self.rule)
+
+            self.rule = None
+            self.rule_name = None
+            self.rule_name_text.setText("")
+            self.rule_event = None
+            self.rule_event_name_label.setText("... select event ...")
+            self.rule_action = None
+            self.rule_action_name_label.setText("... select action ...")
+
+    def remove_rule_btn_clicked(self):
+        index = self.rules_list.selectionModel().currentIndex()
+        self.rules_model.remove_item(index)
+
+    def select_rule_event_btn_clicked(self):
+        if self.rules_scene is None:
+            logger.error("self.rules_scene is None. Return.")
+            return
+
+        selected_events = self.show_select_target_dialog(Event, self.rules_scene)
+        if selected_events is not None and len(selected_events) > 0:
+            self.rule_event = selected_events[0]
+            self.rule_event_name_label.setText(self.rule_event.name)
+            if self.rule_action is not None:
+                self.rule_name_text.setText("{}__{}".format(self.rule_event.name, self.rule_action.name))
+
+    def select_rule_action_btn_clicked(self):
+        if self.rules_scene is None:
+            logger.error("self.rules_scene is None. Return.")
+            return
+
+        selected_actions = self.show_select_target_dialog(Action, self.rules_scene)
+        if selected_actions is not None and len(selected_actions) > 0:
+            self.rule_action = selected_actions[0]
+            self.rule_action_name_label.setText(self.rule_action.name)
+            if self.rule_event is not None:
+                self.rule_name_text.setText("{}__{}".format(self.rule_event.name, self.rule_action.name))
 
     def add_event_btn_clicked(self):
         if self.event_target is None:
@@ -143,7 +266,9 @@ class EventsActionsRulesDialog(QDialog):
             self.rules_model.current_scene = scene
             self.rules_scene = scene
             self.rule_name_text.setText("")
+            self.rule_event = None
             self.rule_event_name_label.setText(".... event name ...")
+            self.rule_action = None
             self.rule_action_name_label.setText("... action name ...")
 
     def init_event_type_combo(self):
@@ -178,12 +303,15 @@ class EventsActionsRulesDialog(QDialog):
     def update_event_properties_frame(self, event_type):
         if event_type.has_properties:
             self.event_properties_frame.show()
-            event_type.update_event_properties_frame(event_type, self.event_properties_frame)
+            event_type.update_event_properties_frame(self.event_properties_frame)
         else:
             self.event_properties_frame.hide()
 
     def init_action_type_combo(self):
-        for ac_name, ac_type in actions.action_types.items():
+        for ac_name, ac_type in actions.scene_action_types.items():
+            self.action_type_combo.addItem(ac_name, ac_type)
+
+        for ac_name, ac_type in actions.global_action_types.items():
             self.action_type_combo.addItem(ac_name, ac_type)
 
         self.action_type_combo.currentIndexChanged.connect(self.action_type_combo_current_index_changed)
@@ -192,14 +320,77 @@ class EventsActionsRulesDialog(QDialog):
         self.action = None
         self.action_name = None
         self.action_name_text.setText("")
-
-        # TODO: reset other properites of action
-
+        self.action_target_label.show()
+        self.action_target_label.setText("... select action target(s) ...")
         self.action_type = self.action_type_combo.itemData(index)
+
+        self.disable_all_action_target_selection_buttons()
+
         self.update_action_properties_frame(self.action_type)
 
+        if self.action_type.has_target:
+            action_target_types = self.action_type.target_types
+            for target_type in action_target_types:
+                if target_type == Scene:
+                    self.select_scene_action_target_btn.setEnabled(True)
+                elif target_type == PhysicalObject:
+                    self.select_phys_obj_action_target_btn.setEnabled(True)
+                else:
+                    self.select_annotation_action_target_btn.setEnabled(True)
+        else:
+            self.action_target_label.hide()
+
     def update_action_properties_frame(self, action_type):
-        logger.info("update_action_properties_frame")
+        if action_type.has_properties:
+            self.action_properties_frame.show()
+            action_type.update_action_properties_frame(self.actions_scene,
+                                                       self.select_target_dialog,
+                                                       self.action_properties_frame)
+            action_type.reset_properties()
+        else:
+            self.action_properties_frame.hide()
+
+    def disable_all_action_target_selection_buttons(self):
+        self.select_scene_action_target_btn.setEnabled(False)
+        self.select_annotation_action_target_btn.setEnabled(False)
+        self.select_phys_obj_action_target_btn.setEnabled(False)
+
+    def select_action_target_btn_clicked(self, target_type):
+        if self.action_type is None:
+            logger.warning("self.action_type is None. Setting to default ToggleAnnotationVisibilityAction")
+            self.action_type = ToggleAnnotationVisibilityAction
+
+        if len(self.action_type.target_types) == 1:
+            target_type = self.action_type.target_types[0]
+
+        targets = self.show_select_target_dialog(target_type,
+                                                 self.actions_scene,
+                                                 action_type=self.action_type)
+
+        if targets is not None and len(targets) > 0:
+            if self.action_type.has_single_target:
+                self.action_target = targets[0]
+                if isinstance(self.action_target, Annotation):
+                    self.action_target_label.setText(self.actions_scene.name + "." + self.action_target.name)
+                else:
+                    self.action_target_label.setText(self.action_target.name)
+
+            else:
+                self.action_target = targets
+                self.action_target_label.setText(
+                    str([self.actions_scene.name + "." + target.name for target in targets]))
+
+            logger.info("received action target: {}".format(str(self.action_target)))
+            if self.action_name is None or self.action_name == "":
+                if type(self.action_target) == list:
+                    self.action_name = self.action_type.__name__ + "_for_" + \
+                                       str([str(target) for target in self.action_target])
+                else:
+                    self.action_name = self.action_type.__name__ + "_for_" + str(self.action_target)
+
+                self.action_name_text.setText(self.action_name)
+        else:
+            logger.warning("targets is none")
 
     def select_event_target_btn_clicked(self, target_type):
         if self.event_type is None:
@@ -209,13 +400,14 @@ class EventsActionsRulesDialog(QDialog):
         if len(self.event_type.target_types) == 1:
             target_type = self.event_type.target_types[0]
 
-        targets = self.show_select_target_dialog(target_type, self.event_type)
+        targets = self.show_select_target_dialog(target_type, self.events_scene, event_type=self.event_type)
 
         if targets is not None and len(targets) > 0:
             target = targets[0]
             logger.info("received event target: {}".format(str(target)))
             self.event_target = target
-            self.event_name = "On_" + self.event_target.name + "_" + self.event_type.__name__
+            if self.event_name is None or self.event_name == "":
+                self.event_name = "On_" + self.event_target.name + "_" + self.event_type.__name__
             self.event_name_text.setText(self.event_name)
             if isinstance(target, Scene):
                 self.event_target_label.setText(target.name)
@@ -224,13 +416,11 @@ class EventsActionsRulesDialog(QDialog):
         else:
             logger.warning("target is none")
 
-    def show_select_target_dialog(self, target_type,
-                                  event_type=None, action_type=None,
-                                  return_only_names=False, multiple_selection=False):
+    def show_select_target_dialog(self, target_type, scene,
+                                  event_type=None, action_type=None):
         targets = None
-        self.select_target_dialog.scene = self.events_scene
+        self.select_target_dialog.scene = scene
         self.select_target_dialog.set_target_types(target_type, event_type, action_type)
-        self.select_target_dialog.return_only_names = return_only_names
         self.select_target_dialog.setModal(True)
         self.select_target_dialog.exec()
         if self.select_target_dialog.result() == QDialog.Accepted:
@@ -320,6 +510,7 @@ class ItemsModel(QAbstractListModel):
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
 
+        items = []
         if self.current_scene is not None:
             if self.item_type == ItemsModel.EVENTS:
                 items = self.current_scene.get_events()
@@ -330,7 +521,7 @@ class ItemsModel(QAbstractListModel):
         else:
             logger.warning("current_scene is None!")
 
-        item = items[row]
+        item = None
+        if len(items) > row:
+            item = items[row]
         return self.createIndex(row, 0, item)
-
-
