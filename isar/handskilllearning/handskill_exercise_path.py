@@ -29,6 +29,48 @@ class HandSkillExercisePathUI(QWizard):
         self.pushButton_selectScene.clicked.connect(self.pushButton_selectScene_clicked)
         self.button(QWizard.FinishButton).clicked.connect(self.finish_clicked)
 
+        self.lineEdit_error_beg.textEdited.connect(self.show_weighted_beginner)
+        self.lineEdit_time_beg.textEdited.connect(self.show_weighted_beginner)
+        self.lineEdit_errorWeighted_beg.textEdited.connect(self.show_weighted_beginner)
+        self.lineEdit_timeWeighted_beg.textEdited.connect(self.show_weighted_beginner)
+
+        self.lineEdit_error_int.textEdited.connect(self.show_weighted_intermediate)
+        self.lineEdit_time_int.textEdited.connect(self.show_weighted_intermediate)
+        self.lineEdit_errorWeighted_int.textEdited.connect(self.show_weighted_intermediate)
+        self.lineEdit_timeWeighted_int.textEdited.connect(self.show_weighted_intermediate)
+
+        self.lineEdit_error_com.textEdited.connect(self.show_weighted_competent)
+        self.lineEdit_time_com.textEdited.connect(self.show_weighted_competent)
+        self.lineEdit_errorWeighted_com.textEdited.connect(self.show_weighted_competent)
+        self.lineEdit_timeWeighted_com.textEdited.connect(self.show_weighted_competent)
+
+    def show_weighted_beginner(self):
+        if self.lineEdit_error_beg.text() != "" and self.lineEdit_time_beg.text() != "" \
+                and self.lineEdit_errorWeighted_beg.text() != "" and self.lineEdit_timeWeighted_beg.text() != "":
+            weighted = self.compute_weighted_combination(int(self.lineEdit_error_beg.text()),
+                                                  int(self.lineEdit_errorWeighted_beg.text()),
+                                                  int(self.lineEdit_time_beg.text()),
+                                                  int(self.lineEdit_timeWeighted_beg.text()))
+            self.lineEdit_weighted_beg.setText(str(weighted))
+
+    def show_weighted_intermediate(self):
+        if self.lineEdit_error_int.text() != "" and self.lineEdit_time_int.text() != "" \
+                and self.lineEdit_errorWeighted_int.text() != "" and self.lineEdit_timeWeighted_int.text() != "":
+            weighted = self.compute_weighted_combination(int(self.lineEdit_error_int.text()),
+                                                  int(self.lineEdit_errorWeighted_int.text()),
+                                                  int(self.lineEdit_time_int.text()),
+                                                  int(self.lineEdit_timeWeighted_int.text()))
+            self.lineEdit_weighted_int.setText(str(weighted))
+
+    def show_weighted_competent(self):
+        if self.lineEdit_error_com.text() != "" and self.lineEdit_time_com.text() != "" \
+                and self.lineEdit_errorWeighted_com.text() != "" and self.lineEdit_timeWeighted_com.text() != "":
+            weighted = self.compute_weighted_combination(int(self.lineEdit_error_com.text()),
+                                                  int(self.lineEdit_errorWeighted_com.text()),
+                                                  int(self.lineEdit_time_com.text()),
+                                                  int(self.lineEdit_timeWeighted_com.text()))
+            self.lineEdit_weighted_com.setText(str(weighted))
+
     def finish_clicked(self):
         self.save_info_target_values()
         self.save_info_feedback()
@@ -50,10 +92,6 @@ class HandSkillExercisePathUI(QWizard):
         self.exercise.error.competent.set_value_weighted_combination(int(self.lineEdit_errorWeighted_com.text()))
         self.exercise.time.competent.set_value(int(self.lineEdit_time_com.text()))
         self.exercise.time.competent.set_value_weighted_combination(int(self.lineEdit_timeWeighted_com.text()))
-
-
-    def compute_weighted_combination(self, err, const_err, time, const_time):
-        return err * const_err + time * const_time
 
     def save_info_feedback(self):
         if self.radioButton_error.isChecked():
@@ -88,6 +126,9 @@ class HandSkillExercisePathUI(QWizard):
         self.exercise.feedback.set_good((int(self.lineEdit_goodFrom.text()), int(self.lineEdit_goodTo.text())))
         self.exercise.feedback.set_average((int(self.lineEdit_averageFrom.text()), int(self.lineEdit_averageTo.text())))
         self.exercise.feedback.set_bad((int(self.lineEdit_badFrom.text()), int(self.lineEdit_badTo.text())))
+
+    def compute_weighted_combination(self, err, const_err, time, const_time):
+        return err * const_err + time * const_time
 
     def save_exercise(self):
         parent_dir = QFileDialog.getExistingDirectory()
