@@ -1,13 +1,19 @@
 import os
 
 import jsonpickle
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
-from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise, Beginner
+from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise
 from isar.scene.annotationmodel import CurveAnnotation
 from isar.scene.scenemodel import ScenesModel
+
+
+# TODO: rearrange methods in class
+# TODO: refactor names
+# TODO: set title and set style
+# TODO: check of correct values in line edit (e.g. integer or string)
 
 
 class HandSkillExercisePathUI(QWizard):
@@ -21,7 +27,6 @@ class HandSkillExercisePathUI(QWizard):
         self.setup_signals()
         self.setup_constraints()
 
-        # TODO: set title and set style
         self.setButtonText(QWizard.FinishButton, "&Save and Finish");
 
     def setup_signals(self):

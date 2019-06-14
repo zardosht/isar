@@ -1,9 +1,9 @@
 """
 Defining the exercises: FollowThePath, CatchTheObject
 """
-from isar.scene.scenemodel import Scene
 
-# TODO refactor the getter and setter of all classes
+
+# TODO: refactor the getter and setter of all classes
 
 class HandSkillExercise:
     def __init__(self):
