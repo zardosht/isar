@@ -12,7 +12,7 @@ from isar.scene.scenemodel import ScenesModel
 
 # TODO: rearrange methods in class
 # TODO: refactor names
-# TODO: set title and set style
+# TODO: set style
 # TODO: check of correct values in line edit (e.g. integer or string)
 
 
@@ -28,6 +28,7 @@ class HandSkillExercisePathUI(QWizard):
         self.setup_constraints()
 
         self.setButtonText(QWizard.FinishButton, "&Save and Finish");
+        self.setWindowTitle("Follow the path exercise")
 
     def setup_signals(self):
         self.pushButton_loadProject.clicked.connect(self.pushButton_loadProject_clicked)
