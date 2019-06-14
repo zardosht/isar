@@ -7,7 +7,6 @@ from PyQt5 import QtWidgets
 import isar
 from isar import ApplicationMode
 from isar.domainlearning.domainlearning import DomainLearningWindow
-from isar.handskilllearning.handskill_exercise_path import HandSkillExercisePathUI
 from isar.scene.definitionwindow import SceneDefinitionWindow
 from isar.services import servicemanager
 
@@ -60,7 +59,6 @@ def main():
         domain_learning_window.move(100, 100)
         domain_learning_window.show()
         app.exec()
-
 
     time.sleep(0.5)
     servicemanager.stop_services()
