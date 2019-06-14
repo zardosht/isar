@@ -3,6 +3,7 @@ Defining the exercises: FollowThePath, CatchTheObject
 """
 from isar.scene.scenemodel import Scene
 
+# TODO refactor the getter and setter of all classes
 
 class HandSkillExercise:
     def __init__(self):
@@ -22,12 +23,11 @@ class FollowThePathExercise(HandSkillExercise):
         self.error = Error()
         self.time = Time()
 
-    # TODO: refactor feedback
-    def set_feedback_evaluation_aspects(self, value):
-        self.feedback.add_to_evaluation_list(Error)
-        self.feedback.add_to_evaluation_list(Time)
+    def get_error(self):
+        return self.error
 
-
+    def get_time(self):
+        return self.time
 """
 Defining the feedback for the exercise
 """
@@ -35,7 +35,9 @@ Defining the feedback for the exercise
 
 class FeedbackExercise:
     def __init__(self):
-        self.evaluationAspectList = []
+        self.value_beginner = 0
+        self.value_intermediate = 0
+        self.value_competent = 0
         self.good = (0, 0)
         self.average = (0, 0)
         self.bad = (0, 0)
