@@ -2,8 +2,8 @@
 Defining the exercises: FollowThePath, CatchTheObject
 """
 
+# TODO: refactor the getter and setter of all classes, refactor names
 
-# TODO: refactor the getter and setter of all classes
 
 class HandSkillExercise:
     def __init__(self):
@@ -141,18 +141,18 @@ Defining the skill levels: Beginner, Intermediate, Competent
 
 class SkillLevel:
     def __init__(self):
-        self._value = None
-        self._value_weighted_combination = None
+        self.value = None
+        self.value_weighted_combination = None
 
     def get_value(self):
-        return self._value
+        return self.value
 
     def set_value(self, value):
         # It is important that the subclass sets its value.
         raise TypeError("Must be implemented by subclasses")
 
     def get_value_weighted_combination(self):
-        return self._value_weighted_combination
+        return self.value_weighted_combination
 
     def set_value_weighted_combination(self, value):
         # It is important that the subclass sets its value.
@@ -164,10 +164,10 @@ class Beginner(SkillLevel):
         super().__init__()
 
     def set_value(self, value):
-        self._value = value
+        self.value = value
 
     def set_value_weighted_combination(self, value):
-        self._value_weighted_combination = value
+        self.value_weighted_combination = value
 
 
 class Intermediate(SkillLevel):
@@ -175,10 +175,10 @@ class Intermediate(SkillLevel):
         super().__init__()
 
     def set_value(self, value):
-        self._value = value
+        self.value = value
 
     def set_value_weighted_combination(self, value):
-        self._value_weighted_combination = value
+        self.value_weighted_combination = value
 
 
 class Competent(SkillLevel):
@@ -186,7 +186,7 @@ class Competent(SkillLevel):
         super().__init__()
 
     def set_value(self, value):
-        self._value = value
+        self.value = value
 
     def set_value_weighted_combination(self, value):
-        self._value_weighted_combination = value
+        self.value_weighted_combination = value
