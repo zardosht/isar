@@ -2,15 +2,12 @@ import os
 
 import jsonpickle
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIntValidator
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
 from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise
 from isar.scene.annotationmodel import CurveAnnotation
 from isar.scene.scenemodel import ScenesModel
-
-
-# TODO: check of correct values in line edit (e.g. integer or string)
 
 
 class HandSkillExercisePathUI(QWizard):
@@ -43,7 +40,7 @@ class HandSkillExercisePathUI(QWizard):
         self.line_error_com.textEdited.connect(self.show_weighted_competent)
         self.line_time_com.textEdited.connect(self.show_weighted_competent)
         self.line_error_weighted_com.textEdited.connect(self.show_weighted_competent)
-        self.line_time_weighted_com.textEdited.connect(self.show_weighted_competent)    
+        self.line_time_weighted_com.textEdited.connect(self.show_weighted_competent)
 
     def button_load_project_clicked(self):
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
@@ -183,6 +180,7 @@ class HandSkillExercisePathUI(QWizard):
             f.write(frozen)
 
     def setup_constraints(self):
+        # register fields to enable/disable the next/finish button
         self.scene.registerField("line_selected_scenes*", self.line_selected_scenes)
         self.target_value.registerField("line_error_beg*", self.line_error_beg)
         self.target_value.registerField("line_time_beg*", self.line_time_beg)
@@ -204,6 +202,26 @@ class HandSkillExercisePathUI(QWizard):
         self.feedback.registerField("line_bad_from*", self.line_bad_from)
         self.feedback.registerField("line_exercise_name*", self.line_exercise_name)
 
+        # set the line edit content to be a number
+        self.line_error_beg.setValidator(QIntValidator())
+        self.line_time_beg.setValidator(QIntValidator())
+        self.line_error_weighted_beg.setValidator(QIntValidator())
+        self.line_time_weighted_beg.setValidator(QIntValidator())
+        self.line_error_int.setValidator(QIntValidator())
+        self.line_time_int.setValidator(QIntValidator())
+        self.line_error_weighted_int.setValidator(QIntValidator())
+        self.line_time_weighted_int.setValidator(QIntValidator())
+        self.line_error_com.setValidator(QIntValidator())
+        self.line_time_com.setValidator(QIntValidator())
+        self.line_error_weighted_com.setValidator(QIntValidator())
+        self.line_time_weighted_com.setValidator(QIntValidator())
+        self.line_good_from.setValidator(QIntValidator())
+        self.line_good_to.setValidator(QIntValidator())
+        self.line_average_from.setValidator(QIntValidator())
+        self.line_average_to.setValidator(QIntValidator())
+        self.line_bad_from.setValidator(QIntValidator())
+        self.line_bad_to.setValidator(QIntValidator())
+
         self.line_project_name.setEnabled(False)
         self.line_selected_scenes.setEnabled(False)
         self.button_select_scene.setEnabled(False)
@@ -212,7 +230,6 @@ class HandSkillExercisePathUI(QWizard):
         self.line_weighted_com.setEnabled(False)
         self.radio_button_error.setChecked(True)
 
-    #  changes: QListWidget to QListView
     def setup_ui(self, Wizard):
         Wizard.setObjectName("Wizard")
         Wizard.resize(500, 500)

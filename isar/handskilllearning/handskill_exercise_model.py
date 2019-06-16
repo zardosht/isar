@@ -1,8 +1,6 @@
 """
-Defining the exercises: FollowThePath, CatchTheObject
+Defining the exercises: FollowThePath
 """
-
-# TODO: refactor the getter and setter of all classes, refactor names
 
 
 class HandSkillExercise:
@@ -14,7 +12,15 @@ class HandSkillExercise:
         return self.scene
 
     def set_scene(self, value):
-        self.scene = value
+        # It is important that the subclass sets its value.
+        raise TypeError("Must be implemented by subclasses")
+
+    def get_feedback(self):
+        return self.feedback
+
+    def set_feedback(self):
+        # It is important that the subclass sets its value.
+        raise TypeError("Must be implemented by subclasses")
 
 
 class FollowThePathExercise(HandSkillExercise):
@@ -26,8 +32,22 @@ class FollowThePathExercise(HandSkillExercise):
     def get_error(self):
         return self.error
 
+    def set_error(self, value):
+        self.error = value
+
     def get_time(self):
         return self.time
+
+    def set_time(self, value):
+        self.time = value
+
+    def set_scene(self, value):
+        self.scene = value
+
+    def set_feedback(self, value):
+        self.feedback = value
+
+
 """
 Defining the feedback for the exercise
 """
@@ -42,15 +62,23 @@ class FeedbackExercise:
         self.average = (0, 0)
         self.bad = (0, 0)
 
-    def get_evaluation_list(self):
-        return self.evaluationAspectList
+    def get_value_beginner(self):
+        self.value_beginner
 
-    def add_to_evaluation_list(self, value):
-        if isinstance(value, EvaluationAspect):
-            self.evaluationAspectList.append(value)
-            return True
-        else:
-            return False
+    def set_value_beginner(self, value):
+        self.value_beginner = value
+
+    def get_value_intermediate(self):
+        self.value_intermediate
+
+    def set_value_intermediate(self, value):
+        self.value_intermediate = value
+
+    def get_value_competent(self):
+        self.value_competent
+
+    def set_value_competent(self, value):
+        self.value_competent = value
 
     def get_good(self):
         return self.good
