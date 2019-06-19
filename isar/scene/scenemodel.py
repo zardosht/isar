@@ -19,6 +19,7 @@ class Project:
         self.scenes = None
         self.scene_size = None
         self.scene_navigation = None
+        self.exercises = None
 
 
 current_project: Project = None
