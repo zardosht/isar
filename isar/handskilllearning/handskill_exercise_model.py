@@ -4,7 +4,8 @@ Defining the exercises: FollowThePath
 
 
 class HandSkillExercise:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.scene = None
         self.feedback = FeedbackExercise()
 
@@ -24,8 +25,8 @@ class HandSkillExercise:
 
 
 class FollowThePathExercise(HandSkillExercise):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name):
+        super().__init__(name)
         self.error = Error()
         self.time = Time()
 

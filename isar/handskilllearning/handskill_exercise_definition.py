@@ -17,7 +17,7 @@ class HandSkillExerciseDefinition(QWizard):
 
     def __init__(self):
         super().__init__()
-        self.exercise = FollowThePathExercise()
+        self.exercise = FollowThePathExercise("Exercise1")
         self.__scenes = None
         self.scenes_model = None
 
