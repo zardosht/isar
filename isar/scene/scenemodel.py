@@ -7,6 +7,7 @@ import jsonpickle
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QAbstractListModel, QModelIndex
 
+from isar.events import eventmanager
 from isar.scene import sceneutil
 
 logger = logging.getLogger("isar.scene.scenemodel")
@@ -156,6 +157,7 @@ class ScenesModel(QAbstractListModel):
         print("scene navigation: " + str(self.back_scene_nav_stack))
 
         self.scene_changed.emit()
+        eventmanager.fire_scene_shown_event(self.__current_scene, self.__current_scene.name)
 
     def move_scene_down(self, selected_index):
         index = selected_index.row()
