@@ -188,6 +188,9 @@ class PhysicalObject:
         self.scene_image = None
         self.pose_estimation = None
 
+        self.highlight = False
+        self.highlight_color = None
+
     @property
     def top_left(self):
         return self.__top_left
@@ -288,6 +291,10 @@ class PhysicalObject:
 
     def __str__(self):
         return self.name
+
+    def reset_runtime_state(self):
+        self.highlight = False
+        self.highlight_color = None
 
 
 

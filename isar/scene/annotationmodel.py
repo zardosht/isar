@@ -1073,21 +1073,6 @@ annotation_counters = {
 # =========== Annotation Properties ========================
 # ==========================================================
 
-
-def get_literal_from_str(str_val):
-    value = None
-    if isinstance(str_val, str):
-        if str_val == "":
-            return value
-
-        try:
-            value = literal_eval(str_val)
-        except Exception as e:
-            logger.error("Error converting value:", e)
-        finally:
-            return value
-
-
 class AnnotationPropertiesModel(QAbstractTableModel):
     def __init__(self):
         super().__init__()
@@ -1355,13 +1340,8 @@ class ColorAnnotationProperty(AnnotationProperty):
 
     def set_value(self, value):
         if isinstance(value, str):
-            literal = get_literal_from_str(value)
-            if literal and \
-                    isinstance(literal, tuple) and \
-                    len(literal) == 3 and \
-                    isinstance(literal[0], int) and \
-                    isinstance(literal[1], int) and \
-                    isinstance(literal[2], int):
+            literal, success = sceneutil.get_color_from_str(value)
+            if literal and success:
                 if self.setter_name is not None:
                     return getattr(self.annotation, self.setter_name)(literal)
                 else:
@@ -1417,7 +1397,7 @@ class PhysicalObjectAnnotationProperty(AnnotationProperty):
 class IntTupleAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         if isinstance(value, str):
-            literal = get_literal_from_str(value)
+            literal = sceneutil.get_literal_from_str(value)
             if literal and \
                     isinstance(literal, tuple) and \
                     len(literal) == 2 and \
@@ -1447,7 +1427,7 @@ class IntTupleAnnotationProperty(AnnotationProperty):
 class FloatAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         if isinstance(value, str):
-            literal = get_literal_from_str(value)
+            literal = sceneutil.get_literal_from_str(value)
             if literal and isinstance(literal, (float, int)):
                 if self.setter_name is not None:
                     return getattr(self.annotation, self.setter_name)(literal)
@@ -1470,7 +1450,7 @@ class FloatAnnotationProperty(AnnotationProperty):
 class IntAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         if isinstance(value, str):
-            literal = get_literal_from_str(value)
+            literal = sceneutil.get_literal_from_str(value)
             if literal and isinstance(literal, int):
                 if self.setter_name is not None:
                     return getattr(self.annotation, self.setter_name)(literal)
@@ -1499,7 +1479,7 @@ class StringAnnotationProperty(AnnotationProperty):
 class BooleanAnnotationProperty(AnnotationProperty):
     def set_value(self, value):
         if isinstance(value, str):
-            literal = get_literal_from_str(value)
+            literal = sceneutil.get_literal_from_str(value)
             if literal is not None and isinstance(literal, bool):
                 if self.setter_name is not None:
                     return getattr(self.annotation, self.setter_name)(literal)

@@ -385,6 +385,9 @@ class Scene:
         for annotation in self.get_all_annotations():
             annotation.reset_runtime_state()
 
+        for phys_obj in self.get_physical_objects():
+            phys_obj.reset_runtime_state()
+
     def add_event(self, event):
         self.__events.append(event)
 

@@ -196,5 +196,6 @@ event_types = {
     PhysicalObjectAppearedEvent.__name__: PhysicalObjectAppearedEvent,
     PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
     PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
+    PhysicalObjectGroupAppeared.__name__: PhysicalObjectGroupAppeared,
     SceneShownEvent.__name__: SceneShownEvent
 }

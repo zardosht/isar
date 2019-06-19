@@ -2,9 +2,9 @@ import logging
 import time
 from threading import Thread
 
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QDialog, QListWidget, QLabel
+from PyQt5.QtWidgets import QPushButton, QDialog, QLabel, QLineEdit
 
-from isar.scene import audioutil
+from isar.scene import audioutil, sceneutil
 from isar.scene.scenemodel import Scene
 
 logger = logging.getLogger("isar.events.actions")
@@ -359,6 +359,82 @@ class StopAnimationAction(Action):
             animation.stop()
 
 
+class HighlightPhysicalObjectsAction(Action):
+    from isar.scene.physicalobjectmodel import PhysicalObject
+    target_types = [PhysicalObject]
+    has_properties = True
+    color = "0, 255, 0"
+
+    def __init__(self, target=None):
+        super().__init__(target)
+
+    def run(self):
+        if self.target is None:
+            logger.warning("self.target is None. Return")
+            return
+
+        if type(self.target) != list:
+            logger.warning("self.target is not a list. Return")
+            return
+
+        for phys_obj in self.target:
+            phys_obj.highlight = True
+            phys_obj.highlight_color = self.color
+
+    @classmethod
+    def update_action_properties_frame(cls, scene, select_target_dialog, qt_frame):
+        layout = qt_frame.layout()
+
+        label = QLabel()
+        label.setText("Color: ")
+        layout.addWidget(label)
+
+        line_edit = QLineEdit()
+        line_edit.setText(HighlightPhysicalObjectsAction.color)
+        layout.addWidget(line_edit)
+
+        set_color_btn = QPushButton()
+        set_color_btn.setText("Set Color")
+        layout.addWidget(set_color_btn)
+        set_color_btn.clicked.connect(lambda: HighlightPhysicalObjectsAction.set_color(line_edit))
+
+    @classmethod
+    def set_color(cls, line_edit):
+        value = line_edit.text()
+        color, success = sceneutil.get_color_from_str(value)
+        if color and success:
+            HighlightPhysicalObjectsAction.color = color
+
+    @classmethod
+    def reset_properties(cls):
+        HighlightPhysicalObjectsAction.color = "0, 255, 0"
+
+    @classmethod
+    def set_properties(cls, instance):
+        instance.color = HighlightPhysicalObjectsAction.color
+
+
+class UnHighlightPhysicalObjectsAction(Action):
+    from isar.scene.physicalobjectmodel import PhysicalObject
+    target_types = [PhysicalObject]
+
+    def __init__(self, target=None):
+        super().__init__(target)
+
+    def run(self):
+        if self.target is None:
+            logger.warning("self.target is None. Return")
+            return
+
+        if type(self.target) != list:
+            logger.warning("self.target is not a list. Return")
+            return
+
+        for phys_obj in self.target:
+            phys_obj.highlight = False
+            phys_obj.highlight_color = None
+
+
 class CompositeAction(Action):
     actions = []
 
@@ -466,6 +542,8 @@ scene_action_types = {
     StopVideoAction.__name__: StopVideoAction,
     StartAnimationAction.__name__: StartAnimationAction,
     StopAnimationAction.__name__: StopAnimationAction,
+    HighlightPhysicalObjectsAction.__name__: HighlightPhysicalObjectsAction,
+    UnHighlightPhysicalObjectsAction.__name__: UnHighlightPhysicalObjectsAction,
     ParallelCompositeAction.__name__: ParallelCompositeAction,
     SequentialCompositeAction.__name__: SequentialCompositeAction
 }

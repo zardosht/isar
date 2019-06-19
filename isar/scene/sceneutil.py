@@ -1,3 +1,5 @@
+from ast import literal_eval
+
 import cv2
 import logging
 import math
@@ -349,3 +351,28 @@ def convert_camera_coord_to_porjector_coord(p):
         return int(proj_point[0]), int(proj_point[1])
 
 
+def get_color_from_str(value):
+    literal = get_literal_from_str(value)
+    if literal and \
+            isinstance(literal, tuple) and \
+            len(literal) == 3 and \
+            isinstance(literal[0], int) and \
+            isinstance(literal[1], int) and \
+            isinstance(literal[2], int):
+        return literal, True
+    else:
+        return value, False
+
+
+def get_literal_from_str(str_val):
+    value = None
+    if isinstance(str_val, str):
+        if str_val == "":
+            return value
+
+        try:
+            value = literal_eval(str_val)
+        except Exception as e:
+            logger.error("Error converting value:", e)
+        finally:
+            return value
