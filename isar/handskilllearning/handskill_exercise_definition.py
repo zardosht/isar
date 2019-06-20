@@ -15,6 +15,7 @@ class HandSkillExerciseDefinition(QWizard):
     def __init__(self):
         super().__init__()
         self.exercise = FollowThePathExercise()
+        self._scenes = None
         self.scenes_model = None
 
         self.setup_ui(self)
@@ -23,10 +24,6 @@ class HandSkillExerciseDefinition(QWizard):
         self.setup_models()
 
         self.setWindowTitle("Follow the path exercise")
-
-    def setup_models(self):
-        self.scenes_model = ScenesModel()
-        self.list_scenes.setModel(self.scenes_model)
 
     def setup_signals(self):
         self.button_load_project.clicked.connect(self.button_load_project_clicked)
@@ -48,6 +45,10 @@ class HandSkillExerciseDefinition(QWizard):
         self.line_error_weighted_com.textEdited.connect(self.show_weighted_competent)
         self.line_time_weighted_com.textEdited.connect(self.show_weighted_competent)
 
+    def setup_models(self):
+        self.scenes_model = ScenesModel()
+        self.list_scenes.setModel(self.scenes_model)
+
     def button_load_project_clicked(self):
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
         project_dir = os.path.dirname(project_filename)
@@ -60,9 +61,10 @@ class HandSkillExerciseDefinition(QWizard):
 
         scenes_model = self.list_scenes.model()
         scenes_model.load_project(project_dir, project_name)
+        self._scenes = scenes_model.get_all_scenes()
 
-        delete_index = -1
-        for scene in scenes_model.get_all_scenes():
+        delete_index = - 1
+        for scene in self._scenes:
             delete_index = delete_index + 1
             count = 0
             for model in scene.get_all_annotations():
@@ -70,6 +72,8 @@ class HandSkillExerciseDefinition(QWizard):
                     count = count + 1
             if not count == 1:
                 index = self.list_scenes.model().index(delete_index, 0)
+                # TODO: bugfix: when deleting a scene from scene model, then the scene will also
+                #  be deleted from the whole project
                 scenes_model.delete_scene(index)
                 delete_index = delete_index - 1
 
@@ -80,7 +84,7 @@ class HandSkillExerciseDefinition(QWizard):
         index = self.list_scenes.currentIndex()
         selected = index.data()
         self.line_selected_scenes.setText(selected)
-        for scene in self.scenes_model.get_all_scenes():
+        for scene in self._scenes:
             if scene.name == selected:
                 self.exercise.set_scene(scene)
 
