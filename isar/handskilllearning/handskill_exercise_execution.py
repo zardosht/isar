@@ -2,12 +2,15 @@ import logging
 import os
 
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 from isar.camera.camera import CameraService
+from isar.handskilllearning.handskill_exercise_model import HandSkillExercise
 from isar.projection.projector import ProjectorView
 from isar.scene import scenemodel
+from isar.scene.annotationmodel import AnnotationsModel
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
@@ -19,19 +22,28 @@ class HandSkillExerciseExecution(QMainWindow):
 
     def __init__(self, screen_id):
         super().__init__()
-        self.exercise = None
-        self.scenes_model = None
-        self._camera_service: CameraService = None
-        self.projector_view = None
-
         self.setup_ui(self)
         self.setup_signals()
         self.setup_constraints()
         self.setWindowTitle("Handskill Exercise Execution")
+        self.exercise = HandSkillExercise()
+        self._projector_view_timer = None
+
+        self._camera_service: CameraService = None
+        # self.setup_camera_service()
+
+        self.projector_view = None
+        # self.setup_projector_view(screen_id)
+
+        self._selection_stick_service = None
+        # self.setup_object_detection_service()
+
+        self.scenes_model = None
+        self.annotations_model = None
         self.setup_models()
 
-        # self.setup_camera_service()
-        # self.setup_projector_view(screen_id)
+        # Do I need this?
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
 
     def setup_signals(self):
         # self.button_calibrate_projector.clicked.connect(self.calibrate_projector)
@@ -39,9 +51,6 @@ class HandSkillExerciseExecution(QMainWindow):
         self.button_load_project.clicked.connect(self.load_project)
         self.button_select_exercise.clicked.connect(self.select_exercise)
         self.button_start.clicked.connect(self.start_exercise)
-
-    def setup_models(self):
-        self.scenes_model = ScenesModel()
 
     def setup_camera_service(self):
         self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
@@ -54,6 +63,13 @@ class HandSkillExerciseExecution(QMainWindow):
             self.calibrate_projector()
         else:
             logger.error("Could not initialize projector. Make sure projector is connected and is turned on!")
+
+    def setup_object_detection_service(self):
+        self._selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
+
+    def setup_models(self):
+        self.scenes_model = ScenesModel()
+        self.annotations_model = AnnotationsModel()
 
     def calibrate_projector(self):
         self.projector_view.calibrating = True
@@ -88,7 +104,29 @@ class HandSkillExerciseExecution(QMainWindow):
         self.button_start.setEnabled(True)
 
     def start_exercise(self):
-        print("start")
+        current_scene = self.exercise.scene
+        self.annotations_model.set_scene(current_scene)
+        self.projector_view.set_annotations_model(self.annotations_model)
+        # self.setup_timers()
+
+    def setup_timers(self):
+        self._projector_view_timer = QTimer()
+        self._projector_view_timer.timeout.connect(self.update_projector_view)
+        self._projector_view_timer.start(5)
+
+    def update_projector_view(self):
+        if self.projector_view.calibrating:
+            return
+        else:
+            camera_frame = self._camera_service.get_frame()
+            self._selection_stick_service.camera_img = camera_frame.raw_image
+            self._hand_tracking_service.camera_img = camera_frame.raw_image
+            self.projector_view.update_projector_view(camera_frame)
+
+    def close(self):
+        self._projector_view_timer.stop()
+        self.projector_view.close()
+        super().close()
 
     def setup_constraints(self):
         self.line_project_name.setEnabled(False)
