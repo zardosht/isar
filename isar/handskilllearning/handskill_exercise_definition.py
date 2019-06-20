@@ -1,7 +1,7 @@
 import os
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QIntValidator
+from PyQt5.QtGui import QIntValidator, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
 from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise
@@ -15,7 +15,6 @@ class HandSkillExerciseDefinition(QWizard):
     def __init__(self):
         super().__init__()
         self.exercise = FollowThePathExercise()
-        self._scenes = None
         self.scenes_model = None
 
         self.setup_ui(self)
@@ -47,7 +46,6 @@ class HandSkillExerciseDefinition(QWizard):
 
     def setup_models(self):
         self.scenes_model = ScenesModel()
-        self.list_scenes.setModel(self.scenes_model)
 
     def load_project(self):
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
@@ -55,36 +53,27 @@ class HandSkillExerciseDefinition(QWizard):
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":
             return
-
         self.line_project_name.setText(project_name)
         self.button_select_scene.setEnabled(True)
 
-        scenes_model = self.list_scenes.model()
-        scenes_model.load_project(project_dir, project_name)
-        self._scenes = scenes_model.get_all_scenes()
-
-        delete_index = - 1
-        for scene in self._scenes:
-            delete_index = delete_index + 1
+        self.scenes_model.load_project(project_dir, project_name)
+        model = QStandardItemModel()
+        for scene in self.scenes_model.get_all_scenes():
             count = 0
-            for model in scene.get_all_annotations():
-                if isinstance(model, CurveAnnotation):
+            for annotation in scene.get_all_annotations():
+                if isinstance(annotation, CurveAnnotation):
                     count = count + 1
-            if not count == 1:
-                index = self.list_scenes.model().index(delete_index, 0)
-                # TODO: bugfix: when deleting a scene from scene model, then the scene will also
-                #  be deleted from the whole project
-                scenes_model.delete_scene(index)
-                delete_index = delete_index - 1
-
-        index = self.list_scenes.model().index(0, 0)
-        self.list_scenes.setCurrentIndex(index)
+            if count == 1:
+                item = QStandardItem()
+                item.setText(scene.name)
+                model.appendRow(item)
+        self.list_scenes.setModel(model)
 
     def select_scene(self):
         index = self.list_scenes.currentIndex()
         selected = index.data()
         self.line_selected_scenes.setText(selected)
-        for scene in self._scenes:
+        for scene in self.scenes_model.get_all_scenes():
             if scene.name == selected:
                 self.exercise.set_scene(scene)
 
@@ -185,8 +174,7 @@ class HandSkillExerciseDefinition(QWizard):
         # TODO: implement to add more than one exercise
         self.exercise.name = self.line_exercise_name.text()
         scenemodel.current_project.exercises = self.exercise
-        scenes_model = self.list_scenes.model()
-        scenes_model.save_project(parent_dir, project_name)
+        self.scenes_model.save_project(parent_dir, project_name)
 
     def setup_constraints(self):
         # register fields to enable/disable the next/finish button

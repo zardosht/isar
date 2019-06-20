@@ -1,40 +1,92 @@
+import logging
+import os
+
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QMainWindow, QFileDialog
+
+from isar.camera.camera import CameraService
+from isar.projection.projector import ProjectorView
+from isar.scene import scenemodel
+from isar.scene.scenemodel import ScenesModel
+from isar.services import servicemanager
+from isar.services.servicemanager import ServiceNames
+
+logger = logging.getLogger("isar.handskill_exercise_execution")
 
 
 class HandSkillExerciseExecution(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, screen_id):
         super().__init__()
+        self.exercise = None
+        self.scenes_model = None
+        self._camera_service: CameraService = None
+        self.projector_view = None
 
         self.setup_ui(self)
         self.setup_signals()
         self.setup_constraints()
+        self.setWindowTitle("Handskill Exercise Execution")
         self.setup_models()
 
-        self.setWindowTitle("Handskill Exercise Execution")
+        # self.setup_camera_service()
+        # self.setup_projector_view(screen_id)
 
     def setup_signals(self):
-        self.button_calibrate_projector.clicked.connect(self.calibrate_projector)
-        self.button_init_scene_size.clicked.connect(self.init_scene_size)
+        # self.button_calibrate_projector.clicked.connect(self.calibrate_projector)
+        # self.button_init_scene_size.clicked.connect(self.init_scene_size)
         self.button_load_project.clicked.connect(self.load_project)
         self.button_select_exercise.clicked.connect(self.select_exercise)
         self.button_start.clicked.connect(self.start_exercise)
 
     def setup_models(self):
-        pass
+        self.scenes_model = ScenesModel()
+
+    def setup_camera_service(self):
+        self._camera_service = servicemanager.get_service(ServiceNames.CAMERA1)
+        self._camera_service.start_capture()
+
+    def setup_projector_view(self, screen_id):
+        self.projector_view = ProjectorView(self.projector_view, screen_id, self._camera_service)
+        self.projector_view.setWindowFlag(QtCore.Qt.Window)
+        if self.projector_view.is_projector_ready():
+            self.calibrate_projector()
+        else:
+            logger.error("Could not initialize projector. Make sure projector is connected and is turned on!")
 
     def calibrate_projector(self):
-        print("calibrate projector")
+        self.projector_view.calibrating = True
+        self.projector_view.calibrate_projector()
 
     def init_scene_size(self):
-        print("init scene size")
+        self.projector_view.init_scene_size()
 
     def load_project(self):
-        print("load button")
+        logger.info("Load project")
+        project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
+        project_dir = os.path.dirname(project_filename)
+        project_name = os.path.splitext(os.path.basename(project_filename))[0]
+        if project_dir is None or project_dir == "":
+            return
+
+        self.line_project_name.setText(project_name)
+        self.scenes_model.load_project(project_dir, project_name)
+
+        model = QStandardItemModel()
+        item = QStandardItem()
+        # TODO: implement for more than one exercise
+        item.setText(scenemodel.current_project.exercises.name)
+        model.appendRow(item)
+        self.list_exercises.setModel(model)
 
     def select_exercise(self):
-        print("select exercise")
+        index = self.list_exercises.currentIndex()
+        selected = index.data()
+        self.line_selected_exercises.setText(selected)
+        # TODO: implement for more than one exercise
+        self.exercise = scenemodel.current_project.exercises
+        self.button_start.setEnabled(True)
 
     def start_exercise(self):
         print("start")
@@ -43,7 +95,7 @@ class HandSkillExerciseExecution(QMainWindow):
         self.line_project_name.setEnabled(False)
         self.line_selected_exercises.setEnabled(False)
         self.radio_button_beginner.setChecked(True)
-
+        self.button_start.setEnabled(False)
 
     def setup_ui(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
