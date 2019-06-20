@@ -171,9 +171,8 @@ class HandSkillExerciseDefinition(QWizard):
                 return
             project_name = self.project_name_le.text()
 
-        # TODO: implement to add more than one exercise
         self.exercise.name = self.line_exercise_name.text()
-        scenemodel.current_project.exercises = self.exercise
+        scenemodel.current_project.exercises.append(self.exercise)
         self.scenes_model.save_project(parent_dir, project_name)
 
     def setup_constraints(self):

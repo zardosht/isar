@@ -74,18 +74,17 @@ class HandSkillExerciseExecution(QMainWindow):
         self.scenes_model.load_project(project_dir, project_name)
 
         model = QStandardItemModel()
-        item = QStandardItem()
-        # TODO: implement for more than one exercise
-        item.setText(scenemodel.current_project.exercises.name)
-        model.appendRow(item)
+        for exercise in scenemodel.current_project.exercises:
+            item = QStandardItem()
+            item.setText(exercise.name)
+            model.appendRow(item)
         self.list_exercises.setModel(model)
 
     def select_exercise(self):
         index = self.list_exercises.currentIndex()
         selected = index.data()
         self.line_selected_exercises.setText(selected)
-        # TODO: implement for more than one exercise
-        self.exercise = scenemodel.current_project.exercises
+        self.exercise = scenemodel.current_project.exercises[self.list_exercises.currentIndex().row()]
         self.button_start.setEnabled(True)
 
     def start_exercise(self):
