@@ -107,24 +107,16 @@ class EventsActionsRulesDialog(QDialog):
 
     def add_action_btn_clicked(self):
         if self.action_type.has_target:
-            if self.action_target is None:
-                logger.error("self.action_target is None. Return.")
+            if not self.action_type.is_action_target_valid(self.action_target):
+                logger.error("Action target is not valid. Return.")
                 return
-
-            if self.action_type.has_single_target:
-                if type(self.action_target) not in self.action_type.target_types:
-                    logger.error("Action target not matching target type of the action. Return.")
-                    return
-            else:
-                if type(self.action_target) != list:
-                    logger.error("Action target not matching target type of the action. Return.")
-                    return
 
         if self.actions_scene is None:
             logger.error("self.actions_scene is None. Return.")
 
         if self.action is None:
-            self.action = self.action_type(self.action_target)
+            self.action = self.action_type()
+            self.action.set_target(self.action_target)
             self.action.name = self.action_name
             self.action.scene_id = self.actions_scene.name
             if self.action_type.has_properties:
