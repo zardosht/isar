@@ -1248,3 +1248,65 @@ annotation_tool_btns = {
 }
 
 
+"""
+Implementation of a method that takes 2 distant points and returns 
+all the points between them.
+Method used for smoothing the CurveAnnotation line and AnimationAnnotation line.
+"""
+
+
+def line_iterator(pt1, pt2):
+    pt1_x = pt1[0]
+    pt1_y = pt1[1]
+    pt2_x = pt2[0]
+    pt2_y = pt2[1]
+
+    # difference and absolute difference between points
+    # used to calculate slope and relative location between points
+    d_x = pt2_x - pt1_x
+    d_y = pt2_y - pt1_y
+    d_xa = numpy.abs(d_x)
+    d_ya = numpy.abs(d_y)
+
+    # predefine numpy array for output based on distance between points
+    iterator = numpy.empty(shape=(numpy.maximum(d_ya, d_xa), 2), dtype=numpy.int)
+
+    # obtain coordinates along the line
+    neg_y = pt1_y > pt2_y
+    neg_x = pt1_x > pt2_x
+    if pt1_x == pt2_x:
+        # vertical line segment
+        iterator[:, 0] = pt1_x
+        if neg_y:
+            iterator[:, 1] = numpy.arange(pt1_y - 1, pt1_y - d_ya - 1, -1)
+        else:
+            iterator[:, 1] = numpy.arange(pt1_y + 1, pt1_y + d_ya + 1)
+    elif pt1_y == pt2_y:
+        # horizontal line segment
+        iterator[:, 1] = pt1_y
+        if neg_x:
+            iterator[:, 0] = numpy.arange(pt1_x - 1, pt1_x - d_xa - 1, -1)
+        else:
+            iterator[:, 0] = numpy.arange(pt1_x + 1, pt1_x + d_xa + 1)
+    else:
+        # diagonal line segment
+        steep_slope = d_ya > d_xa
+        if steep_slope:
+            slope = d_x / d_y
+            if neg_y:
+                iterator[:, 1] = numpy.arange(pt1_y - 1, pt1_y - d_ya - 1, -1)
+            else:
+                iterator[:, 1] = numpy.arange(pt1_y + 1, pt1_y + d_ya + 1)
+            iterator[:, 0] = (slope * (iterator[:, 1] - pt1_y)) + pt1_x
+        else:
+            slope = d_y / d_x
+            if neg_x:
+                iterator[:, 0] = numpy.arange(pt1_x - 1, pt1_x - d_xa - 1, -1)
+            else:
+                iterator[:, 0] = numpy.arange(pt1_x + 1, pt1_x + d_xa + 1)
+            iterator[:, 1] = (slope * (iterator[:, 0] - pt1_x)).astype(numpy.int) + pt1_y
+
+    line_positions = []
+    for position in iterator:
+        line_positions.append(tuple(position))
+    return line_positions
