@@ -5,7 +5,7 @@ import time
 import traceback
 
 from isar.camera.camera import CameraFrame
-from isar.tracking.objectdetection import ObjectDetectionPrediction
+from isar.tracking.objectdetection import ObjectDetectionPrediction, POISON_PILL
 from objectdetectors.yolo_tool_detector import physical_objects, object_detector_package_path, temp_folder_path, \
     physical_objects_dict
 
@@ -24,6 +24,7 @@ debug = False
 
 tfnet = None
 pose_estimators = []
+num__pose_estimator_processes = 10
 
 best_homographies = {}
 pose_estimation_task_queue = mp.JoinableQueue()
@@ -141,8 +142,8 @@ def init_yolo():
 
 def init_pose_estimators():
     global pose_estimators
-    num_processes = 10
-    pose_estimators = [PoseEstimator(pose_estimation_task_queue, pose_estimation_results_queue) for i in range(num_processes)]
+    pose_estimators = [PoseEstimator(pose_estimation_task_queue, pose_estimation_results_queue)
+                       for i in range(num__pose_estimator_processes)]
     for p in pose_estimators:
         p.daemon = True
         p.start()
@@ -151,8 +152,8 @@ def init_pose_estimators():
 
 
 def terminate():
-    for pose_estimator in pose_estimators:
-        pose_estimator.terminate()
+    for i in range(num__pose_estimator_processes):
+        pose_estimation_task_queue.put(POISON_PILL)
 
 
 def get_physical_objects():

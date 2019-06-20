@@ -127,6 +127,11 @@ class DomainLearningWindow(QMainWindow):
         actions_service.set_annotations_model(self.annotations_model)
         actions_service.set_scenes_model(self.scenes_model)
 
+        object_tracking_service = servicemanager.get_service(ServiceNames.OBJECT_TRACKING_SERVICE)
+        object_tracking_service.set_annotations_model(self.annotations_model)
+        object_tracking_service.set_scenes_model(self.scenes_model)
+        object_tracking_service.set_physical_objects_model(self.physical_objects_model)
+
         rules_service = servicemanager.get_service(ServiceNames.RULES_SERVICE)
         rules_service.set_scenes_model(self.scenes_model)
 

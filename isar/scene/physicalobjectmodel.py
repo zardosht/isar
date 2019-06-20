@@ -2,6 +2,7 @@ import logging
 import math
 import pickle
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import QAbstractListModel, Qt, QMimeData, QModelIndex
 from PyQt5.QtGui import QBrush
 
@@ -31,9 +32,143 @@ When a physical object is removed form the scene the annotations attached to it 
 logger = logging.getLogger("isar.scene.physicalobjectmodel")
 
 
+class PhysicalObject:
+    def __init__(self):
+        self.name = "name"
+        self.template_image_path = ""
+        self.template_image = None
+
+        self.__scene_position = None
+        self.__annotations = []
+
+        self._tracking = False
+        self.detection_confidence = None
+        self.__top_left = None
+        self.bottom_right = None
+        self.scene_image = None
+        self.pose_estimation = None
+
+        self.highlight = False
+        self.highlight_color = None
+
+    @property
+    def top_left(self):
+        return self.__top_left
+
+    @top_left.setter
+    def top_left(self, value):
+        self.__top_left = value
+        self.__scene_position = sceneutil.camera_coord_to_scene_coord(value)
+
+    @property
+    def scene_position(self):
+        return self.__scene_position
+
+    @scene_position.setter
+    def scene_position(self, scene_position):
+        self.__scene_position = scene_position
+
+    @property
+    def ref_frame(self):
+        if self.__top_left is None:
+            tl = self.__scene_position
+            width = self.template_image.shape[1]
+            height = self.template_image.shape[0]
+        else:
+            tl = sceneutil.camera_coord_to_scene_coord(self.__top_left)
+            if self.bottom_right is None:
+                logger.warning("self.bottom_right is None! setting to a default value.")
+                self.bottom_right = (tl[0] + 100, tl[1] + 100)
+
+            br = sceneutil.camera_coord_to_scene_coord(self.bottom_right)
+            width = int(math.fabs(br[0] - tl[0]))
+            height = int(math.fabs(br[1] - tl[1]))
+
+        return RefFrame(tl[0], tl[1], width, height)
+
+    def get_annotations(self):
+        return tuple(self.__annotations)
+
+    def clear_annotations(self):
+        self.__annotations.clear()
+
+    def remove_annotation(self, annotation):
+        self.__annotations.remove(annotation)
+
+    def add_annotation(self, annotation):
+        if annotation not in self.__annotations:
+            # annotation.owner = self
+            self.__annotations.append(annotation)
+
+    def update_tracking(self, prediction, phys_objs_model):
+        if prediction is None:
+            if self._tracking:
+                phys_objs_model.emit_tracking_lost(self)
+
+            self._tracking = False
+            self.detection_confidence = None
+            self.__top_left = None
+            self.bottom_right = None
+            self.pose_estimation = None
+            self.scene_image = None
+
+        else:
+            if not self._tracking:
+                phys_objs_model.emit_tracking_captured(self)
+
+            self._tracking = True
+            self.detection_confidence = prediction.confidence
+            self.top_left = prediction.top_left
+            self.bottom_right = prediction.bottom_right
+            self.pose_estimation = prediction.pose_estimation
+            self.scene_image = prediction.image
+
+    def is_tracking(self):
+        return self._tracking
+
+    def delete_from_scene(self):
+        for annotation in self.__annotations:
+            annotation.delete()
+        self.__annotations.clear()
+
+        self.__scene_position = None
+
+        self._tracking = False
+        self.detection_confidence = None
+        self.__top_left = None
+        self.bottom_right = None
+        self.scene_image = None
+        self.pose_estimation = None
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, other):
+        return isinstance(other, PhysicalObject) and self.name == other.name
+
+    def collides_with_point(self, point, scene_scale_factor=(1., 1.)):
+        # Drawing tempalte image on the scene. The ref_frame is in scene_coordinates
+        x, y, width, height = self.ref_frame
+        if self.is_tracking():
+            return x <= point[0] <= x + width and \
+                   y <= point[1] <= y + height
+        else:
+            return x <= point[0] <= x + width * scene_scale_factor[0] and \
+                   y <= point[1] <= y + height * scene_scale_factor[1]
+
+    def __str__(self):
+        return self.name
+
+    def reset_runtime_state(self):
+        self.highlight = False
+        self.highlight_color = None
+
+
 class PhysicalObjectsModel(QAbstractListModel):
 
     MIME_TYPE = "application/isar.physical_object"
+    tracking_lost = QtCore.pyqtSignal(PhysicalObject)
+    tracking_captured = QtCore.pyqtSignal(PhysicalObject)
 
     def __init__(self):
         super().__init__()
@@ -127,7 +262,7 @@ class PhysicalObjectsModel(QAbstractListModel):
             self.__present_physical_objects.clear()
             scene_phys_objs = self.get_scene_physical_objects()
             for phys_obj in scene_phys_objs:
-                phys_obj.update_tracking(None)
+                phys_obj.update_tracking(None, self)
             return
 
         scene_phys_objs = self.get_scene_physical_objects()
@@ -139,14 +274,14 @@ class PhysicalObjectsModel(QAbstractListModel):
                     continue
                 if obj_detector in self.__present_physical_objects:
                     for phys_obj in self.__present_physical_objects[obj_detector]:
-                        phys_obj.update_tracking(None)
+                        phys_obj.update_tracking(None, self)
                     del self.__present_physical_objects[obj_detector]
                 continue
 
             for scene_phys_obj in scene_phys_objs:
                 for prediction in predictions:
                     if scene_phys_obj.name == prediction.label:
-                        scene_phys_obj.update_tracking(prediction)
+                        scene_phys_obj.update_tracking(prediction, self)
                         present_phys_objs.append(scene_phys_obj)
             self.__present_physical_objects[obj_detector] = present_phys_objs
 
@@ -158,7 +293,7 @@ class PhysicalObjectsModel(QAbstractListModel):
         scene_phys_objs = self.get_scene_physical_objects()
         for phys_obj in scene_phys_objs:
             if phys_obj not in result:
-                phys_obj.update_tracking(None)
+                phys_obj.update_tracking(None, self)
 
         return tuple(result)
 
@@ -171,130 +306,8 @@ class PhysicalObjectsModel(QAbstractListModel):
 
         self.__scene.delete_physical_object(po)
 
+    def emit_tracking_lost(self, phys_obj):
+        self.tracking_lost.emit(phys_obj)
 
-class PhysicalObject:
-    def __init__(self):
-        self.name = "name"
-        self.template_image_path = ""
-        self.template_image = None
-
-        self.__scene_position = None
-        self.__annotations = []
-
-        self._tracking = False
-        self.detection_confidence = None
-        self.__top_left = None
-        self.bottom_right = None
-        self.scene_image = None
-        self.pose_estimation = None
-
-        self.highlight = False
-        self.highlight_color = None
-
-    @property
-    def top_left(self):
-        return self.__top_left
-
-    @top_left.setter
-    def top_left(self, value):
-        self.__top_left = value
-        self.__scene_position = sceneutil.camera_coord_to_scene_coord(value)
-
-    @property
-    def scene_position(self):
-        return self.__scene_position
-
-    @scene_position.setter
-    def scene_position(self, scene_position):
-        self.__scene_position = scene_position
-
-    @property
-    def ref_frame(self):
-        if self.__top_left is None:
-            tl = self.__scene_position
-            width = self.template_image.shape[1]
-            height = self.template_image.shape[0]
-        else:
-            tl = sceneutil.camera_coord_to_scene_coord(self.__top_left)
-            if self.bottom_right is None:
-                logger.warning("self.bottom_right is None! setting to a default value.")
-                self.bottom_right = (tl[0] + 100, tl[1] + 100)
-
-            br = sceneutil.camera_coord_to_scene_coord(self.bottom_right)
-            width = int(math.fabs(br[0] - tl[0]))
-            height = int(math.fabs(br[1] - tl[1]))
-
-        return RefFrame(tl[0], tl[1], width, height)
-
-    def get_annotations(self):
-        return tuple(self.__annotations)
-
-    def clear_annotations(self):
-        self.__annotations.clear()
-
-    def remove_annotation(self, annotation):
-        self.__annotations.remove(annotation)
-
-    def add_annotation(self, annotation):
-        if annotation not in self.__annotations:
-            # annotation.owner = self
-            self.__annotations.append(annotation)
-
-    def update_tracking(self, prediction):
-        if prediction is None:
-            self._tracking = False
-            self.detection_confidence = None
-            self.__top_left = None
-            self.bottom_right = None
-            self.pose_estimation = None
-            self.scene_image = None
-        else:
-            self._tracking = True
-            self.detection_confidence = prediction.confidence
-            self.top_left = prediction.top_left
-            self.bottom_right = prediction.bottom_right
-            self.pose_estimation = prediction.pose_estimation
-            self.scene_image = prediction.image
-
-    def is_tracking(self):
-        return self._tracking
-
-    def delete_from_scene(self):
-        for annotation in self.__annotations:
-            annotation.delete()
-        self.__annotations.clear()
-
-        self.__scene_position = None
-
-        self._tracking = False
-        self.detection_confidence = None
-        self.__top_left = None
-        self.bottom_right = None
-        self.scene_image = None
-        self.pose_estimation = None
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def __eq__(self, other):
-        return isinstance(other, PhysicalObject) and self.name == other.name
-
-    def collides_with_point(self, point, scene_scale_factor=(1., 1.)):
-        # Drawing tempalte image on the scene. The ref_frame is in scene_coordinates
-        x, y, width, height = self.ref_frame
-        if self.is_tracking():
-            return x <= point[0] <= x + width and \
-                   y <= point[1] <= y + height
-        else:
-            return x <= point[0] <= x + width * scene_scale_factor[0] and \
-                   y <= point[1] <= y + height * scene_scale_factor[1]
-
-    def __str__(self):
-        return self.name
-
-    def reset_runtime_state(self):
-        self.highlight = False
-        self.highlight_color = None
-
-
-
+    def emit_tracking_captured(self, phys_obj):
+        self.tracking_captured.emit(phys_obj)

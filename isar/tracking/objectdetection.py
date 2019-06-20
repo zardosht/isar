@@ -3,6 +3,7 @@ import importlib.util
 import logging
 import multiprocessing as mp
 import os
+import sys
 import threading
 import time
 import traceback
@@ -224,7 +225,7 @@ class ObjectDetectorWorker(mp.Process):
             if self.shut_down_event.is_set():
                 logger.info("Shutting down: ", self.object_detector.name)
                 self.request_queue.task_done()
-                break
+                sys.exit(0)
 
             if not self.request_queue.empty():
                 obj_detection_request = self.request_queue.get()
@@ -235,10 +236,5 @@ class ObjectDetectorWorker(mp.Process):
                 logger.info("Detection of objects by {} took {}".format(self.object_detector.name, time.time() - t1))
 
     def shut_down(self):
-        self.shut_down_event.set()
-
-    def terminate(self):
         self.object_detector.terminate()
-        super().terminate()
-
-
+        self.shut_down_event.set()

@@ -173,7 +173,7 @@ class PhysicalObjectGroupAppeared(Event):
 class SceneShownEvent(Event):
     # Delay before executing actions that depend on this event in a rule. This is added to make sure
     # the scene is rendered and then the corresponding actions are performed.
-    delay = 0.8
+    delay = 0.6
     target_types = [Scene]
     pass
 
