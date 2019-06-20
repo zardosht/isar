@@ -1,4 +1,5 @@
 import logging
+from threading import Thread
 
 from isar.events import events, eventmanager
 from isar.services.service import Service
@@ -32,4 +33,5 @@ class RulesService(Service):
 
         for rule in self.current_scene.get_rules():
             if rule.event == event:
-                rule.fire()
+                t = Thread(target=rule.fire)
+                t.start()

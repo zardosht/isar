@@ -38,7 +38,7 @@ class SceneRenderer:
         scene_phys_objs = self.__physical_objects_model.get_scene_physical_objects()
         present_phys_objs = self.__physical_objects_model.get_present_physical_objects()
         if present_phys_objs is None:
-            logger.warning("Present physical objects is None!")
+            logger.warning("Present physical objects is None! Return.")
             return
 
         for phys_obj in scene_phys_objs:

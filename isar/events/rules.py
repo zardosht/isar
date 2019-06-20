@@ -1,5 +1,7 @@
 import logging
+import time
 
+from isar.events.events import SceneShownEvent
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
 
@@ -33,5 +35,7 @@ class Rule:
             logger.error("self.actionsservice.current_scene not the same as self.scene. Return.")
             return
 
-        self._actionsservice.perform_action(self.action)
+        if isinstance(self.event, SceneShownEvent):
+            time.sleep(SceneShownEvent.delay)
 
+        self._actionsservice.perform_action(self.action)

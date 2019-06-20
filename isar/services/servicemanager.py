@@ -6,6 +6,7 @@ from isar.camera.camera import CameraService
 from isar.events import eventmanager
 from isar.events.actionsservice import ActionsService
 from isar.events.events import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
+from isar.events.objecttrackingservice import ObjectTrackingService
 from isar.events.rulesservice import RulesService
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
@@ -30,6 +31,7 @@ class ServiceNames(Enum):
     ACTIONS_SERVICE = 7
     TIMER_SERVICE = 8
     RULES_SERVICE = 9
+    OBJECT_TRACKING_SERVICE = 10
 
 
 def start_services():
@@ -76,6 +78,9 @@ def start_services():
         rules_service = RulesService(ServiceNames.RULES_SERVICE)
         rules_service.actions_service = actions_service
         __services[ServiceNames.RULES_SERVICE] = rules_service
+
+        object_tracking_service = ObjectTrackingService(ServiceNames.OBJECT_TRACKING_SERVICE)
+        __services[ServiceNames.OBJECT_TRACKING_SERVICE] = object_tracking_service
 
     except Exception as exp:
         logger.error(exp)

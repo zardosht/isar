@@ -1,4 +1,3 @@
-import threading
 import logging
 
 from isar.events import eventmanager
@@ -19,8 +18,8 @@ class TimerService(Service):
         eventmanager.register_listener(TimerTickEvent.__name__, self)
         eventmanager.register_listener(TimerFinishedEvent.__name__, self)
         eventmanager.register_listener(TimerTimeout1Event.__name__, self)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, self)
-        eventmanager.register_listener(TimerTimeout1Event.__name__, self)
+        eventmanager.register_listener(TimerTimeout2Event.__name__, self)
+        eventmanager.register_listener(TimerTimeout3Event.__name__, self)
 
     def on_event(self, timer_event):
         target = timer_event.target
@@ -30,23 +29,23 @@ class TimerService(Service):
         if not isinstance(target, TimerAnnotation):
             logger.error("Target of timer_event is not a TimerAnnotation. Return.")
 
-        # ------------ Experimental ------------
-        if isinstance(timer_event, TimerFinishedEvent):
-            logger.info("Timer {} finisehd.".format(target.name))
-
-        if isinstance(timer_event, TimerTickEvent):
-            logger.info("Timer {} ticked.".format(target.name))
-
-        if isinstance(timer_event, TimerTimeout1Event):
-            logger.info("Timer {} timeout1 reached.".format(target.name))
-
-        if isinstance(timer_event, TimerTimeout2Event):
-            logger.info("Timer {} timeout2.".format(target.name))
-
-        if isinstance(timer_event, TimerTimeout3Event):
-            logger.info("Timer {} timeout3.".format(target.name))
-
-        # --------------------------------------
+        # # ------------ Experimental ------------
+        # if isinstance(timer_event, TimerFinishedEvent):
+        #     logger.info("Timer {} finisehd.".format(target.name))
+        #
+        # if isinstance(timer_event, TimerTickEvent):
+        #     logger.info("Timer {} ticked.".format(target.name))
+        #
+        # if isinstance(timer_event, TimerTimeout1Event):
+        #     logger.info("Timer {} timeout1 reached.".format(target.name))
+        #
+        # if isinstance(timer_event, TimerTimeout2Event):
+        #     logger.info("Timer {} timeout2.".format(target.name))
+        #
+        # if isinstance(timer_event, TimerTimeout3Event):
+        #     logger.info("Timer {} timeout3.".format(target.name))
+        #
+        # # --------------------------------------
 
     def set_current_scene(self, current_scene):
         self.current_scene = current_scene

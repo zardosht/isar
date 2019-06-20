@@ -1,6 +1,29 @@
+from PyQt5 import QtCore
+from PyQt5.QtCore import QObject
 
 
+class B:
+    def __init__(self, name):
+        self.name = name
 
+
+class A(QObject):
+    sig = QtCore.pyqtSignal(B)
+
+    def __init__(self):
+        super(A, self).__init__()
+        self.sig.connect(self.signal_received)
+
+    def emit_signal(self):
+        b = B("the_cute_b")
+        self.sig.emit(b)
+
+    def signal_received(self, b_instance):
+        print("Received signal with: ", b_instance.name)
+
+
+a = A()
+a.emit_signal()
 
 
 # # ============================================================

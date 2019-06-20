@@ -17,10 +17,12 @@ class Event:
 
     has_multiple_targets = False
 
-    def __init__(self, target):
+    def __init__(self, target=None, targets=None):
         self.scene_id = None
         self.name = None
         self.target = target
+        # for the case the event has multiple targets
+        self.targets = targets
 
     @classmethod
     def update_event_properties_frame(cls, qt_frame):
@@ -33,7 +35,23 @@ class Event:
         if self.scene_id != other.scene_id:
             return False
 
-        return self.target.name == other.target.name
+        if not self.has_multiple_targets:
+            return self.target.name == other.target.name
+        else:
+            if self.targets is None or other.targets is None:
+                return False
+            if type(self.targets) != list or type(other.targets) != list:
+                return False
+
+            if len(self.targets) != len(other.targets):
+                return False
+
+            other_target_names = [target.name for target in other.targets]
+            for target in self.targets:
+                if target.name not in other_target_names:
+                    return False
+
+            return True
 
 
 class SelectionEvent(Event):
@@ -48,7 +66,7 @@ class SelectionEvent(Event):
 
     repeat_interval = 100000000
     """
-    Interval between repeated sending of the event. SelectionEvent is not repeatable, i.e. interval = 100000000 
+    Interval between repeated sending of the event. SelectionEvent is not repeatable, i.e. interval = very large 
     """
 
     pass
@@ -153,9 +171,10 @@ class PhysicalObjectGroupAppeared(Event):
 
 
 class SceneShownEvent(Event):
+    # Delay before executing actions that depend on this event in a rule. This is added to make sure
+    # the scene is rendered and then the corresponding actions are performed.
+    delay = 0.6
     target_types = [Scene]
-
-    # TODO: implement
     pass
 
 
@@ -177,5 +196,6 @@ event_types = {
     PhysicalObjectAppearedEvent.__name__: PhysicalObjectAppearedEvent,
     PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
     PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
+    PhysicalObjectGroupAppeared.__name__: PhysicalObjectGroupAppeared,
     SceneShownEvent.__name__: SceneShownEvent
 }

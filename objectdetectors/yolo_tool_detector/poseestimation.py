@@ -2,11 +2,13 @@ import logging
 import multiprocessing as mp
 import os
 import random
+import sys
 
 import cv2
 import numpy as np
 import time
 
+from isar.tracking.objectdetection import POISON_PILL
 from objectdetectors.yolo_tool_detector import temp_folder_path
 
 logger = logging.getLogger('mirdl.yolo_pose_estimator')
@@ -34,10 +36,10 @@ class PoseEstimator(mp.Process):
         while True:
             pe_input = self.task_queue.get()
 
-            if pe_input is None:
+            if pe_input == POISON_PILL:
                 logger.info("Received None pose_estimation_input. Shutting down.")
                 self.task_queue.task_done()
-                break
+                sys.exit(0)
 
             # compute pose from template and target images
             # put a PoseEstimationOutput instance int the results queue
@@ -46,7 +48,7 @@ class PoseEstimator(mp.Process):
             estimated_pose.object_name = pe_input.object_name
             self.task_queue.task_done()
             self.result_queue.put(estimated_pose)
-            print("Finding best homograpy for {} took {}".format(pe_input.object_name, time.time() - t1))
+            logger.debug("Finding best homograpy for {} took {}".format(pe_input.object_name, time.time() - t1))
 
         return
 

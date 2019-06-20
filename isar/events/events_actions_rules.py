@@ -238,7 +238,7 @@ class EventsActionsRulesDialog(QDialog):
     def scenes_combo_current_index_changed(self, index, combo_name):
         if self.event_scenes_combo.objectName() == combo_name:
             scene = self.event_scenes_combo.itemData(index)
-            self.events_model.current_scene = scene
+            self.events_model.set_current_scene(scene)
             self.events_scene = scene
 
             self.event = None
@@ -252,7 +252,7 @@ class EventsActionsRulesDialog(QDialog):
 
         elif self.action_scenes_combo.objectName() == combo_name:
             scene = self.action_scenes_combo.itemData(index)
-            self.actions_model.current_scene = scene
+            self.actions_model.set_current_scene(scene)
             self.actions_scene = scene
 
             self.action = None
@@ -263,7 +263,7 @@ class EventsActionsRulesDialog(QDialog):
 
         elif self.rule_scenes_combo.objectName() == combo_name:
             scene = self.rule_scenes_combo.itemData(index)
-            self.rules_model.current_scene = scene
+            self.rules_model.set_current_scene(scene)
             self.rules_scene = scene
             self.rule_name_text.setText("")
             self.rule_event = None
@@ -448,6 +448,10 @@ class ItemsModel(QAbstractListModel):
         super().__init__()
         self.item_type = item_type
         self.current_scene = None
+
+    def set_current_scene(self, scene):
+        self.current_scene = scene
+        self.endResetModel()
 
     def rowCount(self, parent=None):
         if self.current_scene is not None:
