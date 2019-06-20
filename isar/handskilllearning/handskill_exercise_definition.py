@@ -26,8 +26,8 @@ class HandSkillExerciseDefinition(QWizard):
         self.setWindowTitle("Follow the path exercise")
 
     def setup_signals(self):
-        self.button_load_project.clicked.connect(self.button_load_project_clicked)
-        self.button_select_scene.clicked.connect(self.button_select_scene_clicked)
+        self.button_load_project.clicked.connect(self.load_project)
+        self.button_select_scene.clicked.connect(self.select_scene)
         self.button(QWizard.FinishButton).clicked.connect(self.finish_clicked)
 
         self.line_error_beg.textEdited.connect(self.show_weighted_beginner)
@@ -49,7 +49,7 @@ class HandSkillExerciseDefinition(QWizard):
         self.scenes_model = ScenesModel()
         self.list_scenes.setModel(self.scenes_model)
 
-    def button_load_project_clicked(self):
+    def load_project(self):
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
         project_dir = os.path.dirname(project_filename)
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
@@ -80,7 +80,7 @@ class HandSkillExerciseDefinition(QWizard):
         index = self.list_scenes.model().index(0, 0)
         self.list_scenes.setCurrentIndex(index)
 
-    def button_select_scene_clicked(self):
+    def select_scene(self):
         index = self.list_scenes.currentIndex()
         selected = index.data()
         self.line_selected_scenes.setText(selected)
