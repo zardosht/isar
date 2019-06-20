@@ -1,5 +1,7 @@
 import logging
+import time
 
+from isar.events import eventmanager
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.services.service import Service
 
@@ -11,6 +13,10 @@ Keeps track of which objects are on the table, and fires PhysicalObjectAppeared,
 PhysicalObjectPicked, and PhysicalObjectGroupAppeared events. 
 """
 
+# These are added to counter the flickering effect of firing appear, disappear events, when tracking is not robust.
+MIN_INTERVAL_BETWEEN_FIRING_APPEAR_EVENTS = 1
+MIN_INTERVAL_BETWEEN_FIRING_DISAPPEAR_EVENTS = 1
+
 
 class ObjectTrackingService(Service):
     def __init__(self, service_name):
@@ -21,6 +27,9 @@ class ObjectTrackingService(Service):
         self.__physical_objects_model = None
 
         self.current_scene = None
+
+        self.object_appeared_dict = {}
+        self.object_disappeared_dict = {}
 
     def set_annotations_model(self, annotations_model):
         self.__annotations_model = annotations_model
@@ -35,12 +44,37 @@ class ObjectTrackingService(Service):
 
     def set_current_scene(self, current_scene):
         self.current_scene = current_scene
+        self.object_appeared_dict.clear()
+        self.object_disappeared_dict.clear()
 
     def tracking_lost(self, phys_obj):
         logger.info("Tracking lost: {}".format(phys_obj.name))
+        if phys_obj.name not in self.object_disappeared_dict:
+            self.object_disappeared_dict[phys_obj.name] = time.time()
+            if phys_obj.name in self.object_appeared_dict:
+                del self.object_disappeared_dict[phys_obj.name]
+
+            eventmanager.fire_object_disappeared_event(phys_obj, self.current_scene.name)
+        else:
+            last_disappear_event_fired_at = self.object_disappeared_dict[phys_obj.name]
+            delta = time.time() - last_disappear_event_fired_at
+            if delta > MIN_INTERVAL_BETWEEN_FIRING_DISAPPEAR_EVENTS:
+                self.object_disappeared_dict[phys_obj.name] = time.time()
+                if phys_obj.name in self.object_appeared_dict:
+                    del self.object_disappeared_dict[phys_obj.name]
+                eventmanager.fire_object_disappeared_event(phys_obj, self.current_scene.name)
 
     def tracking_captured(self, phys_obj):
         logger.info("Tracking captured: {}".format(phys_obj.name))
+        if phys_obj.name not in self.object_appeared_dict:
+            self.object_appeared_dict[phys_obj.name] = time.time()
+            eventmanager.fire_object_appeared_event(phys_obj, self.current_scene.name)
+        else:
+            last_appear_event_fired_at = self.object_appeared_dict[phys_obj.name]
+            delta = time.time() - last_appear_event_fired_at
+            if delta > MIN_INTERVAL_BETWEEN_FIRING_APPEAR_EVENTS:
+                self.object_appeared_dict[phys_obj.name] = time.time()
+                eventmanager.fire_object_appeared_event(phys_obj, self.current_scene.name)
 
     def stop(self):
         pass

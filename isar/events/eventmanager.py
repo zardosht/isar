@@ -2,7 +2,8 @@ import logging
 import time
 
 from isar.events.events import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
-    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent, SelectionEvent, HandOnTopEvent, SceneShownEvent
+    TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent, SelectionEvent, HandOnTopEvent, SceneShownEvent, \
+    PhysicalObjectAppearedEvent, PhysicalObjectDisappearedEvent
 
 logger = logging.getLogger("isar.eventmanager")
 
@@ -86,3 +87,15 @@ def fire_scene_shown_event(scene, scene_id):
     scene_shown_event = SceneShownEvent(scene)
     scene_shown_event.scene_id = scene_id
     fire_event(scene_shown_event)
+
+
+def fire_object_appeared_event(phys_obj, scene_id):
+    object_appeared_event = PhysicalObjectAppearedEvent(phys_obj)
+    object_appeared_event.scene_id = scene_id
+    fire_event(object_appeared_event)
+
+
+def fire_object_disappeared_event(phys_obj, scene_id):
+    object_disappeared_event = PhysicalObjectDisappearedEvent(phys_obj)
+    object_disappeared_event.scene_id = scene_id
+    fire_event(object_disappeared_event)

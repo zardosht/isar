@@ -385,12 +385,17 @@ class HighlightPhysicalObjectsAction(Action):
     def update_action_properties_frame(cls, scene, select_target_dialog, qt_frame):
         layout = qt_frame.layout()
 
+        for i in reversed(range(layout.count())):
+            widget_to_remove = layout.itemAt(i).widget()
+            layout.removeWidget(widget_to_remove)
+            widget_to_remove.setParent(None)
+
         label = QLabel()
         label.setText("Color: ")
         layout.addWidget(label)
 
         line_edit = QLineEdit()
-        line_edit.setText(HighlightPhysicalObjectsAction.color)
+        line_edit.setText(str(HighlightPhysicalObjectsAction.color))
         layout.addWidget(line_edit)
 
         set_color_btn = QPushButton()

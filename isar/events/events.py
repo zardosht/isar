@@ -143,15 +143,11 @@ class TimerTickEvent(Event):
 
 class PhysicalObjectAppearedEvent(Event):
     target_types = [PhysicalObject]
-
-    # TODO: implement
     pass
 
 
 class PhysicalObjectDisappearedEvent(Event):
     target_types = [PhysicalObject]
-
-    # TODO: implement
     pass
 
 
