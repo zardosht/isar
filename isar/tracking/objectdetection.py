@@ -233,7 +233,7 @@ class ObjectDetectorWorker(mp.Process):
                 obj_detection_predictions = self.object_detector.get_predictions(obj_detection_request)
                 self.request_queue.task_done()
                 self.response_queue.put(ObjectDetectionResponse(self.object_detector.name, obj_detection_predictions))
-                logger.info("Detection of objects by {} took {}".format(self.object_detector.name, time.time() - t1))
+                logger.debug("Detection of objects by {} took {}".format(self.object_detector.name, time.time() - t1))
 
     def shut_down(self):
         self.object_detector.terminate()

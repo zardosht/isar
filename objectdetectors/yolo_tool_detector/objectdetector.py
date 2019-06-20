@@ -62,7 +62,7 @@ def get_predictions(obj_detection_request):
         logging.error(e)
         traceback.print_tb(e.__traceback__)
 
-    logger.info("Object detections and computing homographies took {}".format(time.time() - t1))
+    logger.debug("Object detections and computing homographies took {}".format(time.time() - t1))
     return predictions
 
 

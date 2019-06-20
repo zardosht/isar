@@ -48,7 +48,7 @@ class PoseEstimator(mp.Process):
             estimated_pose.object_name = pe_input.object_name
             self.task_queue.task_done()
             self.result_queue.put(estimated_pose)
-            print("Finding best homograpy for {} took {}".format(pe_input.object_name, time.time() - t1))
+            logger.debug("Finding best homograpy for {} took {}".format(pe_input.object_name, time.time() - t1))
 
         return
 
