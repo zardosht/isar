@@ -10,15 +10,11 @@ from isar.scene.annotationmodel import CurveAnnotation
 from isar.scene.scenemodel import ScenesModel
 
 
-# TODO: UI: remove edit line for exercise name
-
-
 class HandSkillExerciseDefinition(QWizard):
 
     def __init__(self):
         super().__init__()
-        self.exercise = FollowThePathExercise("Exercise1")
-        self.__scenes = None
+        self.exercise = FollowThePathExercise()
         self.scenes_model = None
 
         self.setup_ui(self)
@@ -64,13 +60,18 @@ class HandSkillExerciseDefinition(QWizard):
 
         scenes_model = self.list_scenes.model()
         scenes_model.load_project(project_dir, project_name)
-        self.__scenes =  scenes_model._ScenesModel__scenes
 
-        # TODO: implement to choose just the scenes that have one CurveAnnotation
-        for scene in self.__scenes:
-            if not len(scene.get_all_annotations()) == 1 and isinstance(scene.get_all_annotations()[0],
-                                                                        CurveAnnotation):
-                print(scene.name)
+        delete_index = -1
+        for scene in scenes_model.get_all_scenes():
+            delete_index = delete_index + 1
+            count = 0
+            for model in scene.get_all_annotations():
+                if isinstance(model, CurveAnnotation):
+                    count = count + 1
+            if not count == 1:
+                index = self.list_scenes.model().index(delete_index, 0)
+                scenes_model.delete_scene(index)
+                delete_index = delete_index - 1
 
         index = self.list_scenes.model().index(0, 0)
         self.list_scenes.setCurrentIndex(index)
@@ -79,7 +80,7 @@ class HandSkillExerciseDefinition(QWizard):
         index = self.list_scenes.currentIndex()
         selected = index.data()
         self.line_selected_scenes.setText(selected)
-        for scene in self.__scenes:
+        for scene in self.scenes_model.get_all_scenes():
             if scene.name == selected:
                 self.exercise.set_scene(scene)
 
@@ -178,6 +179,7 @@ class HandSkillExerciseDefinition(QWizard):
             project_name = self.project_name_le.text()
 
         # TODO: implement to add more than one exercise
+        self.exercise.name = self.line_exercise_name.text()
         scenemodel.current_project.exercises = self.exercise
         scenes_model = self.list_scenes.model()
         scenes_model.save_project(parent_dir, project_name)
