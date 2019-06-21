@@ -124,7 +124,6 @@ class SelectionStickService(Service):
                         if time_diff > self.repeat_interval:
                             self.fire_event(phys_obj)
                             self.event_timers_phys_obj[phys_obj_name][0] = time.time()
-                            # del self.event_timers_phys_obj[phys_obj]
 
                     break
 

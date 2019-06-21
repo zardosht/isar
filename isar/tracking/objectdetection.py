@@ -100,10 +100,10 @@ class ObjectDetectionService(Service):
         :return:
         """
         global object_detectors
-        for obj_detector_name, obj_detector in object_detectors.items():
+        for obj_detector_name in object_detectors:
             request_queue = mp.JoinableQueue()
             response_queue = mp.Queue()
-            obj_detector_worker = ObjectDetectorWorker(obj_detector, request_queue, response_queue)
+            obj_detector_worker = ObjectDetectorWorker(obj_detector_name, request_queue, response_queue)
             # obj_detector_worker.daemon = False
             self.object_detector_workers.append(obj_detector_worker)
             observer_thread = ObjectDetectionObserverThread(Queue(maxsize=1), obj_detector_worker)
@@ -212,10 +212,10 @@ class ObjectDetectionResponse:
 
 
 class ObjectDetectorWorker(mp.Process):
-    def __init__(self, object_detector, request_queue, response_queue):
+    def __init__(self, object_detector_name, request_queue, response_queue):
         mp.Process.__init__(self)
         # TODO: ERROR - can't pickle module objects
-        self.object_detector = object_detector
+        self.object_detector = object_detectors[object_detector_name]
         self.request_queue = request_queue
         self.response_queue = response_queue
         self.shut_down_event = mp.Event()
