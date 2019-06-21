@@ -99,3 +99,7 @@ def fire_object_disappeared_event(phys_obj, scene_id):
     object_disappeared_event = PhysicalObjectDisappearedEvent(phys_obj)
     object_disappeared_event.scene_id = scene_id
     fire_event(object_disappeared_event)
+
+
+def fire_physical_object_group_appeared_event(obj_group_appeared_event):
+    fire_event(obj_group_appeared_event)

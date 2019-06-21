@@ -2,6 +2,7 @@ import logging
 import time
 
 from isar.events import eventmanager
+from isar.events.events import PhysicalObjectGroupAppearedEvent
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.services.service import Service
 
@@ -28,6 +29,7 @@ class ObjectTrackingService(Service):
 
         self.current_scene = None
 
+        self.object_group_appeared_events = []
         self.object_appeared_dict = {}
         self.object_disappeared_dict = {}
 
@@ -44,6 +46,7 @@ class ObjectTrackingService(Service):
 
     def set_current_scene(self, current_scene):
         self.current_scene = current_scene
+        self.object_group_appeared_events = self.current_scene.get_events_by_type(PhysicalObjectGroupAppearedEvent)
         self.object_appeared_dict.clear()
         self.object_disappeared_dict.clear()
 
@@ -75,6 +78,20 @@ class ObjectTrackingService(Service):
             if delta > MIN_INTERVAL_BETWEEN_FIRING_APPEAR_EVENTS:
                 self.object_appeared_dict[phys_obj.name] = time.time()
                 eventmanager.fire_object_appeared_event(phys_obj, self.current_scene.name)
+
+        for obj_group_appeared_event in self.object_group_appeared_events:
+            self.check_and_fire_obj_group_appeared_event(obj_group_appeared_event)
+
+    def check_and_fire_obj_group_appeared_event(self, obj_group_appeared_event):
+        targets = obj_group_appeared_event.targets
+        targets_present = [False for i in len(targets)]
+        for i in range(len(targets)):
+            if targets[i] in self.object_appeared_dict:
+                targets_present[i] = True
+
+        if all(targets_present):
+            # fire_event
+            eventmanager.fire_physical_object_group_appeared_event(obj_group_appeared_event)
 
     def stop(self):
         pass

@@ -397,6 +397,14 @@ class Scene:
 
     def get_events(self):
         return tuple(self.__events)
+
+    def get_events_by_type(self, event_type):
+        result = []
+        for event in self.__events:
+            if isinstance(event, event_type):
+                result.append(event)
+
+        return result
     
     def add_action(self, action):
         self.__actions.append(action)

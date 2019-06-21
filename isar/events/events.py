@@ -158,7 +158,7 @@ class PhysicalObjectPickedEvent(Event):
     pass
 
 
-class PhysicalObjectGroupAppeared(Event):
+class PhysicalObjectGroupAppearedEvent(Event):
     target_types = [PhysicalObject]
     has_multiple_targets = True
 
@@ -192,6 +192,6 @@ event_types = {
     PhysicalObjectAppearedEvent.__name__: PhysicalObjectAppearedEvent,
     PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
     PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
-    PhysicalObjectGroupAppeared.__name__: PhysicalObjectGroupAppeared,
+    PhysicalObjectGroupAppearedEvent.__name__: PhysicalObjectGroupAppearedEvent,
     SceneShownEvent.__name__: SceneShownEvent
 }
