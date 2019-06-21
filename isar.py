@@ -7,6 +7,8 @@ from PyQt5 import QtWidgets
 import isar
 from isar import ApplicationMode
 from isar.domainlearning.domainlearning import DomainLearningWindow
+from isar.handskilllearning.handskill_exercise_definition import HandSkillExerciseDefinition
+from isar.handskilllearning.handskill_exercise_execution import HandSkillExerciseExecution
 from isar.scene.definitionwindow import SceneDefinitionWindow
 from isar.services import servicemanager
 
@@ -41,22 +43,38 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    scene_defintion = input("Scene Definition (y/n)? ")
+    scene_defintion = input(
+        "Enter option [1,2,3,4]: \n 1 - Scene Definition \n 2 - Domain Learning \n "
+        "3 - Handskill Exercise Definition \n 4 - Handskill Exercise Execution \n")
 
     all_services_initialized = servicemanager.start_services()
     if not all_services_initialized:
         logger.error("Could not intialize services. Return.")
         return
 
-    if scene_defintion == "y":
+    if scene_defintion == "1":
         isar.application_mode = ApplicationMode.AUTHORING
         scene_def_window = SceneDefinitionWindow()
         scene_def_window.show()
         app.exec()
 
-    elif scene_defintion == "n":
+    elif scene_defintion == "2":
         isar.application_mode = ApplicationMode.EXECUTION
         domain_learning_window = DomainLearningWindow(screen_id=2)
+        domain_learning_window.move(100, 100)
+        domain_learning_window.show()
+        app.exec()
+
+    elif scene_defintion == "3":
+        isar.application_mode = ApplicationMode.EXECUTION
+        domain_learning_window = HandSkillExerciseDefinition()
+        domain_learning_window.move(100, 100)
+        domain_learning_window.show()
+        app.exec()
+
+    elif scene_defintion == "4":
+        isar.application_mode = ApplicationMode.EXECUTION
+        domain_learning_window = HandSkillExerciseExecution(screen_id=2)
         domain_learning_window.move(100, 100)
         domain_learning_window.show()
         app.exec()
@@ -67,6 +85,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-

@@ -5,6 +5,7 @@ Defining the exercises: FollowThePath
 
 class HandSkillExercise:
     def __init__(self):
+        self.name = None
         self.scene = None
         self.feedback = FeedbackExercise()
 

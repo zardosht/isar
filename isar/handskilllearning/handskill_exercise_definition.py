@@ -1,30 +1,32 @@
 import os
 
-import jsonpickle
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIntValidator
+from PyQt5.QtGui import QIntValidator, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
 from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise
+from isar.scene import scenemodel
 from isar.scene.annotationmodel import CurveAnnotation
 from isar.scene.scenemodel import ScenesModel
 
 
-class HandSkillExercisePathUI(QWizard):
+class HandSkillExerciseDefinition(QWizard):
 
     def __init__(self):
         super().__init__()
         self.exercise = FollowThePathExercise()
-        self.scenes_model = ScenesModel()
-        self.__scenes = None
+        self.scenes_model = None
+
         self.setup_ui(self)
-        self.setWindowTitle("Follow the path exercise")
         self.setup_signals()
-        self.setup_constraints()    
+        self.setup_constraints()
+        self.setup_models()
+
+        self.setWindowTitle("Follow the path exercise")
 
     def setup_signals(self):
-        self.button_load_project.clicked.connect(self.button_load_project_clicked)
-        self.button_select_scene.clicked.connect(self.button_select_scene_clicked)
+        self.button_load_project.clicked.connect(self.load_project)
+        self.button_select_scene.clicked.connect(self.select_scene)
         self.button(QWizard.FinishButton).clicked.connect(self.finish_clicked)
 
         self.line_error_beg.textEdited.connect(self.show_weighted_beginner)
@@ -42,42 +44,36 @@ class HandSkillExercisePathUI(QWizard):
         self.line_error_weighted_com.textEdited.connect(self.show_weighted_competent)
         self.line_time_weighted_com.textEdited.connect(self.show_weighted_competent)
 
-    def button_load_project_clicked(self):
+    def setup_models(self):
+        self.scenes_model = ScenesModel()
+
+    def load_project(self):
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
         project_dir = os.path.dirname(project_filename)
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":
             return
-
         self.line_project_name.setText(project_name)
         self.button_select_scene.setEnabled(True)
 
-        # loading prom json file
-        global current_project
+        self.scenes_model.load_project(project_dir, project_name)
         model = QStandardItemModel()
-        load_path = os.path.join(project_dir, project_name + ".json")
-        with open(load_path, "r") as f:
-            frozen = f.read()
-            current_project = jsonpickle.decode(frozen)
-            self.__scenes = current_project.scenes
-            for scene in self.__scenes:
-                scene.reset_runtime_state()
-
-                # TODO: reimplement. For now just the scenes with one CurveAnnootation are selected
-                # select just the scenes which are relevant for this exercise
-                if len(scene.get_all_annotations()) == 1 and isinstance(scene.get_all_annotations()[0],
-                                                                        CurveAnnotation):
-                    item = QStandardItem()
-                    item.setText(scene.name)
-                    model.appendRow(item)
-
+        for scene in self.scenes_model.get_all_scenes():
+            count = 0
+            for annotation in scene.get_all_annotations():
+                if isinstance(annotation, CurveAnnotation):
+                    count = count + 1
+            if count == 1:
+                item = QStandardItem()
+                item.setText(scene.name)
+                model.appendRow(item)
         self.list_scenes.setModel(model)
 
-    def button_select_scene_clicked(self):
+    def select_scene(self):
         index = self.list_scenes.currentIndex()
         selected = index.data()
         self.line_selected_scenes.setText(selected)
-        for scene in self.__scenes:
+        for scene in self.scenes_model.get_all_scenes():
             if scene.name == selected:
                 self.exercise.set_scene(scene)
 
@@ -94,20 +90,20 @@ class HandSkillExercisePathUI(QWizard):
         if self.line_error_int.text() != "" and self.line_time_int.text() != "" \
                 and self.line_error_weighted_int.text() != "" and self.line_time_weighted_int.text() != "":
             weighted = self.compute_weighted_combination(int(self.line_error_int.text()),
-                                                  int(self.line_error_weighted_int.text()),
-                                                  int(self.line_time_int.text()),
-                                                  int(self.line_time_weighted_int.text()))
+                                                         int(self.line_error_weighted_int.text()),
+                                                         int(self.line_time_int.text()),
+                                                         int(self.line_time_weighted_int.text()))
             self.line_weighted_int.setText(str(weighted))
 
     def show_weighted_competent(self):
         if self.line_error_com.text() != "" and self.line_time_com.text() != "" \
                 and self.line_error_weighted_com.text() != "" and self.line_time_weighted_com.text() != "":
             weighted = self.compute_weighted_combination(int(self.line_error_com.text()),
-                                                  int(self.line_error_weighted_com.text()),
-                                                  int(self.line_time_com.text()),
-                                                  int(self.line_time_weighted_com.text()))
+                                                         int(self.line_error_weighted_com.text()),
+                                                         int(self.line_time_com.text()),
+                                                         int(self.line_time_weighted_com.text()))
             self.line_weighted_com.setText(str(weighted))
-    
+
     def compute_weighted_combination(self, err, const_err, time, const_time):
         return err * const_err + time * const_time
 
@@ -167,17 +163,17 @@ class HandSkillExercisePathUI(QWizard):
         self.exercise.feedback.set_bad((int(self.line_bad_from.text()), int(self.line_bad_to.text())))
 
     def save_exercise(self):
-        parent_dir = QFileDialog.getExistingDirectory()
-        if parent_dir is None or parent_dir == "":
-            return
+        parent_dir = None
+        project_name = None
+        if not scenemodel.current_project:
+            parent_dir = QFileDialog.getExistingDirectory()
+            if parent_dir is None or parent_dir == "":
+                return
+            project_name = self.project_name_le.text()
 
-        project_name = self.line_exercise_name.text()
-
-        save_path = os.path.join(parent_dir, project_name + ".json")
-
-        frozen = jsonpickle.encode(self.exercise)
-        with open(str(save_path), "w") as f:
-            f.write(frozen)
+        self.exercise.name = self.line_exercise_name.text()
+        scenemodel.current_project.exercises.append(self.exercise)
+        self.scenes_model.save_project(parent_dir, project_name)
 
     def setup_constraints(self):
         # register fields to enable/disable the next/finish button
