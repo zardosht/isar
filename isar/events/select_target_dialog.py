@@ -28,6 +28,9 @@ class SelectTargetDialog(QDialog):
         self.setup_ui()
 
     def set_target_types(self, target_type, event_type=None, action_type=None):
+        self.__targets.clear()
+        self.targets_list.selectionModel().clearSelection()
+
         if self.scene is None:
             logger.warning("The scene is not set for select event target dialog. Return.")
             return

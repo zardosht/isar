@@ -17,12 +17,32 @@ class Event:
 
     has_multiple_targets = False
 
-    def __init__(self, target=None, targets=None):
+    def __init__(self):
         self.scene_id = None
         self.name = None
-        self.target = target
+        self._target = None
         # for the case the event has multiple targets
-        self.targets = targets
+        self._targets = None
+
+    @property
+    def target(self):
+        return self._target
+
+    @target.setter
+    def target(self, value):
+        self._target = value
+
+    @property
+    def targets(self):
+        return self._targets
+
+    @targets.setter
+    def targets(self, value):
+        if not isinstance(value, list):
+            logger.error("targets is not List! Return.")
+            return
+
+        self._targets = value
 
     @classmethod
     def update_event_properties_frame(cls, qt_frame):
@@ -36,18 +56,18 @@ class Event:
             return False
 
         if not self.has_multiple_targets:
-            return self.target.name == other.target.name
+            return self._target.name == other.target.name
         else:
-            if self.targets is None or other.targets is None:
+            if self._targets is None or other.targets is None:
                 return False
-            if type(self.targets) != list or type(other.targets) != list:
+            if type(self._targets) != list or type(other.targets) != list:
                 return False
 
-            if len(self.targets) != len(other.targets):
+            if len(self._targets) != len(other.targets):
                 return False
 
             other_target_names = [target.name for target in other.targets]
-            for target in self.targets:
+            for target in self._targets:
                 if target.name not in other_target_names:
                     return False
 
@@ -76,16 +96,14 @@ class CheckboxCheckedEvent(Event):
     from isar.scene.annotationmodel import CheckboxAnnotation
     target_types = [CheckboxAnnotation]
 
-    def __init__(self, target):
-        super().__init__(target)
+    pass
 
 
 class CheckboxUncheckedEvent(Event):
     from isar.scene.annotationmodel import CheckboxAnnotation
     target_types = [CheckboxAnnotation]
 
-    def __init__(self, target):
-        super().__init__(target)
+    pass
 
 
 class CheckboxGroupChecked(Event):
@@ -101,16 +119,15 @@ class TimerFinishedEvent(Event):
     from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
-    def __init__(self, target):
-        super().__init__(target)
+    pass
 
 
 class TimerTimeout1Event(Event):
     from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
-    def __init__(self, target, current_time):
-        super().__init__(target)
+    def __init__(self, current_time):
+        super().__init__()
         self.current_time = current_time
 
 
@@ -118,8 +135,8 @@ class TimerTimeout2Event(Event):
     from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
-    def __init__(self, target, current_time):
-        super().__init__(target)
+    def __init__(self, current_time):
+        super().__init__()
         self.current_time = current_time
 
 
@@ -127,8 +144,8 @@ class TimerTimeout3Event(Event):
     from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
-    def __init__(self, target, current_time):
-        super().__init__(target)
+    def __init__(self, current_time):
+        super().__init__()
         self.current_time = current_time
 
 
@@ -136,8 +153,8 @@ class TimerTickEvent(Event):
     from isar.scene.annotationmodel import TimerAnnotation
     target_types = [TimerAnnotation]
 
-    def __init__(self, target, current_time):
-        super().__init__(target)
+    def __init__(self, current_time):
+        super().__init__()
         self.current_time = current_time
 
 
@@ -162,7 +179,6 @@ class PhysicalObjectGroupAppearedEvent(Event):
     target_types = [PhysicalObject]
     has_multiple_targets = True
 
-    # TODO: implement
     pass
 
 

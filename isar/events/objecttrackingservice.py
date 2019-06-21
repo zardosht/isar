@@ -55,7 +55,7 @@ class ObjectTrackingService(Service):
         if phys_obj.name not in self.object_disappeared_dict:
             self.object_disappeared_dict[phys_obj.name] = time.time()
             if phys_obj.name in self.object_appeared_dict:
-                del self.object_disappeared_dict[phys_obj.name]
+                del self.object_appeared_dict[phys_obj.name]
 
             eventmanager.fire_object_disappeared_event(phys_obj, self.current_scene.name)
         else:
@@ -64,7 +64,7 @@ class ObjectTrackingService(Service):
             if delta > MIN_INTERVAL_BETWEEN_FIRING_DISAPPEAR_EVENTS:
                 self.object_disappeared_dict[phys_obj.name] = time.time()
                 if phys_obj.name in self.object_appeared_dict:
-                    del self.object_disappeared_dict[phys_obj.name]
+                    del self.object_appeared_dict[phys_obj.name]
                 eventmanager.fire_object_disappeared_event(phys_obj, self.current_scene.name)
 
     def tracking_captured(self, phys_obj):
@@ -84,12 +84,12 @@ class ObjectTrackingService(Service):
 
     def check_and_fire_obj_group_appeared_event(self, obj_group_appeared_event):
         targets = obj_group_appeared_event.targets
-        targets_present = [False for i in len(targets)]
+        targets_present = [False] * len(targets)
         for i in range(len(targets)):
-            if targets[i] in self.object_appeared_dict:
+            if targets[i].name in self.object_appeared_dict:
                 targets_present[i] = True
 
-        if all(targets_present):
+        if len(targets_present) > 0 and all(targets_present):
             eventmanager.fire_physical_object_group_appeared_event(obj_group_appeared_event)
 
     def stop(self):

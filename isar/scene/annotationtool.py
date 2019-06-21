@@ -717,15 +717,11 @@ class SelectionTool(AnnotationTool):
                 self.phys_obj = phys_obj
 
     def mouse_release_event(self, camera_view, event):
-        from isar.events.events import SelectionEvent
+        scene_id = self.annotations_model.get_current_scene().name
         if self.annotation is not None:
-            selection_event = SelectionEvent(self.annotation)
-            selection_event.scene_id = self.annotations_model.get_current_scene().name
-            eventmanager.fire_event(selection_event)
+            eventmanager.fire_selection_event(self.annotation, scene_id)
         elif self.phys_obj is not None:
-            selection_event = SelectionEvent(self.phys_obj)
-            selection_event.scene_id = self.annotations_model.get_current_scene().name
-            eventmanager.fire_event(selection_event)
+            eventmanager.fire_selection_event(self.phys_obj, scene_id)
 
 
 class AudioAnnotationTool(AnnotationTool):

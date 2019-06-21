@@ -123,6 +123,8 @@ class EventsActionsRulesDialog(QDialog):
                 self.action_type.set_properties(self.action)
 
             self.actions_model.add_item(self.action)
+            # reset form
+            self.scenes_combo_current_index_changed(0, "action_scenes_combo")
 
     def event_name_text_changed(self, text):
         self.event_name = text
@@ -204,10 +206,18 @@ class EventsActionsRulesDialog(QDialog):
             return
 
         if self.event is None:
-            self.event = self.event_type(self.event_target)
+            if isinstance(self.event_target, list):
+                self.event = self.event_type()
+                self.event.targets = self.event_target
+            else:
+                self.event = self.event_type()
+                self.event.target = self.event_target
+
             self.event.name = self.event_name
             self.event.scene_id = self.events_scene.name
             self.events_model.add_item(self.event)
+            # reset form
+            self.scenes_combo_current_index_changed(0, "event_scenes_combo")
 
     def remove_event_btn_clicked(self):
         index = self.events_list.selectionModel().currentIndex()
@@ -395,16 +405,25 @@ class EventsActionsRulesDialog(QDialog):
         targets = self.show_select_target_dialog(target_type, self.events_scene, event_type=self.event_type)
 
         if targets is not None and len(targets) > 0:
-            target = targets[0]
-            logger.info("received event target: {}".format(str(target)))
-            self.event_target = target
-            if self.event_name is None or self.event_name == "":
-                self.event_name = "On_" + self.event_target.name + "_" + self.event_type.__name__
-            self.event_name_text.setText(self.event_name)
-            if isinstance(target, Scene):
-                self.event_target_label.setText(target.name)
+            logger.info("received event target: {}".format(str(targets)))
+
+            if self.event_type.has_multiple_targets:
+                self.event_target = targets
+                self.event_target_label.setText(str([target.name for target in targets]))
+                self.event_name = self.event_type.__name__ + "_for_" + \
+                    str([str(target) for target in self.event_target])
             else:
-                self.event_target_label.setText(self.events_scene.name + "." + target.name)
+                target = targets[0]
+                self.event_target = target
+                if self.event_name is None or self.event_name == "":
+                    self.event_name = "On_" + self.event_target.name + "_" + self.event_type.__name__
+                if isinstance(target, Scene):
+                    self.event_target_label.setText(target.name)
+                else:
+                    self.event_target_label.setText(self.events_scene.name + "." + target.name)
+
+            self.event_name_text.setText(self.event_name)
+
         else:
             logger.warning("target is none")
 

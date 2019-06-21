@@ -30,73 +30,85 @@ def fire_event(event):
 
 
 def fire_timer_tick_event(timer_annotation, current_time, scene_id):
-    timer_tick_event = TimerTickEvent(timer_annotation, current_time)
+    timer_tick_event = TimerTickEvent(current_time)
+    timer_tick_event.target = timer_annotation
     timer_tick_event.scene_id = scene_id
     fire_event(timer_tick_event)
 
 
 def fire_timer_timeout1_event(timer_annotation, current_time, scene_id):
-    timer_timeout1_event = TimerTimeout1Event(timer_annotation, current_time)
+    timer_timeout1_event = TimerTimeout1Event(current_time)
+    timer_timeout1_event.target = timer_annotation
     timer_timeout1_event.scene_id = scene_id
     fire_event(timer_timeout1_event)
 
 
 def fire_timer_timeout2_event(timer_annotation, current_time, scene_id):
-    timer_timeout2_event = TimerTimeout2Event(timer_annotation, current_time)
+    timer_timeout2_event = TimerTimeout2Event(current_time)
+    timer_timeout2_event.target = timer_annotation
     timer_timeout2_event.scene_id = scene_id
     fire_event(timer_timeout2_event)
 
 
 def fire_timer_timeout3_event(timer_annotation, current_time, scene_id):
-    timer_timeout3_event = TimerTimeout3Event(timer_annotation, current_time)
+    timer_timeout3_event = TimerTimeout3Event(current_time)
+    timer_timeout3_event.target = timer_annotation
     timer_timeout3_event.scene_id = scene_id
     fire_event(timer_timeout3_event)
 
 
 def fire_timer_finished_event(timer_annotation, scene_id):
-    timer_finished_event = TimerFinishedEvent(timer_annotation)
+    timer_finished_event = TimerFinishedEvent()
+    timer_finished_event.target = timer_annotation
     timer_finished_event.scene_id = scene_id
     fire_event(timer_finished_event)
 
 
 def fire_checkbox_checked_event(checkbox_annotation, scene_id):
-    checked_event = CheckboxCheckedEvent(checkbox_annotation)
+    checked_event = CheckboxCheckedEvent()
+    checked_event.target = checkbox_annotation
     checked_event.scene_id = scene_id
     fire_event(checked_event)
 
 
 def fire_checkbox_unchecked_event(checkbox_annotation, scene_id):
-    unchecked_event = CheckboxUncheckedEvent(checkbox_annotation)
+    unchecked_event = CheckboxUncheckedEvent()
+    unchecked_event.target = checkbox_annotation
     unchecked_event.scene_id = scene_id
     fire_event(unchecked_event)
 
 
 def fire_selection_event(target, scene_id):
-    selection_event = SelectionEvent(target)
+    selection_event = SelectionEvent()
+    selection_event.target = target
     selection_event.scene_id = scene_id
     fire_event(selection_event)
 
 
 def fire_hand_on_top_event(target, scene_id):
-    hand_on_top_event = HandOnTopEvent(target)
+    hand_on_top_event = HandOnTopEvent()
+    hand_on_top_event.target = target
     hand_on_top_event.scene_id = scene_id
     fire_event(hand_on_top_event)
 
 
 def fire_scene_shown_event(scene, scene_id):
-    scene_shown_event = SceneShownEvent(scene)
+    scene_shown_event = SceneShownEvent()
+    scene_shown_event.target = scene
     scene_shown_event.scene_id = scene_id
     fire_event(scene_shown_event)
 
 
 def fire_object_appeared_event(phys_obj, scene_id):
-    object_appeared_event = PhysicalObjectAppearedEvent(phys_obj)
+    object_appeared_event = PhysicalObjectAppearedEvent()
+    object_appeared_event.target = phys_obj
     object_appeared_event.scene_id = scene_id
     fire_event(object_appeared_event)
 
 
 def fire_object_disappeared_event(phys_obj, scene_id):
-    object_disappeared_event = PhysicalObjectDisappearedEvent(phys_obj)
+    object_disappeared_event = PhysicalObjectDisappearedEvent()
+    object_disappeared_event.target = phys_obj
     object_disappeared_event.scene_id = scene_id
     fire_event(object_disappeared_event)
 
