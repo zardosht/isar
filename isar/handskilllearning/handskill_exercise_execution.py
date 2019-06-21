@@ -30,24 +30,23 @@ class HandSkillExerciseExecution(QMainWindow):
         self._projector_view_timer = None
 
         self._camera_service: CameraService = None
-        # self.setup_camera_service()
+        self.setup_camera_service()
 
         self.projector_view = None
-        # self.setup_projector_view(screen_id)
+        self.setup_projector_view(screen_id)
 
         self._selection_stick_service = None
-        # self.setup_object_detection_service()
+        self.setup_object_detection_service()
 
         self.scenes_model = None
         self.annotations_model = None
         self.setup_models()
 
-        # Do I need this?
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
 
     def setup_signals(self):
-        # self.button_calibrate_projector.clicked.connect(self.calibrate_projector)
-        # self.button_init_scene_size.clicked.connect(self.init_scene_size)
+        self.button_calibrate_projector.clicked.connect(self.calibrate_projector)
+        self.button_init_scene_size.clicked.connect(self.init_scene_size)
         self.button_load_project.clicked.connect(self.load_project)
         self.button_select_exercise.clicked.connect(self.select_exercise)
         self.button_start.clicked.connect(self.start_exercise)
@@ -107,7 +106,7 @@ class HandSkillExerciseExecution(QMainWindow):
         current_scene = self.exercise.scene
         self.annotations_model.set_scene(current_scene)
         self.projector_view.set_annotations_model(self.annotations_model)
-        # self.setup_timers()
+        self.setup_timers()
 
     def setup_timers(self):
         self._projector_view_timer = QTimer()
@@ -120,13 +119,17 @@ class HandSkillExerciseExecution(QMainWindow):
         else:
             camera_frame = self._camera_service.get_frame()
             self._selection_stick_service.camera_img = camera_frame.raw_image
-            self._hand_tracking_service.camera_img = camera_frame.raw_image
             self.projector_view.update_projector_view(camera_frame)
 
     def close(self):
         self._projector_view_timer.stop()
         self.projector_view.close()
         super().close()
+
+    # Just to get the other window (the projector widget) to close :/
+    def closeEvent(self, event):
+        self.projector_view.close()
+        super().closeEvent(event)
 
     def setup_constraints(self):
         self.line_project_name.setEnabled(False)
