@@ -190,6 +190,11 @@ class SceneShownEvent(Event):
     pass
 
 
+class SceneLeftEvent(Event):
+    target_types = [Scene]
+    pass
+
+
 class HandOnTopEvent(SelectionEvent):
     trigger_interval = 0.2
     repeat_interval = 0.5
@@ -209,5 +214,6 @@ event_types = {
     PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
     PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
     PhysicalObjectGroupAppearedEvent.__name__: PhysicalObjectGroupAppearedEvent,
-    SceneShownEvent.__name__: SceneShownEvent
+    SceneShownEvent.__name__: SceneShownEvent,
+    SceneLeftEvent.__name__: SceneLeftEvent
 }

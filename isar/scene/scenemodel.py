@@ -138,6 +138,7 @@ class ScenesModel(QAbstractListModel):
             self.dataChanged.emit(index, index, [Qt.DisplayRole])
 
     def set_current_scene(self, selected_index):
+        eventmanager.fire_scene_left_event(self.__current_scene, self.__current_scene.name)
 
         # first tell the current scene to update its phys_obj_annotations_dict
         self.__current_scene.update_po_annotations_dict()

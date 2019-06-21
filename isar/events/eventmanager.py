@@ -1,9 +1,10 @@
 import logging
 import time
+from threading import Thread
 
 from isar.events.events import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
     TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent, SelectionEvent, HandOnTopEvent, SceneShownEvent, \
-    PhysicalObjectAppearedEvent, PhysicalObjectDisappearedEvent
+    PhysicalObjectAppearedEvent, PhysicalObjectDisappearedEvent, SceneLeftEvent
 
 logger = logging.getLogger("isar.eventmanager")
 
@@ -26,6 +27,9 @@ def fire_event(event):
 
     listeners = event_listeners[event_class_name]
     for listener in listeners:
+        # t = Thread(target=listener.on_event, args=(event, ))
+        # t.start()
+
         listener.on_event(event)
 
 
@@ -94,6 +98,13 @@ def fire_hand_on_top_event(target, scene_id):
 
 def fire_scene_shown_event(scene, scene_id):
     scene_shown_event = SceneShownEvent()
+    scene_shown_event.target = scene
+    scene_shown_event.scene_id = scene_id
+    fire_event(scene_shown_event)
+
+
+def fire_scene_left_event(scene, scene_id):
+    scene_shown_event = SceneLeftEvent()
     scene_shown_event.target = scene
     scene_shown_event.scene_id = scene_id
     fire_event(scene_shown_event)

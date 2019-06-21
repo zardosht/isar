@@ -123,8 +123,18 @@ class EventsActionsRulesDialog(QDialog):
                 self.action_type.set_properties(self.action)
 
             self.actions_model.add_item(self.action)
+
             # reset form
-            self.scenes_combo_current_index_changed(0, "action_scenes_combo")
+            self.action = None
+            self.action_name = None
+            self.action_name_text.setText("")
+            self.action_target_label.show()
+            self.action_target_label.setText("... select action target(s) ...")
+            self.action_type = None
+            self.action_type_combo.setCurrentIndex(0)
+            self.action_type_combo_current_index_changed(0)
+            self.action_name = None
+            self.action_name_text.setText("")
 
     def event_name_text_changed(self, text):
         self.event_name = text
@@ -216,8 +226,16 @@ class EventsActionsRulesDialog(QDialog):
             self.event.name = self.event_name
             self.event.scene_id = self.events_scene.name
             self.events_model.add_item(self.event)
+
             # reset form
-            self.scenes_combo_current_index_changed(0, "event_scenes_combo")
+            self.event = None
+            self.event_type = None
+            self.event_type_combo.setCurrentIndex(0)
+            self.event_type_combo_current_index_changed(0)
+            self.event_target = None
+            self.event_name = None
+            self.event_name_text.setText("")
+            self.event_target_label.setText("... select event target ...")
 
     def remove_event_btn_clicked(self):
         index = self.events_list.selectionModel().currentIndex()
