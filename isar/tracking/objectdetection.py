@@ -214,7 +214,6 @@ class ObjectDetectionResponse:
 class ObjectDetectorWorker(mp.Process):
     def __init__(self, object_detector_name, request_queue, response_queue):
         mp.Process.__init__(self)
-        # TODO: ERROR - can't pickle module objects
         self.object_detector = object_detectors[object_detector_name]
         self.request_queue = request_queue
         self.response_queue = response_queue

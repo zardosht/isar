@@ -43,36 +43,39 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    scene_defintion = input(
-        "Enter option [1,2,3,4]: \n 1 - Scene Definition \n 2 - Domain Learning \n "
-        "3 - Handskill Exercise Definition \n 4 - Handskill Exercise Execution \n")
+    use_case = input(
+        "1 - Scene Definition \n" +
+        "2 - Domain Learning \n" +
+        "3 - Hand skill Exercise Definition \n" +
+        "4 - Hand skill Exercise Execution \n\n" +
+        "Enter option [1, 2, 3, 4]: ")
 
     all_services_initialized = servicemanager.start_services()
     if not all_services_initialized:
         logger.error("Could not intialize services. Return.")
         return
 
-    if scene_defintion == "1":
+    if use_case == "1":
         isar.application_mode = ApplicationMode.AUTHORING
         scene_def_window = SceneDefinitionWindow()
         scene_def_window.show()
         app.exec()
 
-    elif scene_defintion == "2":
+    elif use_case == "2":
         isar.application_mode = ApplicationMode.EXECUTION
         domain_learning_window = DomainLearningWindow(screen_id=2)
         domain_learning_window.move(100, 100)
         domain_learning_window.show()
         app.exec()
 
-    elif scene_defintion == "3":
+    elif use_case == "3":
         isar.application_mode = ApplicationMode.EXECUTION
         domain_learning_window = HandSkillExerciseDefinition()
         domain_learning_window.move(100, 100)
         domain_learning_window.show()
         app.exec()
 
-    elif scene_defintion == "4":
+    elif use_case == "4":
         isar.application_mode = ApplicationMode.EXECUTION
         domain_learning_window = HandSkillExerciseExecution(screen_id=2)
         domain_learning_window.move(100, 100)

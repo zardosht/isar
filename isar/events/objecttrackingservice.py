@@ -90,7 +90,6 @@ class ObjectTrackingService(Service):
                 targets_present[i] = True
 
         if all(targets_present):
-            # fire_event
             eventmanager.fire_physical_object_group_appeared_event(obj_group_appeared_event)
 
     def stop(self):
