@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 from queue import Queue
 import cv2
@@ -24,14 +25,21 @@ class CameraService(Service):
         self._do_capture = False
 
     def _open_capture(self):
-        self._capture = cv2.VideoCapture(self.cam_id)
+        if os.name == "nt":
+            self._capture = cv2.VideoCapture(self.cam_id, cv2.CAP_DSHOW)
+            width = 1920
+            height = 1080
+            self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+            self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        else:
+            self._capture = cv2.VideoCapture(self.cam_id)
 
-        # TODO: possibly for later
-        # width = 1920
-        # height = 1080
-        # self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        # self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        # self.capture.set(cv2.CAP_PROP_FPS, 24)
+            # TODO: possibly for later
+            # width = 1920
+            # height = 1080
+            # self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+            # self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+            # self.capture.set(cv2.CAP_PROP_FPS, 24)
 
         if not self._capture.isOpened():
             message = "Could not open camera {}".format(self.cam_id)
