@@ -1318,3 +1318,36 @@ def line_iterator(pt1, pt2):
         pos = (int(position[0]),int(position[1]))
         line_positions.append(tuple(pos))
     return line_positions
+
+
+def distribute_points(distribution, p_x, p_y):
+    if distribution >= len(p_x):
+        return numpy.array((p_x, p_y)).T
+
+    # equally spaced in arc length
+    distribution = numpy.transpose(numpy.linspace(0, 1, distribution))
+
+    # number of points on the curve
+    n = len(p_x)
+    matrix_xy = numpy.array((p_x, p_y)).T
+
+    # compute the chordal arc length of each segment.
+    chordal = (numpy.sum(numpy.diff(matrix_xy, axis=0) ** 2, axis=1)) ** (1 / 2)
+
+    # normalize the arc lengths to a unit total
+    chordal = chordal / numpy.sum(chordal)
+
+    # cumulative arc length
+    cumulative = numpy.append(0, numpy.cumsum(chordal))
+
+    # bin index in which each N is in
+    bin_index = numpy.digitize(distribution, cumulative)
+
+    # catch any problems at the ends
+    bin_index[numpy.where(numpy.bitwise_or(bin_index <= 0, (distribution <= 0)))] = 1
+    bin_index[numpy.where(numpy.bitwise_or(bin_index >= n, (distribution >= 1)))] = n - 1
+
+    s = numpy.divide((distribution - cumulative[bin_index]), chordal[bin_index - 1])
+    distributed_points = matrix_xy[bin_index, :] + numpy.multiply((matrix_xy[bin_index, :] - matrix_xy[bin_index - 1, :]), (numpy.vstack([s] * 2)).T)
+
+    return distributed_points
