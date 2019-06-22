@@ -621,11 +621,20 @@ class CurveAnnotation(Annotation):
         self.end = IntTupleAnnotationProperty("End", None, self)
         self.properties.append(self.end)
 
-        self.color = ColorAnnotationProperty("Color", (0, 0, 0), self)
-        self.properties.append(self.color)
+        self.points = IntAnnotationProperty("Points", None, self)
+        self.properties.append(self.points)
+
+        self.color_line = ColorAnnotationProperty("Color line", (0, 0, 0), self)
+        self.properties.append(self.color_line)
+
+        self.color_points = ColorAnnotationProperty("Color points", (0, 0, 255), self)
+        self.properties.append(self.color_points)
 
         self.thickness = IntAnnotationProperty("Thickness", 2, self)
         self.properties.append(self.thickness)
+
+        self.show_points = BooleanAnnotationProperty("Show points", False, self)
+        self.properties.append(self.show_points)
 
         self.line_positions = []
 

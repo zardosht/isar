@@ -1038,7 +1038,7 @@ class CurveAnnotationTool(AnnotationTool):
 
             start = self.annotation.line_positions[len(self.annotation.line_positions) - 1]
             end = self.annotation.line_positions[len(self.annotation.line_positions) - 2]
-            cv2.line(self._img, start, end, self.annotation.color.get_value(),
+            cv2.line(self._img, start, end, self.annotation.color_line.get_value(),
                      self.annotation.thickness.get_value())
 
             if len(self.compute_line_positions) > 0:
@@ -1056,6 +1056,7 @@ class CurveAnnotationTool(AnnotationTool):
         self.compute_line_positions = self.compute_line_positions \
                                       + line_iterator(self.compute_line_positions.pop(), (img_x, img_y))
         self.annotation.line_positions = self.compute_line_positions
+        self.annotation.points.set_value(len(self.annotation.line_positions))
 
         if self.is_annotation_valid():
             self.annotations_model.add_annotation(self.annotation)
@@ -1075,14 +1076,20 @@ class CurveAnnotationTool(AnnotationTool):
                 self.annotation.line_positions[
                     len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
 
-            for i in range(len(self.annotation.line_positions) - 1):
-                start = sceneutil.convert_object_to_image(self.annotation.line_positions[i], self.phys_obj,
-                                                          self.scene_scale_factor)
-                end = sceneutil.convert_object_to_image(self.annotation.line_positions[i + 1], self.phys_obj,
-                                                        self.scene_scale_factor)
+            if self.annotation.show_points.get_value() is False:
+                for i in range(len(self.annotation.line_positions) - 1):
+                    start = sceneutil.convert_object_to_image(self.annotation.line_positions[i], self.phys_obj,
+                                                              self.scene_scale_factor)
+                    end = sceneutil.convert_object_to_image(self.annotation.line_positions[i + 1], self.phys_obj,
+                                                            self.scene_scale_factor)
 
-                cv2.line(self._img, start, end, self.annotation.color.get_value(),
-                         self.annotation.thickness.get_value())
+                    cv2.line(self._img, start, end, self.annotation.color_line.get_value(),
+                             self.annotation.thickness.get_value())
+            else:
+                distribution = distribute_points(self.annotation.points.get_value(), self.annotation.line_positions)
+                for point in distribution:
+                    cv2.circle(self._img, point, self.annotation.thickness.get_value(),
+                               self.annotation.color_points.get_value(), -1)
 
     def is_annotation_valid(self):
         # Are there any coordinates saved?
