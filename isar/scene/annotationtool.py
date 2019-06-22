@@ -1038,7 +1038,7 @@ class CurveAnnotationTool(AnnotationTool):
 
             start = self.annotation.line_positions[len(self.annotation.line_positions) - 1]
             end = self.annotation.line_positions[len(self.annotation.line_positions) - 2]
-            cv2.line(self._img, start, end, self.annotation.color_line.get_value(),
+            cv2.line(self._img, start, end, self.annotation.color.get_value(),
                      self.annotation.thickness.get_value())
 
             if len(self.compute_line_positions) > 0:
@@ -1083,13 +1083,13 @@ class CurveAnnotationTool(AnnotationTool):
                     end = sceneutil.convert_object_to_image(self.annotation.line_positions[i + 1], self.phys_obj,
                                                             self.scene_scale_factor)
 
-                    cv2.line(self._img, start, end, self.annotation.color_line.get_value(),
+                    cv2.line(self._img, start, end, self.annotation.color.get_value(),
                              self.annotation.thickness.get_value())
             else:
                 distribution = distribute_points(self.annotation.points.get_value(), self.annotation.line_positions)
                 for point in distribution:
                     cv2.circle(self._img, point, self.annotation.thickness.get_value(),
-                               self.annotation.color_points.get_value(), -1)
+                               self.annotation.color.get_value(), -1)
 
     def is_annotation_valid(self):
         # Are there any coordinates saved?
