@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QIntValidator, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
-from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise
+from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise, FeedbackTime, FeedbackError
 from isar.scene import scenemodel
 from isar.scene.annotationmodel import CurveAnnotation
 from isar.scene.scenemodel import ScenesModel
@@ -94,18 +94,16 @@ class HandSkillExerciseDefinition(QWizard):
 
     def save_info_feedback(self):
         if self.radio_button_error.isChecked():
-            self.exercise.feedback.value_beginner = self.exercise.error.beginner.get_value()
-            self.exercise.feedback.value_intermediate = self.exercise.error.intermediate.get_value()
-            self.exercise.feedback.value_competent = self.exercise.error.competent.get_value()
+            self.exercise.feedback = FeedbackError()
+            self.exercise.feedback.set_good((int(self.line_good_from.text())))
+            self.exercise.feedback.set_average((int(self.line_average_from.text())))
+            self.exercise.feedback.set_bad((int(self.line_bad_from.text())))
 
         if self.radio_button_time.isChecked():
-            self.exercise.feedback.value_beginner = self.exercise.time.beginner.get_value()
-            self.exercise.feedback.value_intermediate = self.exercise.time.intermediate.get_value()
-            self.exercise.feedback.value_competent = self.exercise.time.competent.get_value()
-
-        self.exercise.feedback.set_good((int(self.line_good_from.text()), int(self.line_good_to.text())))
-        self.exercise.feedback.set_average((int(self.line_average_from.text()), int(self.line_average_to.text())))
-        self.exercise.feedback.set_bad((int(self.line_bad_from.text()), int(self.line_bad_to.text())))
+            self.exercise.feedback = FeedbackTime()
+            self.exercise.feedback.set_good((int(self.line_good_from.text()), int(self.line_good_to.text())))
+            self.exercise.feedback.set_average((int(self.line_average_from.text()), int(self.line_average_to.text())))
+            self.exercise.feedback.set_bad((int(self.line_bad_from.text()), int(self.line_bad_to.text())))
 
     def save_exercise(self):
         parent_dir = None

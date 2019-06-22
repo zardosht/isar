@@ -7,7 +7,7 @@ class HandSkillExercise:
     def __init__(self):
         self.name = None
         self.scene = None
-        self.feedback = FeedbackExercise()
+        self.feedback = None
 
     def get_scene(self):
         return self.scene
@@ -54,47 +54,57 @@ Defining the feedback for the exercise
 """
 
 
-class FeedbackExercise:
+class Feedback:
     def __init__(self):
-        self.value_beginner = 0
-        self.value_intermediate = 0
-        self.value_competent = 0
-        self.good = (0, 0)
-        self.average = (0, 0)
-        self.bad = (0, 0)
-
-    def get_value_beginner(self):
-        self.value_beginner
-
-    def set_value_beginner(self, value):
-        self.value_beginner = value
-
-    def get_value_intermediate(self):
-        self.value_intermediate
-
-    def set_value_intermediate(self, value):
-        self.value_intermediate = value
-
-    def get_value_competent(self):
-        self.value_competent
-
-    def set_value_competent(self, value):
-        self.value_competent = value
+        self.good = None
+        self.average = None
+        self.bad = None
 
     def get_good(self):
         return self.good
 
     def set_good(self, value):
-        self.good = value
+        # It is important that the subclass sets its value.
+        raise TypeError("Must be implemented by subclasses")
 
     def get_average(self):
         return self.average
 
     def set_average(self, value):
-        self.average = value
+        # It is important that the subclass sets its value.
+        raise TypeError("Must be implemented by subclasses")
 
     def get_bad(self):
         return self.bad
+
+    def set_bad(self, value):
+        # It is important that the subclass sets its value.
+        raise TypeError("Must be implemented by subclasses")
+
+
+class FeedbackError(Feedback):
+    def __init__(self):
+        super().__init__()
+
+    def set_good(self, value):
+        self.good = value
+
+    def set_average(self, value):
+        self.average = value
+
+    def set_bad(self, value):
+        self.bad = value
+
+
+class FeedbackTime(Feedback):
+    def __init__(self):
+        super().__init__()
+
+    def set_good(self, value):
+        self.good = value
+
+    def set_average(self, value):
+        self.average = value
 
     def set_bad(self, value):
         self.bad = value
@@ -171,19 +181,11 @@ Defining the skill levels: Beginner, Intermediate, Competent
 class SkillLevel:
     def __init__(self):
         self.value = None
-        self.value_weighted_combination = None
 
     def get_value(self):
         return self.value
 
     def set_value(self, value):
-        # It is important that the subclass sets its value.
-        raise TypeError("Must be implemented by subclasses")
-
-    def get_value_weighted_combination(self):
-        return self.value_weighted_combination
-
-    def set_value_weighted_combination(self, value):
         # It is important that the subclass sets its value.
         raise TypeError("Must be implemented by subclasses")
 
@@ -195,9 +197,6 @@ class Beginner(SkillLevel):
     def set_value(self, value):
         self.value = value
 
-    def set_value_weighted_combination(self, value):
-        self.value_weighted_combination = value
-
 
 class Intermediate(SkillLevel):
     def __init__(self):
@@ -206,9 +205,6 @@ class Intermediate(SkillLevel):
     def set_value(self, value):
         self.value = value
 
-    def set_value_weighted_combination(self, value):
-        self.value_weighted_combination = value
-
 
 class Competent(SkillLevel):
     def __init__(self):
@@ -216,6 +212,3 @@ class Competent(SkillLevel):
 
     def set_value(self, value):
         self.value = value
-
-    def set_value_weighted_combination(self, value):
-        self.value_weighted_combination = value
