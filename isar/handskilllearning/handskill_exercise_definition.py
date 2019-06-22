@@ -28,6 +28,18 @@ class HandSkillExerciseDefinition(QWizard):
         self.button_load_project.clicked.connect(self.load_project)
         self.button_select_scene.clicked.connect(self.select_scene)
         self.button(QWizard.FinishButton).clicked.connect(self.finish_clicked)
+        self.radio_button_error.toggled.connect(self.checked_radio_button_error)
+        self.radio_button_time.toggled.connect(self.checked_radio_button_time)
+
+    def checked_radio_button_error(self):
+        self.line_good_to.setEnabled(False)
+        self.line_average_to.setEnabled(False)
+        self.line_bad_to.setEnabled(False)
+
+    def checked_radio_button_time(self):
+        self.line_good_to.setEnabled(True)
+        self.line_average_to.setEnabled(True)
+        self.line_bad_to.setEnabled(True)
 
     def setup_models(self):
         self.scenes_model = ScenesModel()
@@ -61,6 +73,9 @@ class HandSkillExerciseDefinition(QWizard):
         for scene in self.scenes_model.get_all_scenes():
             if scene.name == selected:
                 self.exercise.set_scene(scene)
+        for annotation in self.exercise.scene.get_all_annotations():
+            if isinstance(annotation, CurveAnnotation):
+                self.line_number_points.setText(str(annotation.points.get_value()))
 
     def finish_clicked(self):
         self.save_info_target_values()
@@ -105,6 +120,7 @@ class HandSkillExerciseDefinition(QWizard):
         scenemodel.current_project.exercises.append(self.exercise)
         self.scenes_model.save_project(parent_dir, project_name)
 
+    # TODO: fix register field for different feedback
     def setup_constraints(self):
         # register fields to enable/disable the next/finish button
         self.scene.registerField("line_selected_scenes*", self.line_selected_scenes)
@@ -114,12 +130,13 @@ class HandSkillExerciseDefinition(QWizard):
         self.target_value.registerField("line_time_int*", self.line_time_int)
         self.target_value.registerField("line_error_com*", self.line_error_com)
         self.target_value.registerField("line_time_com*", self.line_time_com)
-        self.feedback.registerField("line_good_to*", self.line_good_to)
+        self.target_value.registerField("line_number_points*", self.line_number_points)
         self.feedback.registerField("line_good_from*", self.line_good_from)
-        self.feedback.registerField("line_average_to*", self.line_average_to)
+        # self.feedback.registerField("line_good_to*", self.line_good_to)
         self.feedback.registerField("line_average_from*", self.line_average_from)
-        self.feedback.registerField("line_bad_to*", self.line_bad_to)
+        # self.feedback.registerField("line_average_to*", self.line_average_to)
         self.feedback.registerField("line_bad_from*", self.line_bad_from)
+        # self.feedback.registerField("line_bad_to*", self.line_bad_to)
         self.feedback.registerField("line_exercise_name*", self.line_exercise_name)
 
         # set the line edit content to be a number
@@ -139,6 +156,7 @@ class HandSkillExerciseDefinition(QWizard):
         self.line_project_name.setEnabled(False)
         self.line_selected_scenes.setEnabled(False)
         self.button_select_scene.setEnabled(False)
+        self.line_number_points.setEnabled(False)
         self.radio_button_error.setChecked(True)
 
     def setup_ui(self, Wizard):
@@ -181,51 +199,57 @@ class HandSkillExerciseDefinition(QWizard):
         self.target_value.setObjectName("target_value")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.target_value)
         self.gridLayout_2.setObjectName("gridLayout_2")
+        self.label_number_points = QtWidgets.QLabel(self.target_value)
+        self.label_number_points.setObjectName("label_number_points")
+        self.gridLayout_2.addWidget(self.label_number_points, 0, 0, 1, 2)
+        self.line_number_points = QtWidgets.QLineEdit(self.target_value)
+        self.line_number_points.setObjectName("line_number_points")
+        self.gridLayout_2.addWidget(self.line_number_points, 0, 2, 1, 2)
         self.label_skill_level = QtWidgets.QLabel(self.target_value)
         self.label_skill_level.setObjectName("label_skill_level")
-        self.gridLayout_2.addWidget(self.label_skill_level, 0, 0, 1, 2)
+        self.gridLayout_2.addWidget(self.label_skill_level, 1, 0, 1, 2)
         self.label_error = QtWidgets.QLabel(self.target_value)
         self.label_error.setObjectName("label_error")
-        self.gridLayout_2.addWidget(self.label_error, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label_error, 2, 0, 1, 1)
         self.line_error_beg = QtWidgets.QLineEdit(self.target_value)
         self.line_error_beg.setObjectName("line_error_beg")
-        self.gridLayout_2.addWidget(self.line_error_beg, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.line_error_beg, 2, 1, 1, 2)
         self.label_time = QtWidgets.QLabel(self.target_value)
         self.label_time.setObjectName("label_time")
-        self.gridLayout_2.addWidget(self.label_time, 1, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.label_time, 2, 3, 1, 1)
         self.line_time_beg = QtWidgets.QLineEdit(self.target_value)
         self.line_time_beg.setObjectName("line_time_beg")
-        self.gridLayout_2.addWidget(self.line_time_beg, 1, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.line_time_beg, 2, 4, 1, 1)
         self.label_skill_level_2 = QtWidgets.QLabel(self.target_value)
         self.label_skill_level_2.setObjectName("label_skill_level_2")
-        self.gridLayout_2.addWidget(self.label_skill_level_2, 2, 0, 1, 2)
+        self.gridLayout_2.addWidget(self.label_skill_level_2, 3, 0, 1, 3)
         self.label_error_2 = QtWidgets.QLabel(self.target_value)
         self.label_error_2.setObjectName("label_error_2")
-        self.gridLayout_2.addWidget(self.label_error_2, 3, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label_error_2, 4, 0, 1, 1)
         self.line_error_int = QtWidgets.QLineEdit(self.target_value)
         self.line_error_int.setObjectName("line_error_int")
-        self.gridLayout_2.addWidget(self.line_error_int, 3, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.line_error_int, 4, 1, 1, 2)
         self.label_time_2 = QtWidgets.QLabel(self.target_value)
         self.label_time_2.setObjectName("label_time_2")
-        self.gridLayout_2.addWidget(self.label_time_2, 3, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.label_time_2, 4, 3, 1, 1)
         self.line_time_int = QtWidgets.QLineEdit(self.target_value)
         self.line_time_int.setObjectName("line_time_int")
-        self.gridLayout_2.addWidget(self.line_time_int, 3, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.line_time_int, 4, 4, 1, 1)
         self.label_skill_level_3 = QtWidgets.QLabel(self.target_value)
         self.label_skill_level_3.setObjectName("label_skill_level_3")
-        self.gridLayout_2.addWidget(self.label_skill_level_3, 4, 0, 1, 2)
+        self.gridLayout_2.addWidget(self.label_skill_level_3, 5, 0, 1, 3)
         self.label_error_3 = QtWidgets.QLabel(self.target_value)
         self.label_error_3.setObjectName("label_error_3")
-        self.gridLayout_2.addWidget(self.label_error_3, 5, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label_error_3, 6, 0, 1, 1)
         self.line_error_com = QtWidgets.QLineEdit(self.target_value)
         self.line_error_com.setObjectName("line_error_com")
-        self.gridLayout_2.addWidget(self.line_error_com, 5, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.line_error_com, 6, 1, 1, 2)
         self.label_time_3 = QtWidgets.QLabel(self.target_value)
         self.label_time_3.setObjectName("label_time_3")
-        self.gridLayout_2.addWidget(self.label_time_3, 5, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.label_time_3, 6, 3, 1, 1)
         self.line_time_com = QtWidgets.QLineEdit(self.target_value)
         self.line_time_com.setObjectName("line_time_com")
-        self.gridLayout_2.addWidget(self.line_time_com, 5, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.line_time_com, 6, 4, 1, 1)
         Wizard.addPage(self.target_value)
 
         self.feedback = QtWidgets.QWizardPage()
@@ -322,6 +346,7 @@ class HandSkillExerciseDefinition(QWizard):
         self.label_project_name.setText(_translate("Wizard", "Project name:"))
         self.label_scenes.setText(_translate("Wizard", "Scenes:"))
         self.button_select_scene.setText(_translate("Wizard", "Select"))
+        self.label_number_points.setText(_translate("Wizard", "Number of points:"))
         self.label_skill_level.setText(_translate("Wizard", "Skill level beginner:"))
         self.label_error.setText(_translate("Wizard", "Error:"))
         self.label_time.setText(_translate("Wizard", "Time:"))
