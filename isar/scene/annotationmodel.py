@@ -14,6 +14,7 @@ from PyQt5.QtCore import QAbstractListModel, Qt, QModelIndex, QAbstractTableMode
 from PyQt5.QtWidgets import QComboBox, QFileDialog, QStyledItemDelegate, QWidget, QHBoxLayout, \
     QPushButton, QLabel, QVBoxLayout, QSizePolicy
 
+from isar import ApplicationMode
 from isar.events import eventmanager
 from isar.scene import sceneutil, scenemodel, audioutil
 from isar.scene.physicalobjectmodel import PhysicalObject
@@ -38,7 +39,19 @@ class AnnotationsModel(QAbstractListModel):
             self.current_annotation = self.__annotations[0]
         else:
             self.current_annotation = None
+
+        if ApplicationMode.AUTHORING:
+            self.update_annotation_counters()
+
         self.endResetModel()
+
+    def update_annotation_counters(self):
+        global annotation_counters
+        for annotation_class_name in annotation_counters:
+            annotation_counters[annotation_class_name] = 0
+
+        for annotation in self.__annotations:
+            annotation_counters[annotation.__class__.__name__] += 1
 
     def rowCount(self, parent=None):
         if self.__annotations is None:

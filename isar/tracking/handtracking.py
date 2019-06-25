@@ -2,6 +2,7 @@ import logging
 
 from isar.events import eventmanager
 from isar.events.events import HandOnTopEvent
+from isar.scene.annotationmodel import ActionButtonAnnotation
 from isar.tracking.selectionstick import SelectionStickService
 
 logger = logging.getLogger("isar.handtracking")
@@ -17,4 +18,8 @@ class HandTrackingService(SelectionStickService):
     def fire_event(self, target):
         logger.info("Fire HandOnTopEvent on: " + str(target))
         scene_id = self._annotations_model.get_current_scene().name
-        eventmanager.fire_hand_on_top_event(target, scene_id)
+
+        if isinstance(target, ActionButtonAnnotation):
+            eventmanager.fire_selection_event(target, scene_id)
+        else:
+            eventmanager.fire_hand_on_top_event(target, scene_id)

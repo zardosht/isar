@@ -134,7 +134,7 @@ class SceneDefinitionWindow(QMainWindow):
         self.objects_view.model().set_scene(scenes_model.get_current_scene())
         self.camera_view.set_physical_objects_model(self.objects_view.model())
 
-        self.camera_view.set_active_annotation_tool(None)
+        self.camera_view.set_active_annotation_tool(self.select_btn.objectName())
         self.select_btn.setChecked(True)
         if self.annotation_buttons.checkedButton():
             btn = self.annotation_buttons.checkedButton()
