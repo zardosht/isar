@@ -628,7 +628,7 @@ class CurveAnnotation(Annotation):
     def __init__(self):
         super(CurveAnnotation, self).__init__()
 
-        self.start = IntTupleAnnotationProperty("Start", [0, 0], self)
+        self.start = IntTupleAnnotationProperty("Start", None, self)
         self.properties.append(self.start)
 
         self.end = IntTupleAnnotationProperty("End", None, self)
@@ -647,6 +647,47 @@ class CurveAnnotation(Annotation):
         self.properties.append(self.show_points)
 
         self.line_positions = []
+        self.line_points_distributed = []
+
+        self.exercise = None
+
+    def intersects_with_point(self, point):
+        radius = 5
+        if in_circle(point, self.start.get_value(), radius):
+            self.exercise.start()
+            self.exercise.register_points.append(point)
+
+        elif in_circle(point, self.end.get_value(), radius):
+            self.exercise.stop()
+            self.exercise.register_points.append(point)
+
+        elif self.exercise.running:
+            for value in all_points_in_circle(radius, point):
+                self.exercise.register_points.append(value)
+
+
+"""
+Defining method which returns true or false if the point is in the radius from the center
+"""
+
+
+def in_circle(point, center, radius):
+    return ((point[0] - center[0]) * (point[0] - center[0]) +
+            (point[1] - center[1]) * (point[1] - center[1]) <= radius * radius)
+
+
+"""
+Defining method which returns all points within radius from the center
+"""
+
+
+def all_points_in_circle(radius, center):
+    x_ = numpy.arange(center[0] - radius - 1, center[0] + radius + 1, dtype=int)
+    y_ = numpy.arange(center[1] - radius - 1, center[1] + radius + 1, dtype=int)
+    x, y = numpy.where((x_[:, numpy.newaxis] - center[0]) ** 2 + (y_ - center[1]) ** 2 <= radius ** 2)
+
+    for x, y in zip(x_[x], y_[y]):
+        yield x, y
 
 
 class AnimationAnnotation(Annotation):

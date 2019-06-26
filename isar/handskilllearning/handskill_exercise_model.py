@@ -1,13 +1,14 @@
 """
 Defining the exercises: FollowThePath
 """
+from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation
 
 
 class HandSkillExercise:
     def __init__(self):
         self.name = None
         self.scene = None
-        self.feedback = None
+        self.feedback = Feedback()
 
     def get_scene(self):
         return self.scene
@@ -23,12 +24,20 @@ class HandSkillExercise:
         # It is important that the subclass sets its value.
         raise TypeError("Must be implemented by subclasses")
 
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
 
 class FollowThePathExercise(HandSkillExercise):
     def __init__(self):
         super().__init__()
         self.error = Error()
         self.time = Time()
+        self.running = False
+        self.register_points = []
 
     def get_error(self):
         return self.error
@@ -44,9 +53,64 @@ class FollowThePathExercise(HandSkillExercise):
 
     def set_scene(self, value):
         self.scene = value
+        curve = self.scene.get_all_annotations_by_type(CurveAnnotation)
+        curve[0].exercise = self
 
     def set_feedback(self, value):
         self.feedback = value
+
+    def start(self):
+        if not self.running:
+            self.running = True
+            timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotation[0].start()
+            print("Start Exercise")
+
+    # TODO: stop exercise if time is up and compute feedback
+
+    def stop(self):
+        if self.running:
+            self.running = False
+            timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotation[0].stop()
+            print("Stop Exercise")
+
+        # TODO: give feedback
+        print(self.register_points)
+        actual = self.scene.get_all_annotations_by_type(CurveAnnotation)
+        print(actual[0].line_points_distributed)
+
+        captured_positions = correct_positions(actual[0].line_points_distributed, self.register_points)
+        print(captured_positions)
+        number_captured = len(captured_positions)
+        print(number_captured)
+
+        target_number_points = self.feedback.get_target_value()
+
+        if number_captured >= (self.feedback.get_good() * target_number_points)/100:
+            print("FEEDBACK GOOD!!!!!!!!")
+        elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
+            print("FEEDBACK AVERAGE!!!!!!!!")
+        elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
+            print("FEEDBACK BAD!!!!!!!!")
+        else:
+            print("FEEDBACK NOT EXISTING")
+
+        self.register_points = []
+
+    def some_where(self):
+        # eventmanger.fire_my_fancy_exercise_event(event info)
+        pass
+
+
+""" 
+Defining a method that returns all points which where captured 
+by the user with the tool and are in the defined line positions
+"""
+
+
+def correct_positions(actual_positions, registered_positions):
+    return [x for x in actual_positions if x in registered_positions]
 
 
 """
@@ -56,55 +120,31 @@ Defining the feedback for the exercise
 
 class Feedback:
     def __init__(self):
+        self.target_value  = None
         self.good = None
         self.average = None
         self.bad = None
+
+    def get_target_value(self):
+        return self.target_value
+
+    def set_target_value(self, value):
+        self.target_value = value
 
     def get_good(self):
         return self.good
 
     def set_good(self, value):
-        # It is important that the subclass sets its value.
-        raise TypeError("Must be implemented by subclasses")
+        self.good = value
 
     def get_average(self):
         return self.average
 
     def set_average(self, value):
-        # It is important that the subclass sets its value.
-        raise TypeError("Must be implemented by subclasses")
+        self.average = value
 
     def get_bad(self):
         return self.bad
-
-    def set_bad(self, value):
-        # It is important that the subclass sets its value.
-        raise TypeError("Must be implemented by subclasses")
-
-
-class FeedbackError(Feedback):
-    def __init__(self):
-        super().__init__()
-
-    def set_good(self, value):
-        self.good = value
-
-    def set_average(self, value):
-        self.average = value
-
-    def set_bad(self, value):
-        self.bad = value
-
-
-class FeedbackTime(Feedback):
-    def __init__(self):
-        super().__init__()
-
-    def set_good(self, value):
-        self.good = value
-
-    def set_average(self, value):
-        self.average = value
 
     def set_bad(self, value):
         self.bad = value

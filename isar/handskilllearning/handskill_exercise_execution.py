@@ -10,7 +10,7 @@ from isar.camera.camera import CameraService
 from isar.handskilllearning.handskill_exercise_model import HandSkillExercise
 from isar.projection.projector import ProjectorView
 from isar.scene import scenemodel
-from isar.scene.annotationmodel import AnnotationsModel
+from isar.scene.annotationmodel import AnnotationsModel, TimerAnnotation
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
@@ -81,6 +81,7 @@ class HandSkillExerciseExecution(QMainWindow):
 
     def init_scene_size(self):
         self.projector_view.init_scene_size()
+        self.button_load_project.setEnabled(True)
 
     def load_project(self):
         logger.info("Load project")
@@ -111,6 +112,23 @@ class HandSkillExerciseExecution(QMainWindow):
         current_scene = self.exercise.scene
         self.annotations_model.set_scene(current_scene)
         self.projector_view.set_annotations_model(self.annotations_model)
+
+        # check which radio button is checked and set the duration and feedback target value
+        if self.radio_button_beginner.isChecked():
+            self.exercise.feedback.set_target_value(self.exercise.error.beginner.get_value())
+            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
+            timer[0].duration.set_value(self.exercise.time.beginner.get_value())
+        if self.radio_button_intermediate.isChecked():
+            self.exercise.feedback.set_target_value(self.exercise.error.intermediate.get_value())
+            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
+            timer[0].duration.set_value(self.exercise.time.intermediate.get_value())
+        if self.radio_button_competent.isChecked():
+            self.exercise.feedback.set_target_value(self.exercise.error.competent.get_value())
+            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
+            timer[0].duration.set_value(self.exercise.time.competent.get_value())
+
+        # TODO: fix bug with selection stick physical objects
+        self._selection_stick_service.set_annotations_model(self.annotations_model)
         self.setup_timers()
 
     def setup_timers(self):
@@ -141,6 +159,7 @@ class HandSkillExerciseExecution(QMainWindow):
         self.line_selected_exercises.setEnabled(False)
         self.radio_button_beginner.setChecked(True)
         self.button_start.setEnabled(False)
+        self.button_load_project.setEnabled(False)
 
     def setup_ui(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
