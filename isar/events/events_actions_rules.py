@@ -515,12 +515,33 @@ class ItemsModel(QAbstractListModel):
             elif self.item_type == ItemsModel.ACTIONS:
                 if isinstance(item, Action):
                     self.current_scene.add_action(item)
+                    # TODO: added trying to trace this weired bug that action's target becomes the
+                    #  action itself!
+                    self.sanity_check_action_target(item)
+
             elif self.item_type == ItemsModel.RULES:
                 if isinstance(item, Rule):
                     self.current_scene.add_rule(item)
+                    # TODO: added trying to trace this weired bug that action's target becomes the
+                    #  action itself!
+                    action = item.action
+                    self.sanity_check_action_target(action)
         else:
             logger.warning("current_scene is None!")
         self.endInsertRows()
+
+    @staticmethod
+    def sanity_check_action_target(item):
+        # TODO: added trying to trace this weired bug that action's target becomes the
+        #  action itself!
+        if item.has_target:
+            if item.has_single_target:
+                if isinstance(item._target, Action):
+                    raise RuntimeError("Action target is Action!: {}".format(str(item._target)))
+            else:
+                for target in item._target:
+                    if isinstance(item._target, Action):
+                        raise RuntimeError("Action target is Action!: {}".format(str(item._target)))
 
     def remove_item(self, index):
         self.beginRemoveRows(QModelIndex(), index.row(), index.row())

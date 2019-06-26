@@ -5,6 +5,7 @@ from enum import Enum
 from isar.camera.camera import CameraService
 from isar.events import eventmanager
 from isar.events.actionsservice import ActionsService
+from isar.events.checkboxservice import CheckboxService
 from isar.events.events import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
 from isar.events.objecttrackingservice import ObjectTrackingService
 from isar.events.rulesservice import RulesService
@@ -32,6 +33,7 @@ class ServiceNames(Enum):
     TIMER_SERVICE = 8
     RULES_SERVICE = 9
     OBJECT_TRACKING_SERVICE = 10
+    CHECKBOX_SERVICE = 11
 
 
 def start_services():
@@ -81,6 +83,9 @@ def start_services():
 
         object_tracking_service = ObjectTrackingService(ServiceNames.OBJECT_TRACKING_SERVICE)
         __services[ServiceNames.OBJECT_TRACKING_SERVICE] = object_tracking_service
+
+        checkbox_service = CheckboxService(ServiceNames.CHECKBOX_SERVICE)
+        __services[ServiceNames.CHECKBOX_SERVICE] = checkbox_service
 
     except Exception as exp:
         logger.error(exp)

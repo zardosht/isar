@@ -60,10 +60,17 @@ class Action:
                     logger.error("Action target not matching target type of the action. Return.")
                     return False
 
+                type_matches = False
                 for target in action_target:
-                    if type(target) not in cls.target_types:
-                        logger.error("Action target not matching target type of the action. Return.")
-                        return False
+                    type_matches = False
+                    for target_type in cls.target_types:
+                        if isinstance(target, target_type):
+                            type_matches = True
+                            break
+
+                if not type_matches:
+                    logger.error("Action target not matching target type of the action. Return.")
+                    return False
 
         return True
 
