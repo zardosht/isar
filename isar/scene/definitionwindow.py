@@ -134,7 +134,7 @@ class SceneDefinitionWindow(QMainWindow):
         self.objects_view.model().set_scene(scenes_model.get_current_scene())
         self.camera_view.set_physical_objects_model(self.objects_view.model())
 
-        self.camera_view.set_active_annotation_tool(None)
+        self.camera_view.set_active_annotation_tool(self.select_btn.objectName())
         self.select_btn.setChecked(True)
         if self.annotation_buttons.checkedButton():
             btn = self.annotation_buttons.checkedButton()
@@ -340,6 +340,10 @@ class SceneDefinitionWindow(QMainWindow):
         object_tracking_service.set_annotations_model(self.annotations_model)
         object_tracking_service.set_scenes_model(self.scenes_model)
         object_tracking_service.set_physical_objects_model(self.physical_objects_model)
+
+        checkbox_service = servicemanager.get_service(ServiceNames.CHECKBOX_SERVICE)
+        checkbox_service.set_annotations_model(self.annotations_model)
+        checkbox_service.set_scenes_model(self.scenes_model)
 
         rules_service = servicemanager.get_service(ServiceNames.RULES_SERVICE)
         rules_service.set_scenes_model(self.scenes_model)

@@ -3,9 +3,9 @@ import logging
 
 from isar.events import eventmanager
 from isar.events.events import SelectionEvent
-from isar.scene.annotationmodel import Annotation, ActionButtonAnnotation
-from isar.scene.physicalobjectmodel import PhysicalObject
+from isar.scene.annotationmodel import ActionButtonAnnotation
 from isar.services.service import Service
+
 
 logger = logging.getLogger("isar.selectionservice")
 

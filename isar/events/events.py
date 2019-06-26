@@ -106,12 +106,11 @@ class CheckboxUncheckedEvent(Event):
     pass
 
 
-class CheckboxGroupChecked(Event):
+class CheckboxGroupCheckedEvent(Event):
     from isar.scene.annotationmodel import CheckboxAnnotation
     target_types = [CheckboxAnnotation]
     has_multiple_targets = True
 
-    # TODO: implement
     pass
 
 
@@ -203,17 +202,22 @@ class HandOnTopEvent(SelectionEvent):
 
 event_types = {
     SelectionEvent.__name__: SelectionEvent,
+
     CheckboxCheckedEvent.__name__: CheckboxCheckedEvent,
     CheckboxUncheckedEvent.__name__: CheckboxUncheckedEvent,
+    CheckboxGroupCheckedEvent.__name__: CheckboxGroupCheckedEvent,
+
     TimerFinishedEvent.__name__: TimerFinishedEvent,
     TimerTimeout1Event.__name__: TimerTimeout1Event,
     TimerTimeout2Event.__name__: TimerTimeout2Event,
     TimerTimeout3Event.__name__: TimerTimeout3Event,
     TimerTickEvent.__name__: TimerTickEvent,
+
     PhysicalObjectAppearedEvent.__name__: PhysicalObjectAppearedEvent,
     PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
     PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
     PhysicalObjectGroupAppearedEvent.__name__: PhysicalObjectGroupAppearedEvent,
+
     SceneShownEvent.__name__: SceneShownEvent,
     SceneLeftEvent.__name__: SceneLeftEvent
 }
