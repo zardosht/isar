@@ -48,6 +48,18 @@ class Event:
     def update_event_properties_frame(cls, qt_frame):
         pass
 
+    def __hash__(self):
+        if self.has_multiple_targets:
+            if self._targets is not None and isinstance(self._targets, list) and len(self._targets) > 0:
+                return hash(str(self._targets))
+            else:
+                return id(self)
+        else:
+            if self._target is not None:
+                return hash(self._target.name)
+            else:
+                return id(self)
+
     def __eq__(self, other):
         if type(self) != type(other):
             return False
@@ -107,6 +119,14 @@ class CheckboxUncheckedEvent(Event):
 
 
 class CheckboxGroupCheckedEvent(Event):
+    from isar.scene.annotationmodel import CheckboxAnnotation
+    target_types = [CheckboxAnnotation]
+    has_multiple_targets = True
+
+    pass
+
+
+class CheckboxGroupUncheckedEvent(Event):
     from isar.scene.annotationmodel import CheckboxAnnotation
     target_types = [CheckboxAnnotation]
     has_multiple_targets = True
@@ -206,6 +226,7 @@ event_types = {
     CheckboxCheckedEvent.__name__: CheckboxCheckedEvent,
     CheckboxUncheckedEvent.__name__: CheckboxUncheckedEvent,
     CheckboxGroupCheckedEvent.__name__: CheckboxGroupCheckedEvent,
+    CheckboxGroupUncheckedEvent.__name__: CheckboxGroupUncheckedEvent,
 
     TimerFinishedEvent.__name__: TimerFinishedEvent,
     TimerTimeout1Event.__name__: TimerTimeout1Event,

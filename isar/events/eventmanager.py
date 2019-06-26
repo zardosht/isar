@@ -86,6 +86,10 @@ def fire_checkbox_group_checked_event(checkbox_group_checked_event):
     fire_event(checkbox_group_checked_event)
 
 
+def fire_checkbox_group_unchecked_event(checkbox_group_unchecked_event):
+    fire_event(checkbox_group_unchecked_event)
+
+
 def fire_selection_event(target, scene_id):
     selection_event = SelectionEvent()
     selection_event.target = target
