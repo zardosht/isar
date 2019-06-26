@@ -634,24 +634,25 @@ class CurveAnnotation(Annotation):
         self.properties.append(self.show_points)
 
         self.line_positions = []
+        self.line_points_distributed = []
 
         self.exercise = None
 
-    def intersects_with_point(self, tool_center):
-        # TODO: .....
-        if tool_center overlaps with my start point:
+    def intersects_with_point(self, point):
+        radius = 10
+        if ((point[0] - self.start.get_value()[0]) * (point[0] - self.start.get_value()[0]) +
+        (point[1] - self.start.get_value()[1]) * (point[1] - self.start.get_value()[1]) <= radius * radius):
             self.exercise.start()
+            self.exercise.register_points.append(point)
 
-        if tool_center overlaps with my end point:
-            self.exercise.end()
+        elif ((point[0] - self.end.get_value()[0]) * (point[0] - self.end.get_value()[0]) +
+        (point[1] - self.end.get_value()[1]) * (point[1] - self.end.get_value()[1]) <= radius * radius):
+            self.exercise.stop()
+            self.exercise.register_points.append(point)
 
-        if tool_center overlaps with an other point:
-            exercise.good_points ++
-
-        .....
-
-        pass
-
+        elif self.exercise.running:
+            # TODO: get all the points within the radius not just the exact point
+            self.exercise.register_points.append(point)
 
 
 class AnimationAnnotation(Annotation):
@@ -684,7 +685,6 @@ class AnimationAnnotation(Annotation):
         self.properties.append(self.loop)
 
         self.line_positions = []
-        self.line_points_distributed = []
         self.line_start = None
         self.image_position = None
         self.image_shown = False

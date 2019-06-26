@@ -25,7 +25,9 @@ class HandSkillExercise:
         raise TypeError("Must be implemented by subclasses")
 
     def start(self):
-        # TODO: ...
+        pass
+
+    def stop(self):
         pass
 
 
@@ -34,6 +36,8 @@ class FollowThePathExercise(HandSkillExercise):
         super().__init__()
         self.error = Error()
         self.time = Time()
+        self.running = False
+        self.register_points = []
 
     def get_error(self):
         return self.error
@@ -49,22 +53,57 @@ class FollowThePathExercise(HandSkillExercise):
 
     def set_scene(self, value):
         self.scene = value
-        # TODO:
-        curve = self.scene.get_annotation_by_type(CurveAnnotation)
-        curve.exercise = self
-
+        curve = self.scene.get_all_annotations_by_type(CurveAnnotation)
+        curve[0].exercise = self
 
     def set_feedback(self, value):
         self.feedback = value
 
     def start(self):
-        # TODO: ...
+        # TODO: start TimerAnnotation just one time
+        self.running = True
+        print("Start Exercise")
+
+    # TODO: stop exercise if time is up and compute feedback
+
+    def stop(self):
+        # TODO: stop timer if finish reached
+        self.running = False
+        print("Stop Exercise")
+
+        # TODO: give feedback
+        print(self.register_points)
+        actual = self.scene.get_all_annotations_by_type(CurveAnnotation)
+        print(actual[0].line_points_distributed)
+        captured_positions = correct_positions(actual[0].line_points_distributed, self.register_points)
+        print(captured_positions)
+        number_captured = len(captured_positions)
+        print(number_captured)
+
+        max_points_number = actual[0].points.get_value()
+
+        if number_captured >= (self.feedback.get_good() * max_points_number)/100:
+            print("FEEDBACK GOOD!!!!!!!!")
+        elif number_captured >= (self.feedback.get_average() * max_points_number)/100:
+            print("FEEDBACK AVERAGE!!!!!!!!")
+        elif number_captured >= (self.feedback.get_good() * max_points_number)/100:
+            print("FEEDBACK BAD!!!!!!!!")
+        else:
+            print("FEEDBACK NOT EXISTING")
+
+    def some_where(self):
+        # eventmanger.fire_my_fancy_exercise_event(event info)
         pass
 
 
+""" 
+Defining a method that returns all points which where captured 
+by the user with the tool and are in the defined line positions
+"""
 
-    def some_wheere(self):
-        eventmanger.fire_my_fancy_exercise_event(event info)
+
+def correct_positions(actual_positions, registered_positions):
+    return [x for x in actual_positions if x in registered_positions]
 
 
 """

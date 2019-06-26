@@ -98,7 +98,6 @@ class HandSkillExerciseDefinition(QWizard):
         scenemodel.current_project.exercises.append(self.exercise)
         self.scenes_model.save_project(parent_dir, project_name)
 
-    # TODO: fix register field for different feedback
     def setup_constraints(self):
         # register fields to enable/disable the next/finish button
         self.scene.registerField("line_selected_scenes*", self.line_selected_scenes)
