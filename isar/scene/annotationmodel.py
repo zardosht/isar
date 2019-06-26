@@ -635,6 +635,24 @@ class CurveAnnotation(Annotation):
 
         self.line_positions = []
 
+        self.exercise = None
+
+    def intersects_with_point(self, tool_center):
+        # TODO: .....
+        if tool_center overlaps with my start point:
+            self.exercise.start()
+
+        if tool_center overlaps with my end point:
+            self.exercise.end()
+
+        if tool_center overlaps with an other point:
+            exercise.good_points ++
+
+        .....
+
+        pass
+
+
 
 class AnimationAnnotation(Annotation):
     MINIMUM_NUMBER_POSITIONS = 5

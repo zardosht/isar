@@ -1,6 +1,7 @@
 """
 Defining the exercises: FollowThePath
 """
+from isar.scene.annotationmodel import CurveAnnotation
 
 
 class HandSkillExercise:
@@ -23,6 +24,10 @@ class HandSkillExercise:
         # It is important that the subclass sets its value.
         raise TypeError("Must be implemented by subclasses")
 
+    def start(self):
+        # TODO: ...
+        pass
+
 
 class FollowThePathExercise(HandSkillExercise):
     def __init__(self):
@@ -44,9 +49,22 @@ class FollowThePathExercise(HandSkillExercise):
 
     def set_scene(self, value):
         self.scene = value
+        # TODO:
+        curve = self.scene.get_annotation_by_type(CurveAnnotation)
+        curve.exercise = self
+
 
     def set_feedback(self, value):
         self.feedback = value
+
+    def start(self):
+        # TODO: ...
+        pass
+
+
+
+    def some_wheere(self):
+        eventmanger.fire_my_fancy_exercise_event(event info)
 
 
 """

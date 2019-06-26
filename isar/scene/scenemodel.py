@@ -348,6 +348,15 @@ class Scene:
             if annotation.name == name:
                 return annotation
 
+    def get_all_annotations_by_type(self, annotation_type):
+        annotations = self.get_all_annotations()
+        result = []
+        for annotation in annotations:
+            if isinstance(annotation, annotation_type):
+                result.append(annotation)
+
+        return result
+
     def add_annotation(self, annotation):
         if annotation not in self.__annotations:
             annotation.scene = self
