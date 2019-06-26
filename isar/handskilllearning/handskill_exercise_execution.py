@@ -10,7 +10,7 @@ from isar.camera.camera import CameraService
 from isar.handskilllearning.handskill_exercise_model import HandSkillExercise
 from isar.projection.projector import ProjectorView
 from isar.scene import scenemodel
-from isar.scene.annotationmodel import AnnotationsModel
+from isar.scene.annotationmodel import AnnotationsModel, TimerAnnotation
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
@@ -76,6 +76,7 @@ class HandSkillExerciseExecution(QMainWindow):
 
     def init_scene_size(self):
         self.projector_view.init_scene_size()
+        self.button_load_project.setEnabled(True)
 
     def load_project(self):
         logger.info("Load project")
@@ -136,6 +137,7 @@ class HandSkillExerciseExecution(QMainWindow):
         self.line_selected_exercises.setEnabled(False)
         self.radio_button_beginner.setChecked(True)
         self.button_start.setEnabled(False)
+        self.button_load_project.setEnabled(False)
 
     def setup_ui(self, MainWindow):
         MainWindow.setObjectName("MainWindow")

@@ -7,7 +7,7 @@ class HandSkillExercise:
     def __init__(self):
         self.name = None
         self.scene = None
-        self.feedback = None
+        self.feedback = Feedback()
 
     def get_scene(self):
         return self.scene
@@ -64,47 +64,16 @@ class Feedback:
         return self.good
 
     def set_good(self, value):
-        # It is important that the subclass sets its value.
-        raise TypeError("Must be implemented by subclasses")
+        self.good = value
 
     def get_average(self):
         return self.average
 
     def set_average(self, value):
-        # It is important that the subclass sets its value.
-        raise TypeError("Must be implemented by subclasses")
+        self.average = value
 
     def get_bad(self):
         return self.bad
-
-    def set_bad(self, value):
-        # It is important that the subclass sets its value.
-        raise TypeError("Must be implemented by subclasses")
-
-
-class FeedbackError(Feedback):
-    def __init__(self):
-        super().__init__()
-
-    def set_good(self, value):
-        self.good = value
-
-    def set_average(self, value):
-        self.average = value
-
-    def set_bad(self, value):
-        self.bad = value
-
-
-class FeedbackTime(Feedback):
-    def __init__(self):
-        super().__init__()
-
-    def set_good(self, value):
-        self.good = value
-
-    def set_average(self, value):
-        self.average = value
 
     def set_bad(self, value):
         self.bad = value

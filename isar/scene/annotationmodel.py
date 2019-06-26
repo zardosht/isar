@@ -615,7 +615,7 @@ class CurveAnnotation(Annotation):
     def __init__(self):
         super(CurveAnnotation, self).__init__()
 
-        self.start = IntTupleAnnotationProperty("Start", [0, 0], self)
+        self.start = IntTupleAnnotationProperty("Start", None, self)
         self.properties.append(self.start)
 
         self.end = IntTupleAnnotationProperty("End", None, self)
@@ -666,6 +666,7 @@ class AnimationAnnotation(Annotation):
         self.properties.append(self.loop)
 
         self.line_positions = []
+        self.line_points_distributed = []
         self.line_start = None
         self.image_position = None
         self.image_shown = False

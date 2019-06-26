@@ -1073,8 +1073,9 @@ class CurveAnnotationTool(AnnotationTool):
         if self.is_annotation_valid():
             if self.annotation.end.get_value() is not None:
                 self.annotation.line_positions[0] = self.annotation.start.get_value()
-                self.annotation.line_positions[
-                    len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
+                self.annotation.line_positions[len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
+                cv2.circle(self._img, self.annotation.start.get_value(), 7,(0,255,255), -1)
+                cv2.circle(self._img, self.annotation.end.get_value(), 7,(0,255,255), -1)
 
             if self.annotation.show_points.get_value() is False:
                 for i in range(len(self.annotation.line_positions) - 1):
@@ -1086,8 +1087,8 @@ class CurveAnnotationTool(AnnotationTool):
                     cv2.line(self._img, start, end, self.annotation.color.get_value(),
                              self.annotation.thickness.get_value())
             else:
-                distribution = distribute_points(self.annotation.points.get_value(), self.annotation.line_positions)
-                for point in distribution:
+                self.annotation.line_points_distributed = distribute_points(self.annotation.points.get_value(), self.annotation.line_positions)
+                for point in self.annotation.line_points_distributed:
                     cv2.circle(self._img, point, self.annotation.thickness.get_value(),
                                self.annotation.color.get_value(), -1)
 
