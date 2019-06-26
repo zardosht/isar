@@ -1,7 +1,7 @@
 """
 Defining the exercises: FollowThePath
 """
-from isar.scene.annotationmodel import CurveAnnotation
+from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation
 
 
 class HandSkillExercise:
@@ -60,36 +60,43 @@ class FollowThePathExercise(HandSkillExercise):
         self.feedback = value
 
     def start(self):
-        # TODO: start TimerAnnotation just one time
-        self.running = True
-        print("Start Exercise")
+        if not self.running:
+            self.running = True
+            timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotation[0].start()
+            print("Start Exercise")
 
     # TODO: stop exercise if time is up and compute feedback
 
     def stop(self):
-        # TODO: stop timer if finish reached
-        self.running = False
-        print("Stop Exercise")
+        if self.running:
+            self.running = False
+            timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotation[0].stop()
+            print("Stop Exercise")
 
         # TODO: give feedback
         print(self.register_points)
         actual = self.scene.get_all_annotations_by_type(CurveAnnotation)
         print(actual[0].line_points_distributed)
+
         captured_positions = correct_positions(actual[0].line_points_distributed, self.register_points)
         print(captured_positions)
         number_captured = len(captured_positions)
         print(number_captured)
 
-        max_points_number = actual[0].points.get_value()
+        target_number_points = self.feedback.get_target_value()
 
-        if number_captured >= (self.feedback.get_good() * max_points_number)/100:
+        if number_captured >= (self.feedback.get_good() * target_number_points)/100:
             print("FEEDBACK GOOD!!!!!!!!")
-        elif number_captured >= (self.feedback.get_average() * max_points_number)/100:
+        elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
             print("FEEDBACK AVERAGE!!!!!!!!")
-        elif number_captured >= (self.feedback.get_good() * max_points_number)/100:
+        elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
             print("FEEDBACK BAD!!!!!!!!")
         else:
             print("FEEDBACK NOT EXISTING")
+
+        self.register_points = []
 
     def some_where(self):
         # eventmanger.fire_my_fancy_exercise_event(event info)
@@ -113,9 +120,16 @@ Defining the feedback for the exercise
 
 class Feedback:
     def __init__(self):
+        self.target_value  = None
         self.good = None
         self.average = None
         self.bad = None
+
+    def get_target_value(self):
+        return self.target_value
+
+    def set_target_value(self, value):
+        self.target_value = value
 
     def get_good(self):
         return self.good

@@ -105,9 +105,23 @@ class HandSkillExerciseExecution(QMainWindow):
 
     def start_exercise(self):
         current_scene = self.exercise.scene
-        # TODO: check which radio button is checked and set the duration and feedback target value
         self.annotations_model.set_scene(current_scene)
         self.projector_view.set_annotations_model(self.annotations_model)
+
+        # check which radio button is checked and set the duration and feedback target value
+        if self.radio_button_beginner.isChecked():
+            self.exercise.feedback.set_target_value(self.exercise.error.beginner.get_value())
+            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
+            timer[0].duration.set_value(self.exercise.time.beginner.get_value())
+        if self.radio_button_intermediate.isChecked():
+            self.exercise.feedback.set_target_value(self.exercise.error.intermediate.get_value())
+            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
+            timer[0].duration.set_value(self.exercise.time.intermediate.get_value())
+        if self.radio_button_competent.isChecked():
+            self.exercise.feedback.set_target_value(self.exercise.error.competent.get_value())
+            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
+            timer[0].duration.set_value(self.exercise.time.competent.get_value())
+
         # TODO: fix bug with selection stick physical objects
         self._selection_stick_service.set_annotations_model(self.annotations_model)
         self.setup_timers()
