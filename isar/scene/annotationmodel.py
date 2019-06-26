@@ -185,18 +185,6 @@ class AnnotationsModel(QAbstractListModel):
         else:
             return ()
 
-    def get_all_annotations_by_type(self, t):
-        all_annotations = self.get_all_annotations()
-        if t == Annotation:
-            return all_annotations
-        else:
-            result = []
-            for annotation in all_annotations:
-                if isinstance(annotation, t):
-                    result.append(annotation)
-
-            return result
-
     def get_annotation_by_name(self, name):
         for annotation in self.get_all_annotations():
             if annotation.name == name:

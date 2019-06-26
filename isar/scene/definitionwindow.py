@@ -126,13 +126,13 @@ class SceneDefinitionWindow(QMainWindow):
         current_index = scenes_model.find_index(scenes_model.get_current_scene())
         self.scenes_list.setCurrentIndex(current_index)
 
-        servicemanager.current_scene_changed(self.scenes_model.get_current_scene())
-
         self.annotations_list.model().set_scene(scenes_model.get_current_scene())
         self.camera_view.set_annotations_model(self.annotations_list.model())
 
         self.objects_view.model().set_scene(scenes_model.get_current_scene())
         self.camera_view.set_physical_objects_model(self.objects_view.model())
+
+        servicemanager.current_scene_changed(self.scenes_model.get_current_scene())
 
         self.camera_view.set_active_annotation_tool(self.select_btn.objectName())
         self.select_btn.setChecked(True)

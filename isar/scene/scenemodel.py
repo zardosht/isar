@@ -342,21 +342,6 @@ class Scene:
             if phys_obj.name == name:
                 return phys_obj
 
-    def get_annotation_by_name(self, name):
-        annotations = self.get_all_annotations()
-        for annotation in annotations:
-            if annotation.name == name:
-                return annotation
-
-    def get_all_annotations_by_type(self, annotation_type):
-        annotations = self.get_all_annotations()
-        result = []
-        for annotation in annotations:
-            if isinstance(annotation, annotation_type):
-                result.append(annotation)
-
-        return result
-
     def add_annotation(self, annotation):
         if annotation not in self.__annotations:
             annotation.scene = self
@@ -384,11 +369,31 @@ class Scene:
 
         return tuple(self.__po_annotations_dict[phys_obj])
 
-    def get_all_annotations(self):
+    def get_annotation_by_name(self, name):
+        annotations = self.get_all_annotations()
+        for annotation in annotations:
+            if annotation.name == name:
+                return annotation
+
+    def get_all_annotations_by_type(self, t):
+        return self.get_all_annotations(t)
+
+    def get_all_annotations(self, annotation_type=None):
         all_annotations = []
-        all_annotations.extend(self.__annotations)
+        for annotation in self.__annotations:
+            if annotation_type is not None:
+                if isinstance(annotation, annotation_type):
+                    all_annotations.append(annotation)
+            else:
+                all_annotations.append(annotation)
+
         for phys_obj in self.__physical_objects:
-            all_annotations.extend(phys_obj.get_annotations())
+            for annotation in phys_obj.get_annotations():
+                if annotation_type is not None:
+                    if isinstance(annotation, annotation_type):
+                        all_annotations.append(annotation)
+                else:
+                    all_annotations.append(annotation)
 
         return tuple(all_annotations)
 
