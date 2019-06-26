@@ -64,23 +64,25 @@ def main():
     elif use_case == "2":
         isar.application_mode = ApplicationMode.EXECUTION
         domain_learning_window = DomainLearningWindow(screen_id=2)
-        domain_learning_window.move(100, 100)
-        domain_learning_window.show()
-        app.exec()
+        if domain_learning_window.projector_initialized:
+            domain_learning_window.move(100, 100)
+            domain_learning_window.show()
+            app.exec()
 
     elif use_case == "3":
         isar.application_mode = ApplicationMode.EXECUTION
-        domain_learning_window = HandSkillExerciseDefinition()
-        domain_learning_window.move(100, 100)
-        domain_learning_window.show()
+        hand_skill_exercise_definition_window = HandSkillExerciseDefinition()
+        hand_skill_exercise_definition_window.move(100, 100)
+        hand_skill_exercise_definition_window.show()
         app.exec()
 
     elif use_case == "4":
         isar.application_mode = ApplicationMode.EXECUTION
-        domain_learning_window = HandSkillExerciseExecution(screen_id=2)
-        domain_learning_window.move(100, 100)
-        domain_learning_window.show()
-        app.exec()
+        hand_skill_exercise_execution_window = HandSkillExerciseExecution(screen_id=2)
+        if hand_skill_exercise_execution_window.projector_initialized:
+            hand_skill_exercise_execution_window.move(100, 100)
+            hand_skill_exercise_execution_window.show()
+            app.exec()
 
     time.sleep(0.5)
     servicemanager.stop_services()

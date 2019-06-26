@@ -42,18 +42,21 @@ class ProjectorView(QtWidgets.QWidget):
         self.homography_matrix = np.identity(3, dtype=np.float64)
         self.camera_service: CameraService = camera_service
 
-        self.init_projector(screen_id)
-
-        self.move(self.projector.left(), self.projector.top())
-        self.resize(self.projector.width(), self.projector.height())
-        self.setWindowFlag(Qt.FramelessWindowHint)
-        self.showFullScreen()
-
         self.__annotations_model = None
         self.__physical_objects_model = None
         self.scene_renderer = SceneRenderer()
         self.scene_renderer.set_annotations_model(self.__annotations_model)
         self.scene_renderer.set_physical_objects_model(self.__physical_objects_model)
+
+        projector_initialized = self.init_projector(screen_id)
+        if not projector_initialized:
+            logger.error("Could not initialize projector. Projector is not ready! Return.")
+            return
+
+        self.move(self.projector.left(), self.projector.top())
+        self.resize(self.projector.width(), self.projector.height())
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.showFullScreen()
 
     def set_annotations_model(self, annotations_model):
         self.__annotations_model = annotations_model
@@ -90,10 +93,13 @@ class ProjectorView(QtWidgets.QWidget):
         self.projector_width = int(self.projector.width())
         self.projector_height = int(self.projector.height())
 
-        blank_image = np.ones((self.projector_height, self.projector_width, 3), np.uint8)
-        blank_image[:] = (255, 0, 255)
-
-        self.set_scene_image(blank_image)
+        if self.is_projector_ready():
+            blank_image = np.ones((self.projector_height, self.projector_width, 3), np.uint8)
+            blank_image[:] = (255, 0, 255)
+            self.set_scene_image(blank_image)
+            return True
+        else:
+            return False
 
     def is_projector_ready(self):
         return self.projector is not None and self.projector_width != 0 and self.projector_height != 0

@@ -33,7 +33,10 @@ class HandSkillExerciseExecution(QMainWindow):
         self.setup_camera_service()
 
         self.projector_view = None
-        self.setup_projector_view(screen_id)
+        self.projector_initialized = self.setup_projector_view(screen_id)
+        if not self.projector_initialized:
+            logger.error("Projector is not ready! Return")
+            return
 
         self._selection_stick_service = None
         self.setup_object_detection_service()
@@ -57,11 +60,13 @@ class HandSkillExerciseExecution(QMainWindow):
 
     def setup_projector_view(self, screen_id):
         self.projector_view = ProjectorView(self.projector_view, screen_id, self._camera_service)
-        self.projector_view.setWindowFlag(QtCore.Qt.Window)
         if self.projector_view.is_projector_ready():
+            self.projector_view.setWindowFlag(QtCore.Qt.Window)
             self.calibrate_projector()
+            return True
         else:
             logger.error("Could not initialize projector. Make sure projector is connected and is turned on!")
+            return False
 
     def setup_object_detection_service(self):
         self._selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
