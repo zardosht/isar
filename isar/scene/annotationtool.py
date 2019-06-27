@@ -10,7 +10,7 @@ from isar.events import eventmanager
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
-    CheckboxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation
+    CheckboxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation, FeedbackAnnotation
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -1008,6 +1008,62 @@ class RelationshipAnnotationTool(AnnotationTool):
         pass
 
 
+class FeedbackAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(FeedbackAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        self.set_drawing(True)
+        self.annotation = FeedbackAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.annotation.position.set_value((img_x, img_y))
+
+    def mouse_move_event(self, camera_view, event):
+        # do nothing
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        self.annotations_model.add_annotation(self.annotation)
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if not self.annotation:
+            return
+
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                     self.phys_obj, self.scene_scale_factor)
+
+        radius = self.annotation.radius.get_value()
+
+        show_inactive = self.annotation.show_inactive.get_value()
+        show_good = self.annotation.show_good.get_value()
+        show_average = self.annotation.show_average.get_value()
+        show_bad = self.annotation.show_bad.get_value()
+
+        if show_inactive:
+            silver = 192, 192, 192
+            cv2.circle(self._img, position, radius, silver, -1)
+
+        elif show_good:
+            green = 0, 255, 0
+            cv2.circle(self._img, position, radius, green, -1)
+
+        elif show_average:
+            yellow = 0, 255, 255
+            cv2.circle(self._img, position, radius, yellow, -1)
+
+        elif show_bad:
+            red = 255, 0, 0
+            cv2.circle(self._img, position, radius, red, -1)
+
+
 class CurveAnnotationTool(AnnotationTool):
     def __init__(self):
         super(CurveAnnotationTool, self).__init__()
@@ -1241,7 +1297,8 @@ annotation_tools = {
     CheckboxAnnotation.__name__: CheckboxAnnotationTool(),
     ActionButtonAnnotation.__name__: ActionButtonAnnotationTool(),
     CurveAnnotation.__name__: CurveAnnotationTool(),
-    AnimationAnnotation.__name__: AnimationAnnotationTool()
+    AnimationAnnotation.__name__: AnimationAnnotationTool(),
+    FeedbackAnnotation.__name__: FeedbackAnnotationTool()
 }
 
 annotation_tool_btns = {

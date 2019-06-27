@@ -11,6 +11,7 @@ from isar.handskilllearning.handskill_exercise_model import HandSkillExercise
 from isar.projection.projector import ProjectorView
 from isar.scene import scenemodel
 from isar.scene.annotationmodel import AnnotationsModel, TimerAnnotation
+from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
 from isar.services.servicemanager import ServiceNames
@@ -43,6 +44,7 @@ class HandSkillExerciseExecution(QMainWindow):
 
         self.scenes_model = None
         self.annotations_model = None
+        self.physical_objects_model = None
         self.setup_models()
 
         self.setAttribute(QtCore.Qt.WA_QuitOnClose, True)
@@ -74,6 +76,7 @@ class HandSkillExerciseExecution(QMainWindow):
     def setup_models(self):
         self.scenes_model = ScenesModel()
         self.annotations_model = AnnotationsModel()
+        self.physical_objects_model = PhysicalObjectsModel()
 
     def calibrate_projector(self):
         self.projector_view.calibrating = True
@@ -127,8 +130,9 @@ class HandSkillExerciseExecution(QMainWindow):
             timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
             timer[0].duration.set_value(self.exercise.time.competent.get_value())
 
-        # TODO: fix bug with selection stick physical objects
         self._selection_stick_service.set_annotations_model(self.annotations_model)
+        self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)
+        self.exercise.selection_stick = self._selection_stick_service
         self.setup_timers()
 
     def setup_timers(self):
