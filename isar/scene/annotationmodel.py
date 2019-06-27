@@ -615,6 +615,7 @@ class ActionButtonAnnotation(RectangleAnnotation):
 
 class CurveAnnotation(Annotation):
     MINIMUM_NUMBER_POSITIONS = 5
+    RADIUS = 6
 
     def __init__(self):
         super(CurveAnnotation, self).__init__()
@@ -643,18 +644,16 @@ class CurveAnnotation(Annotation):
         self.exercise = None
 
     def intersects_with_point(self, point):
-        radius = 5
-        if in_circle(point, self.start.get_value(), radius):
-            self.exercise.start()
-            self.exercise.register_points.append(point)
+        if self.exercise is not None:
+            if in_circle(point, self.start.get_value(), CurveAnnotation.RADIUS) and not self.exercise.running:
+                self.exercise.start()
+                self.exercise.register_points.append(point)
 
-        elif in_circle(point, self.end.get_value(), radius):
-            self.exercise.stop()
-            self.exercise.register_points.append(point)
-
-        elif self.exercise.running:
-            for value in all_points_in_circle(radius, point):
-                self.exercise.register_points.append(value)
+            # TODO fix bug: program does not run into this if statement
+            if in_circle(point, self.end.get_value(), CurveAnnotation.RADIUS) and self.exercise.running:
+                print("Stop exercise STICK")
+                self.exercise.stop()
+                self.exercise.register_points.append(point)
 
 
 """
@@ -665,20 +664,6 @@ Defining method which returns true or false if the point is in the radius from t
 def in_circle(point, center, radius):
     return ((point[0] - center[0]) * (point[0] - center[0]) +
             (point[1] - center[1]) * (point[1] - center[1]) <= radius * radius)
-
-
-"""
-Defining method which returns all points within radius from the center
-"""
-
-
-def all_points_in_circle(radius, center):
-    x_ = numpy.arange(center[0] - radius - 1, center[0] + radius + 1, dtype=int)
-    y_ = numpy.arange(center[1] - radius - 1, center[1] + radius + 1, dtype=int)
-    x, y = numpy.where((x_[:, numpy.newaxis] - center[0]) ** 2 + (y_ - center[1]) ** 2 <= radius ** 2)
-
-    for x, y in zip(x_[x], y_[y]):
-        yield x, y
 
 
 class AnimationAnnotation(Annotation):
@@ -919,6 +904,11 @@ class TimerAnnotation(Annotation):
         self.current_time = 0
         self.timer_thread = None
 
+        self.timer_finish_listeners = []
+
+    def add_timer_finished_listener(self, listener):
+        self.timer_finish_listeners.append(listener)
+
     def set_show_as_chart(self, value):
         self.show_as_chart._value = value
         if value:
@@ -1051,6 +1041,8 @@ class TimerThread(Thread):
 
         if not stopped_before_finish:
             eventmanager.fire_timer_finished_event(self.timer_annotation, self.scene.name)
+            for listener in self.timer_annotation.timer_finish_listeners:
+                listener.on_timer_finished()
 
     def stop(self):
         self.stop_event.set()

@@ -1,7 +1,10 @@
+import numpy
+from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle
+from threading import Thread
+
 """
 Defining the exercises: FollowThePath
 """
-from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation
 
 
 class HandSkillExercise:
@@ -38,6 +41,7 @@ class FollowThePathExercise(HandSkillExercise):
         self.time = Time()
         self.running = False
         self.register_points = []
+        self.selection_stick = None
 
     def get_error(self):
         return self.error
@@ -61,56 +65,57 @@ class FollowThePathExercise(HandSkillExercise):
 
     def start(self):
         if not self.running:
+            print("Start Exercise")
+            self.register_points = []
             self.running = True
+
             timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
             timer_annotation[0].start()
-            print("Start Exercise")
+            timer_annotation[0].add_timer_finished_listener(self)
 
-    # TODO: stop exercise if time is up and compute feedback
+            collect_points_thread = Thread(target=self.start_collect_points())
+            collect_points_thread.start()
+
+    def start_collect_points(self):
+        while True:
+            if not self.running:
+                break
+            stick_point = self.selection_stick.get_center_point(in_image_coordinates=False)
+            actual = self.scene.get_all_annotations_by_type(CurveAnnotation)
+            if stick_point is not None:
+                for point in actual[0].line_points_distributed:
+                    if in_circle(stick_point, point, CurveAnnotation.RADIUS):
+                        self.register_points.append(point)
+
+    def on_timer_finished(self):
+        if self.running:
+            self.stop()
 
     def stop(self):
         if self.running:
+            print("Stop Exercise")
             self.running = False
             timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
             timer_annotation[0].stop()
-            print("Stop Exercise")
+            timer_annotation[0].reset()
 
-        # TODO: give feedback
-        print(self.register_points)
-        actual = self.scene.get_all_annotations_by_type(CurveAnnotation)
-        print(actual[0].line_points_distributed)
+            print("Captured")
+            no_duplicates = numpy.unique(self.register_points, axis=0)
+            number_captured = len(no_duplicates)
+            print(number_captured)
 
-        captured_positions = correct_positions(actual[0].line_points_distributed, self.register_points)
-        print(captured_positions)
-        number_captured = len(captured_positions)
-        print(number_captured)
+            print("Target")
+            target_number_points = self.feedback.get_target_value()
+            print(target_number_points)
 
-        target_number_points = self.feedback.get_target_value()
-
-        if number_captured >= (self.feedback.get_good() * target_number_points)/100:
-            print("FEEDBACK GOOD!!!!!!!!")
-        elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
-            print("FEEDBACK AVERAGE!!!!!!!!")
-        elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
-            print("FEEDBACK BAD!!!!!!!!")
-        else:
-            print("FEEDBACK NOT EXISTING")
-
-        self.register_points = []
-
-    def some_where(self):
-        # eventmanger.fire_my_fancy_exercise_event(event info)
-        pass
-
-
-""" 
-Defining a method that returns all points which where captured 
-by the user with the tool and are in the defined line positions
-"""
-
-
-def correct_positions(actual_positions, registered_positions):
-    return [x for x in actual_positions if x in registered_positions]
+            if number_captured >= (self.feedback.get_good() * target_number_points)/100:
+                print("FEEDBACK GOOD!!!!!!!!")
+            elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
+                print("FEEDBACK AVERAGE!!!!!!!!")
+            elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
+                print("FEEDBACK BAD!!!!!!!!")
+            else:
+                print("FEEDBACK NOT EXISTING")
 
 
 """
@@ -120,7 +125,7 @@ Defining the feedback for the exercise
 
 class Feedback:
     def __init__(self):
-        self.target_value  = None
+        self.target_value = None
         self.good = None
         self.average = None
         self.bad = None
