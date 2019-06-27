@@ -82,7 +82,12 @@ class SelectTargetDialog(QDialog):
         return lw_item
 
     def get_targets(self):
-        return self.__targets
+        targets = []
+        for obj in self.__targets:
+            targets.append(obj)
+
+        self.__targets.clear()
+        return targets
 
     def targets_list_selection_changed(self):
         self.__targets.clear()

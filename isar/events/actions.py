@@ -21,12 +21,17 @@ class Action:
         self.name = "action"
         self.scene_id = None
 
-        self._target = None
+        self.__target = None
         self.annotations_model = None
         self.scenes_model = None
         self._action_service = None
 
-    def set_target(self, target):
+    @property
+    def target(self):
+        return self.__target
+
+    @target.setter
+    def target(self, target):
         # For debugging only: Added to catch this weired behavior that action target is the action itself!
         if isinstance(target, Action):
             raise RuntimeError()
@@ -35,7 +40,7 @@ class Action:
             logger.error("Action target is invalid: {}. Return.".format(target))
             return
 
-        self._target = target
+        self.__target = target
 
     def run(self):
         # must be implemented by subclasses
@@ -97,15 +102,15 @@ class ToggleAnnotationVisibilityAction(Action):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.warning("self.target is None. Return")
             return
 
-        if type(self._target) != list:
+        if type(self.target) != list:
             logger.warning("self.target is not a list. Return")
             return
 
-        for annotation in self._target:
+        for annotation in self.target:
             is_visible = annotation.show.get_value()
             annotation.show.set_value(not is_visible)
 
@@ -115,15 +120,15 @@ class ShowAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.warning("self.target is None. Return")
             return
 
-        if type(self._target) != list:
+        if type(self.target) != list:
             logger.warning("self.target is not a list. Return")
             return
 
-        for annotation in self._target:
+        for annotation in self.target:
             annotation.show.set_value(True)
 
 
@@ -132,15 +137,15 @@ class HideAnnotationAction(ToggleAnnotationVisibilityAction):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.warning("self.target is None. Return")
             return
 
-        if type(self._target) != list:
+        if type(self.target) != list:
             logger.warning("self.target is not a list. Return")
             return
 
-        for annotation in self._target:
+        for annotation in self.target:
             annotation.show.set_value(False)
 
 
@@ -155,12 +160,12 @@ class ShowSceneAction(Action):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.error("self.target is None. Return.")
             return
 
-        if type(self._target) == Scene:
-            self.scenes_model.show_scene(self._target.name)
+        if type(self.target) == Scene:
+            self.scenes_model.show_scene(self.target.name)
         else:
             logger.error("self.target is not a Scene.")
 
@@ -224,12 +229,12 @@ class StartTimerAction(Action):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.error("self.target is None. Return.")
             return
 
-        if type(self._target) == StartTimerAction.target_types[0]:
-            self._target.start()
+        if type(self.target) == StartTimerAction.target_types[0]:
+            self.target.start()
         else:
             logger.error("self.target is not TimerAnnotation.")
 
@@ -246,12 +251,12 @@ class StopTimerAction(Action):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.error("self.target is None. Return.")
             return
 
-        if type(self._target) == StopTimerAction.target_types[0]:
-            self._target.stop()
+        if type(self.target) == StopTimerAction.target_types[0]:
+            self.target.stop()
         else:
             logger.error("self.target is not TimerAnnotation.")
 
@@ -269,12 +274,12 @@ class ResetTimerAction(Action):
         self.timer_name = None
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.error("self.target is None. Return.")
             return
 
-        if type(self._target) == ResetTimerAction.target_types[0]:
-            self._target.reset()
+        if type(self.target) == ResetTimerAction.target_types[0]:
+            self.target.reset()
         else:
             logger.error("self.target is not TimerAnnotation.")
 
@@ -292,12 +297,12 @@ class StartAudioAction(Action):
         self.annotation_name = None
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.error("self.target is None. Return.")
             return
 
-        if type(self._target) == StartAudioAction.target_types[0]:
-            annotation = self._target
+        if type(self.target) == StartAudioAction.target_types[0]:
+            annotation = self.target
             audio_file_path = annotation.audio_path.get_value()
             loop = annotation.loop_playback.get_value()
             audioutil.play(audio_file_path, loop)
@@ -318,12 +323,12 @@ class StopAudioAction(Action):
         self.annotation_name = None
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.error("self.target is None. Return.")
             return
 
-        if type(self._target) == StopAudioAction.target_types[0]:
-            annotation = self._target
+        if type(self.target) == StopAudioAction.target_types[0]:
+            annotation = self.target
             audio_file_path = annotation.audio_path.get_value()
             audioutil.stop(audio_file_path)
         else:
@@ -371,15 +376,15 @@ class StartAnimationAction(Action):
         self.animation_names = None
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.warning("self.target is None. Return")
             return
 
-        if type(self._target) != list:
+        if type(self.target) != list:
             logger.warning("self.target is not a list. Return")
             return
 
-        for animation in self._target:
+        for animation in self.target:
             animation.start()
 
 
@@ -392,15 +397,15 @@ class StopAnimationAction(Action):
         self.animation_names = None
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.warning("self.target is None. Return")
             return
 
-        if type(self._target) != list:
+        if type(self.target) != list:
             logger.warning("self.target is not a list. Return")
             return
 
-        for animation in self._target:
+        for animation in self.target:
             animation.stop()
 
 
@@ -414,15 +419,15 @@ class HighlightPhysicalObjectsAction(Action):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.warning("self.target is None. Return")
             return
 
-        if type(self._target) != list:
+        if type(self.target) != list:
             logger.warning("self.target is not a list. Return")
             return
 
-        for phys_obj in self._target:
+        for phys_obj in self.target:
             phys_obj.highlight = True
             phys_obj.highlight_color = self.color
 
@@ -472,15 +477,15 @@ class UnHighlightPhysicalObjectsAction(Action):
         super().__init__()
 
     def run(self):
-        if self._target is None:
+        if self.target is None:
             logger.warning("self.target is None. Return")
             return
 
-        if type(self._target) != list:
+        if type(self.target) != list:
             logger.warning("self.target is not a list. Return")
             return
 
-        for phys_obj in self._target:
+        for phys_obj in self.target:
             phys_obj.highlight = False
             phys_obj.highlight_color = None
 

@@ -1071,6 +1071,9 @@ class CheckboxAnnotation(Annotation):
 
     def intersects_with_point(self, point):
         position = self.position.get_value()
+        if position is None or point is None:
+            return False
+
         width = self.size.get_value()
         height = self.size.get_value()
         return position[0] <= point[0] <= position[0] + width and \

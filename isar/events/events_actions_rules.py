@@ -116,7 +116,7 @@ class EventsActionsRulesDialog(QDialog):
 
         if self.action is None:
             self.action = self.action_type()
-            self.action.set_target(self.action_target)
+            self.action.target = self.action_target
             self.action.name = self.action_name
             self.action.scene_id = self.actions_scene.name
             if self.action_type.has_properties:
@@ -128,6 +128,7 @@ class EventsActionsRulesDialog(QDialog):
             self.action = None
             self.action_name = None
             self.action_name_text.setText("")
+            self.action_target = None
             self.action_target_label.show()
             self.action_target_label.setText("... select action target(s) ...")
             self.action_type = None
@@ -276,6 +277,7 @@ class EventsActionsRulesDialog(QDialog):
             self.actions_scene = scene
 
             self.action = None
+            self.action_target = None
             self.action_type = None
             self.action_type_combo_current_index_changed(0)
             self.action_name = None
@@ -338,6 +340,7 @@ class EventsActionsRulesDialog(QDialog):
 
     def action_type_combo_current_index_changed(self, index):
         self.action = None
+        self.action_target = None
         self.action_name = None
         self.action_name_text.setText("")
         self.action_target_label.show()
@@ -536,12 +539,12 @@ class ItemsModel(QAbstractListModel):
         #  action itself!
         if item.has_target:
             if item.has_single_target:
-                if isinstance(item._target, Action):
-                    raise RuntimeError("Action target is Action!: {}".format(str(item._target)))
+                if isinstance(item.target, Action):
+                    raise RuntimeError("Action target is Action!: {}".format(str(item.target)))
             else:
-                for target in item._target:
-                    if isinstance(item._target, Action):
-                        raise RuntimeError("Action target is Action!: {}".format(str(item._target)))
+                for obj in item.target:
+                    if isinstance(obj, Action):
+                        raise RuntimeError("Action target is Action!: {}".format(str(item.target)))
 
     def remove_item(self, index):
         self.beginRemoveRows(QModelIndex(), index.row(), index.row())
