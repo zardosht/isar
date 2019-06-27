@@ -315,6 +315,9 @@ Video
 Audio
 Timer
 ActionButton
+Curve
+Animation
+ObjectTrackingArea
 """
 
 
