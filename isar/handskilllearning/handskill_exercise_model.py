@@ -1,5 +1,5 @@
 import numpy
-from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle
+from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle, FeedbackAnnotation
 from threading import Thread
 
 """
@@ -104,17 +104,22 @@ class FollowThePathExercise(HandSkillExercise):
             number_captured = len(no_duplicates)
             print(number_captured)
 
+            feedback_annotation = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
             print("Target")
             target_number_points = self.feedback.get_target_value()
             print(target_number_points)
 
             if number_captured >= (self.feedback.get_good() * target_number_points)/100:
+                feedback_annotation[0].set_show_good(True)
                 print("FEEDBACK GOOD!!!!!!!!")
             elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
+                feedback_annotation[0].set_show_average(True)
                 print("FEEDBACK AVERAGE!!!!!!!!")
             elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
+                feedback_annotation[0].set_show_bad(True)
                 print("FEEDBACK BAD!!!!!!!!")
             else:
+                feedback_annotation[0].set_show_inactive(True)
                 print("FEEDBACK NOT EXISTING")
 
 

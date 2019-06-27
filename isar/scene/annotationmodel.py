@@ -1093,6 +1093,78 @@ class RelationshipAnnotation(Annotation):
         self.to_object: PhysicalObject = None
 
 
+class FeedbackAnnotation(Annotation):
+
+    def __init__(self):
+        super().__init__()
+
+        self.show_inactive = BooleanAnnotationProperty("Show Inactive", True, self, self.set_show_inactive.__name__)
+        self.properties.append(self.show_inactive)
+
+        self.show_good = BooleanAnnotationProperty("Show Good", False, self, self.set_show_good.__name__)
+        self.properties.append(self.show_good)
+
+        self.show_average = BooleanAnnotationProperty("Show Average", False, self, self.set_show_average.__name__)
+        self.properties.append(self.show_average)
+
+        self.show_bad = BooleanAnnotationProperty("Show Bad", False, self, self.set_show_bad.__name__)
+        self.properties.append(self.show_bad)
+
+        self.radius = IntAnnotationProperty("Radius", 50, self)
+        self.properties.append(self.radius)
+
+    def set_show_inactive(self, value):
+        self.show_inactive._value = value
+        if value:
+            self.show_good._value = False
+            self.show_average._value = False
+            self.show_bad._value = False
+        else:
+            self.show_good._value = True
+            self.show_average._value = False
+            self.show_bad._value = False
+        return True
+
+    def set_show_good(self, value):
+        self.show_good._value = value
+        if value:
+            self.show_average._value = False
+            self.show_bad._value = False
+            self.show_inactive._value = False
+        else:
+            self.show_average._value = False
+            self.show_bad._value = False
+            self.show_inactive._value = True
+        return True
+
+    def set_show_average(self, value):
+        self.show_average._value = value
+        if value:
+            self.show_good._value = False
+            self.show_bad._value = False
+            self.show_inactive._value = False
+        else:
+            self.show_good._value = False
+            self.show_bad._value = False
+            self.show_inactive._value = True
+        return True
+
+    def set_show_bad(self, value):
+        self.show_bad._value = value
+        if value:
+            self.show_good._value = False
+            self.show_average._value = False
+            self.show_inactive._value = False
+        else:
+            self.show_good._value = False
+            self.show_average._value = False
+            self.show_inactive._value = True
+        return True
+
+    def reset_runtime_state(self):
+        self.set_show_inactive(True)
+
+
 annotation_counters = {
     LineAnnotation.__name__: 0,
     RectangleAnnotation.__name__: 0,
@@ -1107,7 +1179,8 @@ annotation_counters = {
     CheckboxAnnotation.__name__: 0,
     ActionButtonAnnotation.__name__: 0,
     CurveAnnotation.__name__: 0,
-    AnimationAnnotation.__name__: 0
+    AnimationAnnotation.__name__: 0,
+    FeedbackAnnotation.__name__: 0
 
 }
 
