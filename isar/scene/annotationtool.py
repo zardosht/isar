@@ -10,7 +10,8 @@ from isar.events import eventmanager
 from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
-    CheckboxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation, FeedbackAnnotation
+    CheckboxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation, FeedbackAnnotation, \
+    ObjectAreaAnnotation
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -163,13 +164,17 @@ class RectangleAnnotationTool(AnnotationTool):
         position = [self.v1[0] + int(width / 2), self.v1[1] + int(height / 2)]
 
         if self.is_annotation_valid(width, height):
-            annotation = RectangleAnnotation()
+            annotation = self.create_annotation()
             annotation.set_position(position)
             annotation.width.set_value(abs(width))
             annotation.height.set_value(abs(height))
             self.annotations_model.add_annotation(annotation)
 
         self.set_drawing(False)
+
+    @staticmethod
+    def create_annotation():
+        return RectangleAnnotation()
 
     @staticmethod
     def is_annotation_valid(width, height):
@@ -206,6 +211,15 @@ class RectangleAnnotationTool(AnnotationTool):
                       tuple(self.v2),
                       color,
                       thickness)
+
+
+class ObjectAreaAnnotationTool(RectangleAnnotationTool):
+    def __init__(self):
+        super().__init__()
+
+    @staticmethod
+    def create_annotation():
+        return ObjectAreaAnnotation()
 
 
 class LineAnnotationTool(AnnotationTool):
@@ -1333,7 +1347,8 @@ annotation_tools = {
     ActionButtonAnnotation.__name__: ActionButtonAnnotationTool(),
     CurveAnnotation.__name__: CurveAnnotationTool(),
     AnimationAnnotation.__name__: AnimationAnnotationTool(),
-    FeedbackAnnotation.__name__: FeedbackAnnotationTool()
+    FeedbackAnnotation.__name__: FeedbackAnnotationTool(),
+    ObjectAreaAnnotation.__name__: ObjectAreaAnnotationTool()
 }
 
 annotation_tool_btns = {
@@ -1352,7 +1367,8 @@ annotation_tool_btns = {
     "action_button_btn": ActionButtonAnnotationTool(),
     "curve_btn": CurveAnnotationTool(),
     "animation_btn": AnimationAnnotationTool(),
-    "feedback_btn": FeedbackAnnotationTool()
+    "feedback_btn": FeedbackAnnotationTool(),
+    "object_area_btn": ObjectAreaAnnotationTool()
 }
 
 
