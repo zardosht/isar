@@ -972,6 +972,17 @@
                 </widget>
                </item>
                <item>
+                <widget class="QToolButton" name="object_area_btn">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>images/object_area.png</normaloff>images/object_area.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <spacer name="horizontalSpacer_2">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -1003,7 +1014,7 @@
      <x>0</x>
      <y>0</y>
      <width>1543</width>
-     <height>17</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
