@@ -955,6 +955,23 @@
                 </widget>
                </item>
                <item>
+                <widget class="QToolButton" name="feedback_btn">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>images/feedback.png</normaloff>images/feedback.png</iconset>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">annotation_buttons</string>
+                 </attribute>
+                </widget>
+               </item>
+               <item>
                 <spacer name="horizontalSpacer_2">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>

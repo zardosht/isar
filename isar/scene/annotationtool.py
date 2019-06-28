@@ -1047,21 +1047,56 @@ class FeedbackAnnotationTool(AnnotationTool):
         show_average = self.annotation.show_average.get_value()
         show_bad = self.annotation.show_bad.get_value()
 
+        # TODO: generate this according to the circle radius
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.75
+        text_thickness = 1
+        text_color = 0, 0, 0
+        line_type = cv2.LINE_AA
+
         if show_inactive:
             silver = 192, 192, 192
+            text = "Invalid"
+            text_size, _ = cv2.getTextSize(text, font, font_scale, text_thickness)
+            text_position_x = int(position[0] - (text_size[0] / 2))
+            text_position_y = int(position[1] + (text_size[1] / 2))
+            text_position = (text_position_x, text_position_y)
+
             cv2.circle(self._img, position, radius, silver, -1)
+            cv2.putText(self._img, text, text_position, font, font_scale, text_color, text_thickness, line_type)
 
         elif show_good:
             green = 0, 255, 0
+            text = "Good"
+            text_size, _ = cv2.getTextSize(text, font, font_scale, text_thickness)
+            text_position_x = int(position[0] - (text_size[0] / 2))
+            text_position_y = int(position[1] + (text_size[1] / 2))
+            text_position = (text_position_x, text_position_y)
+
             cv2.circle(self._img, position, radius, green, -1)
+            cv2.putText(self._img, text, text_position, font, font_scale, text_color, text_thickness, line_type)
 
         elif show_average:
             yellow = 0, 255, 255
+            text = "Average"
+            text_size, _ = cv2.getTextSize(text, font, font_scale, text_thickness)
+            text_position_x = int(position[0] - (text_size[0] / 2))
+            text_position_y = int(position[1] + (text_size[1] / 2))
+            text_position = (text_position_x, text_position_y)
+
             cv2.circle(self._img, position, radius, yellow, -1)
+            cv2.putText(self._img, text, text_position, font, font_scale, text_color, text_thickness, line_type)
 
         elif show_bad:
-            red = 255, 0, 0
+            red = 0, 0, 255
+            text = "Bad"
+            text_size, _ = cv2.getTextSize(text, font, font_scale, text_thickness)
+            text_position_x = int(position[0] - (text_size[0] / 2))
+            text_position_y = int(position[1] + (text_size[1] / 2))
+            text_position = (text_position_x, text_position_y)
+
             cv2.circle(self._img, position, radius, red, -1)
+            cv2.putText(self._img, text, text_position, font, font_scale, text_color, text_thickness, line_type)
 
 
 class CurveAnnotationTool(AnnotationTool):
@@ -1316,7 +1351,8 @@ annotation_tool_btns = {
     "image_btn": ImageAnnotationTool(),
     "action_button_btn": ActionButtonAnnotationTool(),
     "curve_btn": CurveAnnotationTool(),
-    "animation_btn": AnimationAnnotationTool()
+    "animation_btn": AnimationAnnotationTool(),
+    "feedback_btn": FeedbackAnnotationTool()
 }
 
 

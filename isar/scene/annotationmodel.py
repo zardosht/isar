@@ -620,12 +620,14 @@ class CurveAnnotation(Annotation):
     def __init__(self):
         super(CurveAnnotation, self).__init__()
 
+        # TODO: implement position that should move the line
         self.start = IntTupleAnnotationProperty("Start", None, self)
         self.properties.append(self.start)
 
         self.end = IntTupleAnnotationProperty("End", None, self)
         self.properties.append(self.end)
 
+        # TODO: make points no bigger than line position size
         self.points = IntAnnotationProperty("Points", None, self)
         self.properties.append(self.points)
 
@@ -635,6 +637,7 @@ class CurveAnnotation(Annotation):
         self.thickness = IntAnnotationProperty("Thickness", 2, self)
         self.properties.append(self.thickness)
 
+        # TODO: show just points not the line
         self.show_points = BooleanAnnotationProperty("Show points", False, self)
         self.properties.append(self.show_points)
 
