@@ -133,7 +133,7 @@ def fire_physical_object_disappeared_event(phys_obj, scene_id):
 
 
 def fire_physical_object_picked_event(phys_obj, scene_id):
-    logger.info("Physical object picked: {}", phys_obj)
+    logger.info("Physical object picked: {}".format(str(phys_obj)))
 
     object_picked_event = PhysicalObjectPickedEvent()
     object_picked_event.target = phys_obj

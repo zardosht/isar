@@ -77,6 +77,8 @@ class ObjectTrackingService(Service):
                 if phys_obj.name in self.object_appeared_dict:
                     del self.object_appeared_dict[phys_obj.name]
                 eventmanager.fire_physical_object_disappeared_event(phys_obj, self.current_scene.name)
+                if phys_obj == self.hand_on_top_phys_obj:
+                    eventmanager.fire_physical_object_picked_event(phys_obj, self.current_scene.name)
 
     def tracking_captured(self, phys_obj):
         logger.info("Tracking captured: {}".format(phys_obj.name))
