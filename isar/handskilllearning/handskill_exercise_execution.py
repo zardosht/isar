@@ -86,6 +86,7 @@ class HandSkillExerciseExecution(QMainWindow):
         self.projector_view.init_scene_size()
         self.button_load_project.setEnabled(True)
 
+    # TODO: differentiate between the two exercises
     def load_project(self):
         logger.info("Load project")
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]

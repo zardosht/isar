@@ -3,7 +3,7 @@ from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circ
 from threading import Thread
 
 """
-Defining the exercises: FollowThePath
+Defining the exercises: FollowThePath, CatchTheObjects
 """
 
 
@@ -73,6 +73,9 @@ class FollowThePathExercise(HandSkillExercise):
             timer_annotation[0].start()
             timer_annotation[0].add_timer_finished_listener(self)
 
+            feedback_annotation = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
+            feedback_annotation[0].set_show_inactive(True)
+
             collect_points_thread = Thread(target=self.start_collect_points())
             collect_points_thread.start()
 
@@ -121,6 +124,42 @@ class FollowThePathExercise(HandSkillExercise):
             else:
                 feedback_annotation[0].set_show_inactive(True)
                 print("FEEDBACK NOT EXISTING")
+
+
+class CatchTheObjects(HandSkillExercise):
+    def __init__(self):
+        super().__init__()
+        self.number = Number()
+        self.time = Time()
+        self.running = False
+        self.register_objects = []
+        self.selection_stick = None
+
+    def get_number(self):
+        return self.number
+
+    def set_number(self, value):
+        self.number = value
+
+    def get_time(self):
+        return self.time
+
+    def set_time(self, value):
+        self.time = value
+
+    def set_scene(self, value):
+        self.scene = value
+        curve = self.scene.get_all_annotations_by_type(CurveAnnotation)
+        curve[0].exercise = self
+
+    def set_feedback(self, value):
+        self.feedback = value
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
 
 
 """
@@ -209,6 +248,21 @@ class Error(EvaluationAspect):
 
 
 class Time(EvaluationAspect):
+
+    def __init__(self):
+        super().__init__()
+
+    def set_beginner(self, value):
+        self.beginner = value
+
+    def set_intermediate(self, value):
+        self.intermediate = value
+
+    def set_competent(self, value):
+        self.competent = value
+
+
+class Number(EvaluationAspect):
 
     def __init__(self):
         super().__init__()

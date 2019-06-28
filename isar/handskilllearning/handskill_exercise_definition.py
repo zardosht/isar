@@ -45,6 +45,7 @@ class HandSkillExerciseDefinition(QWizard):
         model = QStandardItemModel()
         for scene in self.scenes_model.get_all_scenes():
             count = 0
+            # TODO: use the get_all_bu_type method
             for annotation in scene.get_all_annotations():
                 if isinstance(annotation, CurveAnnotation):
                     count = count + 1

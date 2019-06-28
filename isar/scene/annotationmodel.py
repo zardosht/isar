@@ -614,13 +614,14 @@ class ActionButtonAnnotation(RectangleAnnotation):
 
 
 class CurveAnnotation(Annotation):
-    MINIMUM_NUMBER_POSITIONS = 5
-    RADIUS = 6
+    MINIMUM_NUMBER_POSITIONS = 7
+    RADIUS = 10
 
     def __init__(self):
         super(CurveAnnotation, self).__init__()
 
         # TODO: implement position that should move the line
+        # TODO: add thickness for start and end
         self.start = IntTupleAnnotationProperty("Start", None, self)
         self.properties.append(self.start)
 
