@@ -78,7 +78,7 @@ def main():
 
     elif use_case == "4":
         isar.application_mode = ApplicationMode.EXECUTION
-        hand_skill_exercise_execution_window = HandSkillExerciseExecution(screen_id=1)
+        hand_skill_exercise_execution_window = HandSkillExerciseExecution(screen_id=2)
         if hand_skill_exercise_execution_window.projector_initialized:
             hand_skill_exercise_execution_window.move(100, 100)
             hand_skill_exercise_execution_window.show()
