@@ -650,14 +650,14 @@ class CurveAnnotation(Annotation):
     def intersects_with_point(self, point):
         if self.exercise is not None:
             if in_circle(point, self.start.get_value(), CurveAnnotation.RADIUS) and not self.exercise.running:
-                self.exercise.start()
                 self.exercise.register_points.append(point)
+                self.exercise.start()
 
             # TODO fix bug: program does not run into this if statement
             if in_circle(point, self.end.get_value(), CurveAnnotation.RADIUS) and self.exercise.running:
                 print("Stop exercise STICK")
-                self.exercise.stop()
                 self.exercise.register_points.append(point)
+                self.exercise.stop()
 
 
 """

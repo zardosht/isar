@@ -12,6 +12,7 @@ class HandSkillExercise:
         self.name = None
         self.scene = None
         self.feedback = Feedback()
+        self.selection_stick = None
 
     def get_scene(self):
         return self.scene
@@ -41,7 +42,6 @@ class FollowThePathExercise(HandSkillExercise):
         self.time = Time()
         self.running = False
         self.register_points = []
-        self.selection_stick = None
 
     def get_error(self):
         return self.error

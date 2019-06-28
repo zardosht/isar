@@ -7,7 +7,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 from isar.camera.camera import CameraService
-from isar.handskilllearning.handskill_exercise_model import HandSkillExercise
+from isar.handskilllearning.handskill_exercise_model import HandSkillExercise, FollowThePathExercise
 from isar.projection.projector import ProjectorView
 from isar.scene import scenemodel
 from isar.scene.annotationmodel import AnnotationsModel, TimerAnnotation
@@ -27,7 +27,7 @@ class HandSkillExerciseExecution(QMainWindow):
         self.setup_signals()
         self.setup_constraints()
         self.setWindowTitle("Handskill Exercise Execution")
-        self.exercise = HandSkillExercise()
+        self.exercise = FollowThePathExercise()
         self._projector_view_timer = None
 
         self._camera_service: CameraService = None
