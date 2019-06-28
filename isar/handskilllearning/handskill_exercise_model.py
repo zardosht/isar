@@ -1,3 +1,5 @@
+import logging
+
 import numpy
 from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle, FeedbackAnnotation
 from threading import Thread
@@ -5,6 +7,9 @@ from threading import Thread
 """
 Defining the exercises: FollowThePath, CatchTheObjects
 """
+
+
+logger = logging.getLogger("isar.handskilllearning.handskill_exercise_model")
 
 
 class HandSkillExercise:
@@ -69,14 +74,14 @@ class FollowThePathExercise(HandSkillExercise):
             self.register_points = []
             self.running = True
 
-            timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
-            timer_annotation[0].start()
-            timer_annotation[0].add_timer_finished_listener(self)
+            timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotations[0].start()
+            timer_annotations[0].add_timer_finished_listener(self)
 
-            feedback_annotation = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
-            feedback_annotation[0].set_show_inactive(True)
+            feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
+            feedback_annotations[0].set_show_inactive(True)
 
-            collect_points_thread = Thread(target=self.start_collect_points())
+            collect_points_thread = Thread(target=self.start_collect_points)
             collect_points_thread.start()
 
     def start_collect_points(self):
