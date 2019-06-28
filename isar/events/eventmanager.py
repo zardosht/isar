@@ -4,7 +4,7 @@ from threading import Thread
 
 from isar.events.events import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
     TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent, SelectionEvent, HandOnTopEvent, SceneShownEvent, \
-    PhysicalObjectAppearedEvent, PhysicalObjectDisappearedEvent, SceneLeftEvent
+    PhysicalObjectAppearedEvent, PhysicalObjectDisappearedEvent, SceneLeftEvent, PhysicalObjectPickedEvent
 
 logger = logging.getLogger("isar.eventmanager")
 
@@ -118,18 +118,27 @@ def fire_scene_left_event(scene, scene_id):
     fire_event(scene_shown_event)
 
 
-def fire_object_appeared_event(phys_obj, scene_id):
+def fire_physical_object_appeared_event(phys_obj, scene_id):
     object_appeared_event = PhysicalObjectAppearedEvent()
     object_appeared_event.target = phys_obj
     object_appeared_event.scene_id = scene_id
     fire_event(object_appeared_event)
 
 
-def fire_object_disappeared_event(phys_obj, scene_id):
+def fire_physical_object_disappeared_event(phys_obj, scene_id):
     object_disappeared_event = PhysicalObjectDisappearedEvent()
     object_disappeared_event.target = phys_obj
     object_disappeared_event.scene_id = scene_id
     fire_event(object_disappeared_event)
+
+
+def fire_physical_object_picked_event(phys_obj, scene_id):
+    logger.info("Physical object picked: {}", phys_obj)
+
+    object_picked_event = PhysicalObjectPickedEvent()
+    object_picked_event.target = phys_obj
+    object_picked_event.scene_id = scene_id
+    fire_event(object_picked_event)
 
 
 def fire_physical_object_group_appeared_event(obj_group_appeared_event):

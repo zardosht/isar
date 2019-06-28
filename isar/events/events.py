@@ -189,8 +189,6 @@ class PhysicalObjectDisappearedEvent(Event):
 
 class PhysicalObjectPickedEvent(Event):
     target_types = [PhysicalObject]
-
-    # TODO: implement
     pass
 
 
