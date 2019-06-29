@@ -4,7 +4,8 @@ from threading import Thread
 
 from isar.events.events import TimerTickEvent, TimerTimeout1Event, TimerTimeout2Event, TimerTimeout3Event, \
     TimerFinishedEvent, CheckboxCheckedEvent, CheckboxUncheckedEvent, SelectionEvent, HandOnTopEvent, SceneShownEvent, \
-    PhysicalObjectAppearedEvent, PhysicalObjectDisappearedEvent, SceneLeftEvent, PhysicalObjectPickedEvent
+    PhysicalObjectAppearedEvent, PhysicalObjectDisappearedEvent, SceneLeftEvent, PhysicalObjectPickedEvent, \
+    PhysicalObjectPlacedInAreaEvent
 
 logger = logging.getLogger("isar.eventmanager")
 
@@ -133,12 +134,23 @@ def fire_physical_object_disappeared_event(phys_obj, scene_id):
 
 
 def fire_physical_object_picked_event(phys_obj, scene_id):
-    logger.info("Physical object picked: {}".format(str(phys_obj)))
-
     object_picked_event = PhysicalObjectPickedEvent()
     object_picked_event.target = phys_obj
     object_picked_event.scene_id = scene_id
     fire_event(object_picked_event)
+
+
+def fire_object_placed_in_area_event(obj_placed_in_area_event):
+    logger.info("Object placed in area: {}-{}".format(
+        str(obj_placed_in_area_event.target), str(obj_placed_in_area_event.physical_object)))
+    fire_event(obj_placed_in_area_event)
+
+
+def fire_object_removed_from_area_event(obj_removed_from_area_event):
+    logger.info("Object placed in area: {}-{}".format(
+        str(obj_removed_from_area_event.target), str(obj_removed_from_area_event.physical_object)))
+
+    fire_event(obj_removed_from_area_event)
 
 
 def fire_physical_object_group_appeared_event(obj_group_appeared_event):

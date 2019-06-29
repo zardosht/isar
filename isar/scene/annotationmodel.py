@@ -445,6 +445,7 @@ class RectangleAnnotation(Annotation):
 class ObjectAreaAnnotation(RectangleAnnotation):
     def __init__(self):
         super().__init__()
+        self.is_selectable = False
 
 
 class CircleAnnotation(Annotation):

@@ -374,6 +374,17 @@ class SceneDefinitionWindow(QMainWindow):
         if self.track_objects_checkbox.isChecked():
             scene_phys_objs_names = phys_obj_model.get_scene_physical_objects_names()
             if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
+
+                # TODO: what if I gave the camera service over to the request
+                #  (or even didn't give anything an the object detector took the
+                #   image itself from the camera service -- this is not good, give the service over
+                #   because what if the object detector didn't know how to get the camera frame?)....
+                #   Anyways, what if you gave the camera service over instead of the frame, and then the
+                #   object detector took the frame from the service?
+                #  I think it would be faster.
+                #  The object detector takes the frame, independent from the main app loop, and updated the
+                #  positions of physical objects. It possibly makes the view faster.
+
                 self._object_detection_service.get_present_objects(camera_frame,
                                                                    scene_phys_objs_names,
                                                                    callback=self.on_obj_detection_complete)

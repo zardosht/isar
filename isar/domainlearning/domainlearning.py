@@ -183,6 +183,9 @@ class DomainLearningWindow(QMainWindow):
             self.projector_view.update_projector_view(camera_frame)
 
         if self.track_objects_checkbox.isChecked():
+
+            # TODO: check the comment on definition window.
+
             scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
             if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
                 self._object_detection_service.get_present_objects(camera_frame,

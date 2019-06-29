@@ -86,6 +86,12 @@ class PhysicalObject:
 
         return RefFrame(tl[0], tl[1], width, height)
 
+    def get_center(self):
+        ref_frame = self.ref_frame
+        x = int(ref_frame.x + ref_frame.width / 2)
+        y = int(ref_frame.y + ref_frame.height / 2)
+        return x, y
+
     def get_annotations(self):
         return tuple(self.__annotations)
 

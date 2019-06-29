@@ -499,6 +499,11 @@ class CompositeAction(Action):
     @classmethod
     def update_action_properties_frame(cls, scene, select_target_dialog, qt_frame):
         layout = qt_frame.layout()
+        for i in reversed(range(layout.count())):
+            widget_to_remove = layout.itemAt(i).widget()
+            layout.removeWidget(widget_to_remove)
+            widget_to_remove.setParent(None)
+
         select_actions_btn = QPushButton()
         select_actions_btn.setText("Select Actions ...")
         layout.addWidget(select_actions_btn)

@@ -226,6 +226,9 @@ class EventsActionsRulesDialog(QDialog):
 
             self.event.name = self.event_name
             self.event.scene_id = self.events_scene.name
+            if self.event_type.has_properties:
+                self.event_type.set_properties(self.event)
+
             self.events_model.add_item(self.event)
 
             # reset form
@@ -325,7 +328,10 @@ class EventsActionsRulesDialog(QDialog):
     def update_event_properties_frame(self, event_type):
         if event_type.has_properties:
             self.event_properties_frame.show()
-            event_type.update_event_properties_frame(self.event_properties_frame)
+            event_type.update_event_properties_frame(self.events_scene,
+                                                     self.select_target_dialog,
+                                                     self.event_properties_frame)
+            event_type.reset_properties()
         else:
             self.event_properties_frame.hide()
 
