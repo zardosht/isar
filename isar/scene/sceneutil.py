@@ -302,6 +302,9 @@ def camera_coord_to_scene_coord_c(cam_coord):
     if scene_rect_c is None:
         return cam_coord
 
+    if cam_coord is None:
+        return cam_coord
+
     return cam_coord[0] - scene_rect_c[0], cam_coord[1] - scene_rect_c[1]
 
 

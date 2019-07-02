@@ -365,10 +365,8 @@ class SceneDefinitionWindow(QMainWindow):
         if not self.scene_size_initialized:
             logger.warning("Scene size is not initialized.")
 
-        self._selection_stick_service.camera_img = camera_frame.raw_image
-        self._hand_tracking_service.camera_img = camera_frame.raw_image
-
-        self.camera_view.set_camera_frame(camera_frame)
+        # self._selection_stick_service.camera_img = camera_frame.raw_image
+        # self._hand_tracking_service.camera_img = camera_frame.raw_image
 
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
         if self.track_objects_checkbox.isChecked():
@@ -385,11 +383,17 @@ class SceneDefinitionWindow(QMainWindow):
                 #  The object detector takes the frame, independent from the main app loop, and updated the
                 #  positions of physical objects. It possibly makes the view faster.
 
-                self._object_detection_service.get_present_objects(camera_frame,
-                                                                   scene_phys_objs_names,
+                # self._object_detection_service.get_present_objects(camera_frame,
+                #                                                    scene_phys_objs_names,
+                #                                                    callback=self.on_obj_detection_complete)
+
+                self._object_detection_service.get_present_objects(scene_phys_objs_names,
                                                                    callback=self.on_obj_detection_complete)
         else:
             phys_obj_model.update_present_physical_objects(None)
+
+        self.camera_view.set_camera_frame(camera_frame)
+
 
     def on_obj_detection_complete(self, phys_obj_predictions):
         phys_obj_model: PhysicalObjectsModel = self.objects_view.model()

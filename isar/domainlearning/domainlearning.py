@@ -177,22 +177,26 @@ class DomainLearningWindow(QMainWindow):
             return
         else:
             camera_frame = self._camera_service.get_frame()
-            self._selection_stick_service.camera_img = camera_frame.raw_image
-            self._hand_tracking_service.camera_img = camera_frame.raw_image
+
+            # self._selection_stick_service.camera_img = camera_frame.raw_image
+            # self._hand_tracking_service.camera_img = camera_frame.raw_image
+
+            if self.track_objects_checkbox.isChecked():
+
+                # TODO: check the comment on definition window.
+
+                scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
+                if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
+                    # self._object_detection_service.get_present_objects(camera_frame,
+                    #                                                    scene_phys_objs_names,
+                    #                                                    callback=self.on_obj_detection_complete)
+
+                    self._object_detection_service.get_present_objects(scene_phys_objs_names,
+                                                                       callback=self.on_obj_detection_complete)
+            else:
+                self.physical_objects_model.update_present_physical_objects(None)
 
             self.projector_view.update_projector_view(camera_frame)
-
-        if self.track_objects_checkbox.isChecked():
-
-            # TODO: check the comment on definition window.
-
-            scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
-            if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
-                self._object_detection_service.get_present_objects(camera_frame,
-                                                                   scene_phys_objs_names,
-                                                                   callback=self.on_obj_detection_complete)
-        else:
-            self.physical_objects_model.update_present_physical_objects(None)
 
     def on_obj_detection_complete(self, phys_obj_predictions):
         self.physical_objects_model.update_present_physical_objects(phys_obj_predictions)
