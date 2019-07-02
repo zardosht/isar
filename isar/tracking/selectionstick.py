@@ -37,13 +37,15 @@ logger = logging.getLogger("isar.selectionstick")
 
 class SelectionStickService(Service):
 
-    def __init__(self, service_name=None):
+    def __init__(self, service_name=None, camera_service=None):
         super().__init__(service_name)
-        self._stop_event = threading.Event()
+        self._stop_tracking_event = threading.Event()
+        self._stop_event_detection_event = threading.Event()
+
         self.camera_img = None
         self._current_rect = None
-        self._physical_objects_model = None
         self._annotations_model = None
+        self._current_scene = None
 
         self.MARKER_ID = 5
 
@@ -58,15 +60,29 @@ class SelectionStickService(Service):
         self.event_timers_phys_obj = {}
         self.event_timers_annotation = {}
 
+        self._camera_service = camera_service
+
+    def set_current_scene(self, current_scene):
+        self._current_scene = current_scene
+
     def start(self):
-        tracking_thread = threading.Thread(target=self._start_tracking)
+        self._camera_service.start_capture()
+
+        tracking_thread = threading.Thread(name="SelectionStickTrackingThread", target=self._start_tracking)
         tracking_thread.start()
 
-        event_detection_thread = threading.Thread(target=self._start_event_detection)
+        event_detection_thread = threading.Thread(name="SelectionStickEventDetectionThread",
+                                                  target=self._start_event_detection)
         event_detection_thread.start()
 
     def _start_tracking(self):
-        while not self._stop_event.is_set():
+        while not self._stop_tracking_event.is_set():
+            camera_frame = self._camera_service.get_frame()
+            if camera_frame is None:
+                continue
+
+            self.camera_img = camera_frame.raw_image
+
             if self.camera_img is None:
                 continue
 
@@ -91,8 +107,11 @@ class SelectionStickService(Service):
         # put colliding objects/annotations with the timestamp in a dic
         # check the colliding objects, if more that three seconds colliding, then fire event.
 
-        while not self._stop_event.is_set():
+        while not self._stop_event_detection_event.is_set():
             if self._current_rect is None:
+                continue
+
+            if self._current_scene is None:
                 continue
 
             center_point = self.get_center_point(in_image_coordinates=True)
@@ -102,7 +121,7 @@ class SelectionStickService(Service):
             center_in_scene = sceneutil.camera_coord_to_scene_coord(center_point)
 
             collides_with_object = False
-            for phys_obj in self._physical_objects_model.get_scene_physical_objects():
+            for phys_obj in self._current_scene.get_physical_objects():
                 if phys_obj.collides_with_point(center_in_scene, sceneutil.scene_scale_factor_c):
                     phys_obj_name = phys_obj.name
                     collides_with_object = True
@@ -165,7 +184,9 @@ class SelectionStickService(Service):
                 self.event_timers_annotation.clear()
 
     def stop(self):
-        self._stop_event.set()
+        self._stop_tracking_event.set()
+        self._stop_event_detection_event.set()
+        self._camera_service.stop_capture()
 
     def fire_event(self, target):
         logger.info("Fire SelectionEvent on: " + str(target))

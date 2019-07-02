@@ -89,10 +89,11 @@ def init():
 
 
 class ObjectDetectionService(Service):
-    def __init__(self, service_name=None):
+    def __init__(self, service_name=None, camera_service=None):
         super().__init__(service_name)
         self.object_detector_workers = []
         self.observer_threads: List[ObjectDetectionObserverThread] = []
+        self._camera_service = camera_service
 
     def start(self):
         """
