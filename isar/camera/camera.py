@@ -51,7 +51,7 @@ class CameraService(Service):
             raise Exception(message)
 
     def start(self):
-        t = threading.Thread(target=self._start_capture)
+        t = threading.Thread(name="CameraThread", target=self._start_capture)
         t.start()
 
     def _start_capture(self):

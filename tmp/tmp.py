@@ -1,31 +1,99 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import QObject
+import multiprocessing
+import time
+
+call_counter = 0
 
 
-class B:
-    def __init__(self, name):
-        self.name = name
+def do_work():
+    global call_counter
+    call_counter += 1
+    start_time = time.time()
+    print("Started long operation {}.".format(call_counter))
+    length = 1.0e7
+    sum = 0
+    for i in range(int(length)):
+        sum += i
+
+    print("Long operation {} took {}".format(call_counter, time.time() - start_time))
 
 
-class A(QObject):
-    sig = QtCore.pyqtSignal(B)
+p = multiprocessing.Process(target=do_work)
+p.start()
 
-    def __init__(self):
-        super(A, self).__init__()
-        self.sig.connect(self.signal_received)
+print("process started")
+print("sleeping for 2 sec.")
 
-    def emit_signal(self):
-        b = B("the_cute_b")
-        self.sig.emit(b)
+time.sleep(2)
 
-    def signal_received(self, b_instance):
-        print("Received signal with: ", b_instance.name)
+print("woke up")
+print("restarting process")
 
+p.start()
 
-a = A()
-a.emit_signal()
+print("end")
 
 
+# import sys
+# import time
+#
+# from PyQt5 import QtWidgets
+# from PyQt5.QtCore import QTimer, QThread, QCoreApplication
+#
+# call_counter = 0
+#
+#
+# def do_long_operation():
+#     global call_counter
+#     call_counter += 1
+#     start_time = time.time()
+#     print("Started long operation {}.".format(call_counter))
+#     length = 1.0e7
+#     sum = 0
+#     for i in range(int(length)):
+#         sum += i
+#
+#     print("Long operation {} took {}".format(call_counter, time.time() - start_time))
+#
+#
+# app = QCoreApplication(sys.argv)
+#
+# timer = QTimer()
+# timer.timeout.connect(do_long_operation)
+# timer.start(100)
+# print("Timer started.")
+#
+# app.exec()
+#
+# # ============================================================
+#
+# from PyQt5 import QtCore
+# from PyQt5.QtCore import QObject
+#
+#
+# class B:
+#     def __init__(self, name):
+#         self.name = name
+#
+#
+# class A(QObject):
+#     sig = QtCore.pyqtSignal(B)
+#
+#     def __init__(self):
+#         super(A, self).__init__()
+#         self.sig.connect(self.signal_received)
+#
+#     def emit_signal(self):
+#         b = B("the_cute_b")
+#         self.sig.emit(b)
+#
+#     def signal_received(self, b_instance):
+#         print("Received signal with: ", b_instance.name)
+#
+#
+# a = A()
+# a.emit_signal()
+#
+#
 # # ============================================================
 #
 # from tmp_package.tmp1 import A

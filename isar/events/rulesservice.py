@@ -33,5 +33,5 @@ class RulesService(Service):
 
         for rule in self.current_scene.get_rules():
             if rule.event == event:
-                t = Thread(target=rule.fire)
+                t = Thread(name="RuleServiceFireRuleThread", target=rule.fire)
                 t.start()

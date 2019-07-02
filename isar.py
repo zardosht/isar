@@ -86,6 +86,7 @@ def main():
 
     time.sleep(0.5)
     servicemanager.stop_services()
+    print("Bye! See you next time :)")
 
 
 if __name__ == "__main__":

@@ -761,7 +761,7 @@ class AnimationAnnotation(Annotation):
 
 class AnimationThread(Thread):
     def __init__(self, animation_annotation):
-        super().__init__()
+        super().__init__(name="AnimationThread")
         self.animation_annotation = animation_annotation
         self.image_positions = numpy.add(self.animation_annotation.line_positions,
                                          self.animation_annotation.position.get_value())
@@ -787,7 +787,7 @@ class AnimationThread(Thread):
                         self.animation_annotation.image_position = tuple(point)
                         time.sleep(self.speed)
                     self.loop_direction = False
-        logger.info("Thread finished.")
+        logger.info("Animation thread finished.")
 
     def stop(self):
         self.stop_event.set()
@@ -1015,7 +1015,7 @@ class TimerThread(Thread):
     # I had to add this class because of the weired Lock exception I got,
     # when the timer thread was inside the TimerAnnotation class
     def __init__(self, timer_annotation):
-        super().__init__()
+        super().__init__(name="TimerThread")
         self.timer_annotation = timer_annotation
         self.scene = self.timer_annotation.scene
         self.stop_event = Event()

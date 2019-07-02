@@ -541,7 +541,8 @@ class ParallelCompositeAction(Action):
 
     def run(self):
         for action in self.actions:
-            t = Thread(target=lambda a: self._action_service.perform_action(a), args=(action, ))
+            t = Thread(name="ParallelCompositeActionThread",
+                       target=lambda a: self._action_service.perform_action(a), args=(action, ))
             t.start()
 
     @classmethod
@@ -567,7 +568,7 @@ class SequentialCompositeAction(Action):
         self.time_between_actions = 1
 
     def run(self):
-        t = Thread(target=self.do_run)
+        t = Thread(name="SequentialCompositeActionThread", target=self.do_run)
         t.start()
 
     def do_run(self):

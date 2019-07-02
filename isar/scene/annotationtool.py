@@ -589,7 +589,7 @@ class VideoAnnotationTool(ImageAnnotationTool):
             frame = cv2.imread("isar/ui/images/video_loading.png")
             if not self.loading_video:
                 self.loading_video = True
-                t = Thread(target=self.load_video, args=(str(video_path), ))
+                t = Thread(name="LoadVideoThread", target=self.load_video, args=(str(video_path), ))
                 t.start()
 
         if frame is None:
