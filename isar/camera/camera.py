@@ -84,6 +84,15 @@ class CameraService(Service):
         :return:
         """
         self._stop_event.set()
+
+        # camera service must stop last.
+        # when it stops, it puts three None objects in its queue (very dirty! this is not the way to solve it.
+        # but I don't care now. Why three? because I have three services waiting for this camera frame)
+        # if any thread is waiting for camera service queue, it can pick the None object and continue termination.
+        self._queue.put(None)
+        self._queue.put(None)
+        self._queue.put(None)
+
         self._capture.release()
 
     def start_capture(self):

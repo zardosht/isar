@@ -103,6 +103,12 @@ def stop_services():
             logger.error(exp)
             traceback.print_tb(exp.__traceback__)
 
+    # camera service must stop last.
+    # when it stops, it puts some None objects in its queue
+    # if any thread is waiting for camera service queue, it can pick the None object and continue termination.
+    camera_service = get_service(ServiceNames.CAMERA1)
+    camera_service.stop()
+
 
 def get_service(service_name):
     return __services[service_name]
