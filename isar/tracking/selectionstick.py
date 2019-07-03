@@ -190,9 +190,8 @@ class SelectionStickService(Service):
 
     def fire_event(self, target):
         logger.info("Fire SelectionEvent on: " + str(target))
-        selection_event = SelectionEvent(target)
-        selection_event.scene_id = self._annotations_model.get_current_scene().name
-        eventmanager.fire_event(selection_event)
+        scene_id = self._annotations_model.get_current_scene().name
+        eventmanager.fire_selection_event(target, scene_id)
 
     def draw_current_rect(self, img, camera_projector_homography=None, scene_homography=None):
         current_rect = self._current_rect
