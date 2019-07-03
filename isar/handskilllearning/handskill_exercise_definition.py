@@ -4,9 +4,9 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QIntValidator, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
-from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise
+from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise, CatchTheObjectExercise
 from isar.scene import scenemodel
-from isar.scene.annotationmodel import CurveAnnotation
+from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, FeedbackAnnotation, AnimationAnnotation
 from isar.scene.scenemodel import ScenesModel
 
 
@@ -14,7 +14,7 @@ class HandSkillExerciseDefinition(QWizard):
 
     def __init__(self):
         super().__init__()
-        self.exercise = FollowThePathExercise()
+        self.exercise = None
         self.scenes_model = None
 
         self.setup_ui(self)
@@ -35,24 +35,28 @@ class HandSkillExerciseDefinition(QWizard):
         self.scenes_model = ScenesModel()
 
     def define_follow_the_path(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.label_number.setText(_translate("Wizard", "Number of points:"))
-        self.label_err_nr.setText(_translate("Wizard", "Error:"))
-        self.label_err_nr_2.setText(_translate("Wizard", "Error:"))
-        self.label_err_nr_3.setText(_translate("Wizard", "Error:"))
-        self.label_good.setText(_translate("Wizard", "Good min number points:"))
-        self.label_average.setText(_translate("Wizard", "Average min number points:"))
-        self.label_bad.setText(_translate("Wizard", "Bad min number points:"))
+        self.exercise = FollowThePathExercise()
+        self.label_number.setText("Number of points:")
+        self.label_err_nr.setText("Error:")
+        self.label_err_nr_2.setText("Error:")
+        self.label_err_nr_3.setText("Error:")
+        self.label_good.setText("Good min number points:")
+        self.label_average.setText("Average min number points:")
+        self.label_bad.setText("Bad min number points:")
+        self.line_project_name.setText("")
+        self.line_number.setText("")
 
     def define_catch_the_object(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.label_number.setText(_translate("Wizard", "Number of objects:"))
-        self.label_err_nr.setText(_translate("Wizard", "Number:"))
-        self.label_err_nr_2.setText(_translate("Wizard", "Number:"))
-        self.label_err_nr_3.setText(_translate("Wizard", "Number:"))
-        self.label_good.setText(_translate("Wizard", "Good min number objects:"))
-        self.label_average.setText(_translate("Wizard", "Average min number objects:"))
-        self.label_bad.setText(_translate("Wizard", "Bad min number objects:"))
+        self.exercise = CatchTheObjectExercise()
+        self.label_number.setText("Number of objects:")
+        self.label_err_nr.setText("Number:")
+        self.label_err_nr_2.setText("Number:")
+        self.label_err_nr_3.setText("Number:")
+        self.label_good.setText("Good min number objects:")
+        self.label_average.setText("Average min number objects:")
+        self.label_bad.setText("Bad min number objects:")
+        self.line_project_name.setText("")
+        self.line_number.setText("")
 
     def load_project(self):
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
@@ -66,15 +70,23 @@ class HandSkillExerciseDefinition(QWizard):
         self.scenes_model.load_project(project_dir, project_name)
         model = QStandardItemModel()
         for scene in self.scenes_model.get_all_scenes():
-            count = 0
-            # TODO: use the get_all_bu_type method
-            for annotation in scene.get_all_annotations():
-                if isinstance(annotation, CurveAnnotation):
-                    count = count + 1
-            if count == 1:
-                item = QStandardItem()
-                item.setText(scene.name)
-                model.appendRow(item)
+            curve_annotations = scene.get_all_annotations_by_type(CurveAnnotation)
+            animation_annotations = scene.get_all_annotations_by_type(AnimationAnnotation)
+            timer_annotations = scene.get_all_annotations_by_type(TimerAnnotation)
+            feedback_annotations = scene.get_all_annotations_by_type(FeedbackAnnotation)
+            if len(timer_annotations) > 0 and len(feedback_annotations) > 0:
+
+                if self.radio_button_follow.isChecked() and len(curve_annotations) == 1:
+                    item = QStandardItem()
+                    item.setText(scene.name)
+                    model.appendRow(item)
+
+                # TODO: also check for start and stop animation action annotation
+                if self.radio_button_catch.isChecked() and len(animation_annotations) > 0:
+                    item = QStandardItem()
+                    item.setText(scene.name)
+                    model.appendRow(item)
+
         self.list_scenes.setModel(model)
 
     def select_scene(self):
@@ -84,9 +96,14 @@ class HandSkillExerciseDefinition(QWizard):
         for scene in self.scenes_model.get_all_scenes():
             if scene.name == selected:
                 self.exercise.set_scene(scene)
-        for annotation in self.exercise.scene.get_all_annotations():
-            if isinstance(annotation, CurveAnnotation):
-                self.line_number.setText(str(annotation.points.get_value()))
+
+        if self.radio_button_follow.isChecked():
+            curve_annotations = self.exercise.scene.get_all_annotations_by_type(CurveAnnotation)
+            self.line_number.setText(str(curve_annotations[0].points.get_value()))
+
+        if self.radio_button_catch.isChecked():
+            animation_annotations = self.exercise.scene.get_all_annotations_by_type(AnimationAnnotation)
+            self.line_number.setText(str(len(animation_annotations)))
 
     def finish_clicked(self):
         self.save_info_target_values()
@@ -94,13 +111,18 @@ class HandSkillExerciseDefinition(QWizard):
         self.save_exercise()
 
     def save_info_target_values(self):
-        self.exercise.error.beginner.set_value(int(self.line_err_nr_beg.text()))
+        if self.radio_button_follow.isChecked():
+            self.exercise.error.beginner.set_value(int(self.line_err_nr_beg.text()))
+            self.exercise.error.intermediate.set_value(int(self.line_err_nr_int.text()))
+            self.exercise.error.competent.set_value(int(self.line_err_nr_com.text()))
+
+        if self.radio_button_catch.isChecked():
+            self.exercise.number.beginner.set_value(int(self.line_err_nr_beg.text()))
+            self.exercise.number.intermediate.set_value(int(self.line_err_nr_int.text()))
+            self.exercise.number.competent.set_value(int(self.line_err_nr_com.text()))
+
         self.exercise.time.beginner.set_value(int(self.line_time_beg.text()))
-
-        self.exercise.error.intermediate.set_value(int(self.line_err_nr_int.text()))
         self.exercise.time.intermediate.set_value(int(self.line_time_int.text()))
-
-        self.exercise.error.competent.set_value(int(self.line_err_nr_com.text()))
         self.exercise.time.competent.set_value(int(self.line_time_com.text()))
 
     def save_info_feedback(self):
@@ -123,6 +145,7 @@ class HandSkillExerciseDefinition(QWizard):
 
     def setup_constraints(self):
         # register fields to enable/disable the next/finish button
+        self.project.registerField("line_project_name*", self.line_project_name)
         self.scene.registerField("line_selected_scenes*", self.line_selected_scenes)
         self.target_value.registerField("line_err_nr_beg*", self.line_err_nr_beg)
         self.target_value.registerField("line_time_beg*", self.line_time_beg)
@@ -147,7 +170,10 @@ class HandSkillExerciseDefinition(QWizard):
         self.line_average.setValidator(QIntValidator())
         self.line_bad.setValidator(QIntValidator())
 
+        # set the default exercise to follow the path
         self.radio_button_follow.setChecked(True)
+        self.exercise = FollowThePathExercise()
+
         self.line_project_name.setEnabled(False)
         self.line_selected_scenes.setEnabled(False)
         self.button_select_scene.setEnabled(False)

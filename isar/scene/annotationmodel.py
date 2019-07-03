@@ -704,6 +704,8 @@ class AnimationAnnotation(Annotation):
         self.image_shown = False
         self.animation_thread = None
 
+        self.exercise = None
+
     def __getstate__(self):
         state = self.__dict__.copy()
         del state["animation_thread"]
