@@ -71,7 +71,7 @@ class FollowThePathExercise(HandSkillExercise):
 
     def start(self):
         if not self.running:
-            print("Start Exercise")
+            logger.info("Start follow the path exercise")
             self.register_points = []
             self.running = True
 
@@ -102,12 +102,13 @@ class FollowThePathExercise(HandSkillExercise):
 
     def stop(self):
         if self.running:
-            print("Stop Exercise")
+            logger.info("Stop follow the path exercise")
             self.running = False
             timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
             timer_annotation[0].stop()
             timer_annotation[0].reset()
 
+            # TODO: delete print
             print("Captured")
             no_duplicates = numpy.unique(self.register_points, axis=0)
             number_captured = len(no_duplicates)
@@ -163,10 +164,10 @@ class CatchTheObjectExercise(HandSkillExercise):
         self.feedback = value
 
     def start(self):
-        pass
+        logger.info("Start catch the object exercise")
 
     def stop(self):
-        pass
+        logger.info("Stop catch the object exercise")
 
 
 """

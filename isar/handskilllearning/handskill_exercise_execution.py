@@ -87,7 +87,6 @@ class HandSkillExerciseExecution(QMainWindow):
         self.button_load_project.setEnabled(True)
 
     def load_project(self):
-        logger.info("Load project")
         project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
         project_dir = os.path.dirname(project_filename)
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
