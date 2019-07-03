@@ -1,7 +1,8 @@
 import logging
 
 import numpy
-from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle, FeedbackAnnotation
+from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle, FeedbackAnnotation, \
+    AnimationAnnotation
 from threading import Thread
 
 """
@@ -62,8 +63,8 @@ class FollowThePathExercise(HandSkillExercise):
 
     def set_scene(self, value):
         self.scene = value
-        curve = self.scene.get_all_annotations_by_type(CurveAnnotation)
-        curve[0].exercise = self
+        curves = self.scene.get_all_annotations_by_type(CurveAnnotation)
+        curves[0].exercise = self
 
     def set_feedback(self, value):
         self.feedback = value
@@ -131,14 +132,13 @@ class FollowThePathExercise(HandSkillExercise):
                 print("FEEDBACK NOT EXISTING")
 
 
-class CatchTheObjects(HandSkillExercise):
+class CatchTheObjectExercise(HandSkillExercise):
     def __init__(self):
         super().__init__()
         self.number = Number()
         self.time = Time()
         self.running = False
         self.register_objects = []
-        self.selection_stick = None
 
     def get_number(self):
         return self.number
@@ -154,8 +154,8 @@ class CatchTheObjects(HandSkillExercise):
 
     def set_scene(self, value):
         self.scene = value
-        curve = self.scene.get_all_annotations_by_type(CurveAnnotation)
-        curve[0].exercise = self
+        animations = self.scene.get_all_annotations_by_type(AnimationAnnotation)
+        animations[0].exercise = self
 
     def set_feedback(self, value):
         self.feedback = value
