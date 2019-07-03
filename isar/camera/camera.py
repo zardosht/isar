@@ -1,6 +1,7 @@
 import logging
 import os
 import threading
+import time
 from queue import Queue, LifoQueue
 import cv2
 
@@ -69,6 +70,8 @@ class CameraService(Service):
 
             if self._queue.full():
                 continue
+
+            # time.sleep(0.05)
 
             ret, frame = self._capture.read()
             if ret:

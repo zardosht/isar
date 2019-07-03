@@ -175,7 +175,7 @@ class DomainLearningWindow(QMainWindow):
 
         self._object_detection_timer = QTimer()
         self._object_detection_timer.timeout.connect(self.run_object_detection)
-        self._object_detection_timer.start(100)
+        self._object_detection_timer.start(5)
 
     def update_projector_view(self):
         if self.projector_view.calibrating:
