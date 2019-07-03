@@ -154,6 +154,8 @@ class CatchTheObjectExercise(HandSkillExercise):
 
     def set_scene(self, value):
         self.scene = value
+
+        # TODO: not sure if needed for this type exercise
         animations = self.scene.get_all_annotations_by_type(AnimationAnnotation)
         animations[0].exercise = self
 
