@@ -94,6 +94,7 @@ class ObjectDetectionService(Service):
         self.object_detector_workers = []
         self.observer_threads: List[ObjectDetectionObserverThread] = []
         self._camera_service = camera_service
+        self._do_object_detection = False
 
     def start(self):
         """
@@ -116,7 +117,17 @@ class ObjectDetectionService(Service):
         for observer_thread in self.observer_threads:
             observer_thread.start()
 
+    def start_object_detection(self):
+        self._do_object_detection = True
+
+    def stop_object_detection(self):
+        self._do_object_detection = False
+
     def get_present_objects(self, scene_phys_objs_names, callback=None):
+        if not self._do_object_detection:
+            logger.info("Object detection is deactivated. Return. Did you call start_object_detection() first?")
+            return
+
         camera_frame = self._camera_service.get_frame()
         for observer_thread in self.observer_threads:
             if not observer_thread.request_queue.full():
