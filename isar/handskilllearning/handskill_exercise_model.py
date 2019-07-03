@@ -138,7 +138,6 @@ class CatchTheObjects(HandSkillExercise):
         self.time = Time()
         self.running = False
         self.register_objects = []
-        self.selection_stick = None
 
     def get_number(self):
         return self.number
