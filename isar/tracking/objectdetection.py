@@ -107,10 +107,10 @@ class ObjectDetectionService(Service):
             request_queue = mp.JoinableQueue(maxsize=1)
             response_queue = mp.Queue()
             obj_detector_worker = ObjectDetectorWorker(obj_detector_name, request_queue, response_queue)
-            obj_detector_worker.daemon = True
+            # NOTE: object detection workers cannot be daemonic, becuase they may fork new child processes
             self.object_detector_workers.append(obj_detector_worker)
             observer_thread = ObjectDetectionObserverThread(Queue(maxsize=1), obj_detector_worker)
-            # observer_thread.daemon = True
+            observer_thread.daemon = True
             self.observer_threads.append(observer_thread)
 
         for worker in self.object_detector_workers:
