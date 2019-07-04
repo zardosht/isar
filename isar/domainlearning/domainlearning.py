@@ -5,6 +5,8 @@ import time
 from PyQt5 import QtCore, uic
 from PyQt5.QtCore import QItemSelectionModel, QTimer, Qt
 from PyQt5.QtWidgets import QFileDialog, QMainWindow
+
+import isar
 from isar.camera.camera import CameraService
 from isar.projection.projector import ProjectorView
 from isar.scene.annotationmodel import AnnotationsModel
@@ -80,7 +82,7 @@ class DomainLearningWindow(QMainWindow):
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
-        project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
+        project_filename = QFileDialog.getOpenFileName(parent=None, filter="(*.json)")[0]
         project_dir = os.path.dirname(project_filename)
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":
@@ -171,17 +173,20 @@ class DomainLearningWindow(QMainWindow):
     def setup_timers(self):
         self._projector_view_timer = QTimer()
         self._projector_view_timer.timeout.connect(self.update_projector_view)
-        self._projector_view_timer.start(5)
+        self._projector_view_timer.start(isar.CAMERA_UPDATE_INTERVAL)
 
         self._object_detection_timer = QTimer()
         self._object_detection_timer.timeout.connect(self.run_object_detection)
-        self._object_detection_timer.start(5)
+        self._object_detection_timer.start(isar.OBJECT_DETECTION_INTERVAL)
 
     def update_projector_view(self):
         if self.projector_view.calibrating:
             return
         else:
             camera_frame = self._camera_service.get_frame()
+            if camera_frame is None:
+                return
+
             self.projector_view.update_projector_view(camera_frame)
 
     def run_object_detection(self):

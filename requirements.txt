@@ -1,5 +1,7 @@
+opencv-python
+opencv-contrib-python
 jsonpickle
 numpy
 screeninfo
-cv2
 PyQt5
+python-vlc

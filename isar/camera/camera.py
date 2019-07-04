@@ -18,11 +18,11 @@ class CameraService(Service):
     def __init__(self, service_name=None, cam_id=0):
         super().__init__(service_name)
 
-        # _queue_size = 100
-        # self._queue = LifoQueue(_queue_size)
+        _queue_size = 100
+        self._queue = LifoQueue(_queue_size)
 
-        _queue_size = 1
-        self._queue = Queue(_queue_size)
+        # _queue_size = 1
+        # self._queue = Queue(_queue_size)
 
         self.cam_id = cam_id
         self._capture = None
@@ -69,6 +69,7 @@ class CameraService(Service):
                 continue
 
             if self._queue.full():
+                # logger.warning("Camera _queue is full! continue.")
                 continue
 
             # time.sleep(0.05)
@@ -112,6 +113,10 @@ class CameraService(Service):
         """
         if not self._do_capture:
             raise RuntimeError("_do_capture is False. Have you forgotten to call start_capture() first?")
+
+        if self._queue.empty():
+            # logger.warning("Camera _queue is empty! Return None.")
+            return None
 
         camera_frame = self._queue.get()
         if flipped_x:

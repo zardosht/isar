@@ -7,6 +7,7 @@ from PyQt5.QtCore import QTimer, QItemSelectionModel, Qt, QItemSelection
 from PyQt5.QtGui import QPixmap, QMouseEvent, QDrag
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QListView, QFileDialog, QMessageBox, QInputDialog, QMainWindow
 
+import isar
 from isar.camera.camera import CameraService
 from isar.events.events_actions_rules import EventsActionsRulesDialog
 from isar.scene import sceneutil, scenemodel
@@ -211,7 +212,7 @@ class SceneDefinitionWindow(QMainWindow):
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
-        project_filename = QFileDialog.getOpenFileName(filter="(*.json)")[0]
+        project_filename = QFileDialog.getOpenFileName(parent=None, filter="(*.json)")[0]
         project_dir = os.path.dirname(project_filename)
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":
@@ -300,11 +301,11 @@ class SceneDefinitionWindow(QMainWindow):
     def setup_timer(self):
         self._camera_view_timer = QTimer()
         self._camera_view_timer.timeout.connect(self.update_camera_view)
-        self._camera_view_timer.start(5)
+        self._camera_view_timer.start(isar.CAMERA_UPDATE_INTERVAL)
 
         self._object_detection_timer = QTimer()
         self._object_detection_timer.timeout.connect(self.run_object_detection)
-        self._object_detection_timer.start(5)
+        self._object_detection_timer.start(isar.OBJECT_DETECTION_INTERVAL)
 
     def setup_models(self):
         self.scenes_model = ScenesModel()

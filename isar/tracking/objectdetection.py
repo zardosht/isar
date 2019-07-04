@@ -129,6 +129,9 @@ class ObjectDetectionService(Service):
             return
 
         camera_frame = self._camera_service.get_frame()
+        if camera_frame is None:
+            return
+
         for observer_thread in self.observer_threads:
             if not observer_thread.request_queue.full():
                 observer_thread.request_queue.put(ObjectDetectionRequest(camera_frame, scene_phys_objs_names), block=False)

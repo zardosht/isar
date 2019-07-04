@@ -160,6 +160,9 @@ class ProjectorView(QtWidgets.QWidget):
                 projector_points = projectionutil.get_chessboard_points("projector_points", projector_img)
 
                 camera_frame: CameraFrame = self.camera_service.get_frame()
+                if camera_frame is None:
+                    continue
+
                 camera_img = camera_frame.raw_image
                 # camera_img = cv2.resize(camera_img, self.scene_size)
                 # camera_img = cv2.flip(camera_img, -1)
@@ -191,19 +194,20 @@ class ProjectorView(QtWidgets.QWidget):
 
         # testing the found homography
         camera_frame: CameraFrame = self.camera_service.get_frame()
-        camera_img = camera_frame.raw_image
-        if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
-        # camera_img = cv2.resize(camera_img, self.scene_size)
+        if camera_frame is not None:
+            camera_img = camera_frame.raw_image
+            if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
+            # camera_img = cv2.resize(camera_img, self.scene_size)
 
-        camera_points = projectionutil.get_chessboard_points("camera_points", camera_img)
-        reprojected_points = cv2.perspectiveTransform(np.array([camera_points]), self.homography_matrix)
-        reprojected_points = reprojected_points.squeeze()
-        test_chessboard_image = projector_img.copy()
-        for reprojected_point in reprojected_points:
-            cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (255, 0, 0), 2)
+            camera_points = projectionutil.get_chessboard_points("camera_points", camera_img)
+            reprojected_points = cv2.perspectiveTransform(np.array([camera_points]), self.homography_matrix)
+            reprojected_points = reprojected_points.squeeze()
+            test_chessboard_image = projector_img.copy()
+            for reprojected_point in reprojected_points:
+                cv2.circle(test_chessboard_image, tuple(reprojected_point), 5, (255, 0, 0), 2)
 
-        self.set_scene_image(test_chessboard_image)
-        time.sleep(5)
+            self.set_scene_image(test_chessboard_image)
+            time.sleep(5)
 
         # calibration finished
         self.calibrating = False

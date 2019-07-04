@@ -151,6 +151,9 @@ class HandSkillExerciseExecution(QMainWindow):
             return
         else:
             camera_frame = self._camera_service.get_frame()
+            if camera_frame is None:
+                return
+
             self._selection_stick_service.camera_img = camera_frame.raw_image
             self.projector_view.update_projector_view(camera_frame)
 

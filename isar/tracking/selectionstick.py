@@ -6,6 +6,7 @@ import threading
 
 import numpy as np
 
+import isar
 from isar.events import eventmanager
 from isar.events.events import SelectionEvent
 from isar.scene import sceneutil
@@ -77,6 +78,9 @@ class SelectionStickService(Service):
 
     def _start_tracking(self):
         while not self._stop_tracking_event.is_set():
+
+            time.sleep(isar.SELECTION_STICK_TRACKING_INTERVAL)
+
             camera_frame = self._camera_service.get_frame()
             if camera_frame is None:
                 continue
