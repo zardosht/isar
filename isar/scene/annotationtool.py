@@ -1102,6 +1102,7 @@ class FeedbackAnnotationTool(AnnotationTool):
 class CurveAnnotationTool(AnnotationTool):
     def __init__(self):
         super(CurveAnnotationTool, self).__init__()
+        self.all_line_points = []
 
     def mouse_press_event(self, camera_view, event):
         self.set_drawing(True)
@@ -1112,12 +1113,12 @@ class CurveAnnotationTool(AnnotationTool):
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-        self.annotation.line_positions.append((img_x, img_y))
+        self.annotation.line_points.append((img_x, img_y))
         self.annotation.start.set_value((img_x, img_y))
         self.annotation.set_position((img_x, img_y))
 
-        self.compute_line_positions = []
-        self.compute_line_positions.append((img_x, img_y))
+        self.all_line_points = []
+        self.all_line_points.append((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
@@ -1125,29 +1126,24 @@ class CurveAnnotationTool(AnnotationTool):
             img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-            self.annotation.line_positions.append((img_x, img_y))
+            self.annotation.line_points.append((img_x, img_y))
 
-            start = self.annotation.line_positions[len(self.annotation.line_positions) - 1]
-            end = self.annotation.line_positions[len(self.annotation.line_positions) - 2]
-            cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
-                     self.annotation.line_thickness.get_value())
-
-            if len(self.compute_line_positions) > 0:
-               self.compute_line_positions = self.compute_line_positions \
-                                        + line_iterator(self.compute_line_positions.pop(), (img_x, img_y))
+            if len(self.all_line_points) > 0:
+               self.all_line_points = self.all_line_points \
+                                      + line_iterator(self.all_line_points.pop(), (img_x, img_y))
 
     def mouse_release_event(self, camera_view, event):
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-        self.annotation.line_positions.append((img_x, img_y))
-        self.annotation.end.set_value((img_x, img_y))
+        self.annotation.line_points.append((img_x, img_y))
 
-        self.compute_line_positions = self.compute_line_positions \
-                                      + line_iterator(self.compute_line_positions.pop(), (img_x, img_y))
-        self.annotation.line_positions = self.compute_line_positions
-        self.annotation.points.set_value(len(self.annotation.line_positions))
+        self.all_line_points = self.all_line_points \
+                               + line_iterator(self.all_line_points.pop(), (img_x, img_y))
+        self.annotation.line_points = self.all_line_points
+        self.annotation.points.set_value(len(self.annotation.line_points))
+        self.annotation.end.set_value((img_x, img_y))
 
         if self.is_annotation_valid():
             self.annotations_model.add_annotation(self.annotation)
@@ -1163,35 +1159,39 @@ class CurveAnnotationTool(AnnotationTool):
 
         if self.is_annotation_valid():
             if self.annotation.end.get_value() is not None:
-                self.annotation.line_positions[0] = self.annotation.start.get_value()
-                self.annotation.line_positions[
-                    len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
+                # possibility to change the start and end point
+                self.annotation.line_points[0] = self.annotation.start.get_value()
+                self.annotation.line_points[
+                    len(self.annotation.line_points) - 1] = self.annotation.end.get_value()
+
+                # computing the distributed line points if points is changed
+                self.annotation.line_points_distributed = distribute_points(self.annotation.points.get_value(),
+                                                                            self.annotation.line_points)
+                for point in self.annotation.line_points_distributed:
+                    cv2.circle(self._img, point, self.annotation.points_radius.get_value(),
+                               self.annotation.points_color.get_value(), -1)
+
+                # drawing circles around the start and end point
                 cv2.circle(self._img, self.annotation.start.get_value(),
                            self.annotation.start_stop_radius.get_value(),
                            self.annotation.start_stop_color.get_value(), -1)
                 cv2.circle(self._img, self.annotation.end.get_value(),
                            self.annotation.start_stop_radius.get_value(),
                            self.annotation.start_stop_color.get_value(), -1)
-
-            if self.annotation.show_points.get_value() is False:
-                for i in range(len(self.annotation.line_positions) - 1):
-                    start = sceneutil.convert_object_to_image(self.annotation.line_positions[i], self.phys_obj,
+            else:
+                # drawing the line while mouse is clicked and moving
+                for i in range(len(self.annotation.line_points) - 1):
+                    start = sceneutil.convert_object_to_image(self.annotation.line_points[i], self.phys_obj,
                                                               self.scene_scale_factor)
-                    end = sceneutil.convert_object_to_image(self.annotation.line_positions[i + 1], self.phys_obj,
+                    end = sceneutil.convert_object_to_image(self.annotation.line_points[i + 1], self.phys_obj,
                                                             self.scene_scale_factor)
 
-                    cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
-                             self.annotation.line_thickness.get_value())
-            else:
-                self.annotation.line_points_distributed = distribute_points(self.annotation.points.get_value(),
-                                                                            self.annotation.line_positions)
-                for point in self.annotation.line_points_distributed:
-                    cv2.circle(self._img, point, self.annotation.line_thickness.get_value(),
-                               self.annotation.line_color.get_value(), -1)
+                    cv2.line(self._img, start, end, self.annotation.points_color.get_value(),
+                             self.annotation.points_radius.get_value())
 
     def is_annotation_valid(self):
         # Are there any coordinates saved?
-        if len(self.annotation.line_positions) < CurveAnnotation.MINIMUM_NUMBER_POSITIONS:
+        if len(self.annotation.line_points) < CurveAnnotation.MINIMUM_NUMBER_POSITIONS:
             return False
         return True
 
@@ -1201,6 +1201,7 @@ class AnimationAnnotationTool(AnnotationTool):
 
     def __init__(self):
         super(AnimationAnnotationTool, self).__init__()
+        self.all_line_points = []
 
     def mouse_press_event(self, camera_view, event):
         if scenemodel.current_project is None:
@@ -1218,13 +1219,13 @@ class AnimationAnnotationTool(AnnotationTool):
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-        self.annotation.set_position((img_x, img_y))
+        self.annotation.set_position((0, 0))
         self.annotation.line_start = (img_x, img_y)
         self.annotation.image_position = (img_x, img_y)
+        self.annotation.line_points.append((img_x, img_y))
 
-        # compute the difference between position and the mouse coordinates for moving the animation
-        diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
-        self.annotation.line_positions.append(diff)
+        self.all_line_points = []
+        self.all_line_points.append((img_x, img_y))
 
     def mouse_move_event(self, camera_view, event):
         if self._drawing:
@@ -1232,24 +1233,20 @@ class AnimationAnnotationTool(AnnotationTool):
             img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
                 event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-            # compute the difference for moving the animation
-            diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
-            self.annotation.line_positions.append(diff)
-
-            start = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions) - 1],
-                                    self.annotation.position.get_value()))
-            end = tuple(numpy.add(self.annotation.line_positions[len(self.annotation.line_positions) - 2],
-                                  self.annotation.position.get_value()))
-            cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
-                     self.annotation.line_thickness.get_value())
+            self.annotation.line_points.append((img_x, img_y))
+            if len(self.all_line_points) > 0:
+               self.all_line_points = self.all_line_points \
+                                      + line_iterator(self.all_line_points.pop(), (img_x, img_y))
 
     def mouse_release_event(self, camera_view, event):
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
         img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
             event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
 
-        diff = tuple(numpy.subtract((img_x, img_y), self.annotation.position.get_value()))
-        self.annotation.line_positions.append(diff)
+        self.annotation.line_points.append((img_x, img_y))
+        self.all_line_points = self.all_line_points \
+                               + line_iterator(self.all_line_points.pop(), (img_x, img_y))
+        self.annotation.line_points = self.all_line_points
 
         file_path, _ = QFileDialog.getOpenFileName()
         if file_path is None or file_path == "":
@@ -1272,19 +1269,20 @@ class AnimationAnnotationTool(AnnotationTool):
             return
 
         if self.is_annotation_valid():
-            for i in range(len(self.annotation.line_positions) - 1):
-                start_add = tuple(numpy.add(self.annotation.line_positions[i], self.annotation.position.get_value()))
+            for i in range(len(self.annotation.line_points) - 1):
+                start_add = tuple(numpy.add(self.annotation.line_points[i], self.annotation.position.get_value()))
                 start = sceneutil.convert_object_to_image(start_add, self.phys_obj, self.scene_scale_factor)
 
-                end_add = tuple(numpy.add(self.annotation.line_positions[i + 1], self.annotation.position.get_value()))
+                end_add = tuple(numpy.add(self.annotation.line_points[i + 1], self.annotation.position.get_value()))
                 end = sceneutil.convert_object_to_image(end_add, self.phys_obj, self.scene_scale_factor)
 
                 cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
                          self.annotation.line_thickness.get_value())
 
+        self.annotation.line_start = tuple(numpy.add(self.annotation.line_points[0], self.annotation.position.get_value()))
+
         if self.annotation.animation_thread is None:
-            self.annotation.image_position = self.annotation.position.get_value();
-        self.annotation.line_start = tuple(numpy.add(self.annotation.line_positions[0], self.annotation.position.get_value()))
+            self.annotation.image_position = self.annotation.line_start
 
         if self.annotation.image_shown is True:
             self.draw_image()
@@ -1316,7 +1314,7 @@ class AnimationAnnotationTool(AnnotationTool):
         sceneutil.draw_image_on(self._img, image, img_position)
 
     def is_annotation_valid(self):
-        if len(self.annotation.line_positions) < AnimationAnnotation.MINIMUM_NUMBER_POSITIONS:
+        if len(self.annotation.line_points) < AnimationAnnotation.MINIMUM_NUMBER_POSITIONS:
             return False
         if self.annotation.image_height.get_value() < AnimationAnnotation.MINIMUM_HEIGHT \
                 or self.annotation.image_width.get_value() < AnimationAnnotation.MINIMUM_WIDTH:

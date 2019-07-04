@@ -630,11 +630,11 @@ class CurveAnnotation(Annotation):
         self.points = IntAnnotationProperty("Points", None, self, self.set_points.__name__)
         self.properties.append(self.points)
 
-        self.line_color = ColorAnnotationProperty("Line color", (0, 0, 0), self)
-        self.properties.append(self.line_color)
+        self.points_color = ColorAnnotationProperty("Points color", (0, 0, 0), self)
+        self.properties.append(self.points_color)
 
-        self.line_thickness = IntAnnotationProperty("Line thickness", 2, self)
-        self.properties.append(self.line_thickness)
+        self.points_radius = IntAnnotationProperty("Points radius", 2, self)
+        self.properties.append(self.points_radius)
 
         self.start_stop_color = ColorAnnotationProperty("Start/Stop color", (0, 255, 255), self)
         self.properties.append(self.start_stop_color)
@@ -642,17 +642,13 @@ class CurveAnnotation(Annotation):
         self.start_stop_radius = IntAnnotationProperty("Start/Stop radius", 7, self)
         self.properties.append(self.start_stop_radius)
 
-        # TODO: show just points not the line
-        self.show_points = BooleanAnnotationProperty("Show points", False, self)
-        self.properties.append(self.show_points)
-
-        self.line_positions = []
+        self.line_points = []
         self.line_points_distributed = []
 
         self.exercise = None
 
     def set_points(self, value):
-        if value <= len(self.line_positions):
+        if value <= len(self.line_points):
             self.points._value = value
             return True
         return False
@@ -696,10 +692,10 @@ class AnimationAnnotation(Annotation):
         self.image_path = FilePathAnnotationProperty("Image Filename", None, self)
         self.properties.append(self.image_path)
 
-        self.image_width = IntAnnotationProperty("Image Width", 20, self)
+        self.image_width = IntAnnotationProperty("Image Width", 30, self)
         self.properties.append(self.image_width)
 
-        self.image_height = IntAnnotationProperty("Image Height", 20, self)
+        self.image_height = IntAnnotationProperty("Image Height", 30, self)
         self.properties.append(self.image_height)
 
         self.animation_speed = IntAnnotationProperty("Animation Speed", 2, self)
@@ -708,7 +704,7 @@ class AnimationAnnotation(Annotation):
         self.loop = BooleanAnnotationProperty("Loop", False, self)
         self.properties.append(self.loop)
 
-        self.line_positions = []
+        self.line_points = []
         self.line_start = None
         self.image_position = None
         self.image_shown = False
@@ -767,9 +763,10 @@ class AnimationThread(Thread):
     def __init__(self, animation_annotation):
         super().__init__()
         self.animation_annotation = animation_annotation
-        self.image_positions = numpy.add(self.animation_annotation.line_positions,
+        self.image_positions = numpy.add(self.animation_annotation.line_points,
                                          self.animation_annotation.position.get_value())
         self.stop_event = Event()
+        # TODO: compute the speed differently because of to many points
         self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
         self.loop_direction = False
 
