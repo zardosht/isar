@@ -37,6 +37,14 @@ class CameraService(Service):
             height = 1080
             self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
             self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+        elif os.name == "posix":
+            self._capture = cv2.VideoCapture(self.cam_id)
+            width = 1920
+            height = 1080
+            self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+            self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
         else:
             self._capture = cv2.VideoCapture(self.cam_id)
 
