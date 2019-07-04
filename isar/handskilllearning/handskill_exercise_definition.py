@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QIntValidator, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
+from isar.events.actions import StartAnimationAction, StopAnimationAction
 from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise, CatchTheObjectExercise
 from isar.scene import scenemodel
 from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, FeedbackAnnotation, AnimationAnnotation
@@ -74,6 +75,17 @@ class HandSkillExerciseDefinition(QWizard):
             animation_annotations = scene.get_all_annotations_by_type(AnimationAnnotation)
             timer_annotations = scene.get_all_annotations_by_type(TimerAnnotation)
             feedback_annotations = scene.get_all_annotations_by_type(FeedbackAnnotation)
+
+            # TODO: implement method in scene get_al_actions by type
+            scene_actions = scene.get_actions()
+            count_start_action = 0
+            count_stop_action = 0
+            for action in scene_actions:
+                if isinstance(action, StartAnimationAction):
+                    count_start_action = count_start_action + 1
+                if isinstance(action, StopAnimationAction):
+                    count_stop_action = count_stop_action + 1
+
             if len(timer_annotations) > 0 and len(feedback_annotations) > 0:
 
                 if self.radio_button_follow.isChecked() and len(curve_annotations) == 1:
@@ -81,8 +93,8 @@ class HandSkillExerciseDefinition(QWizard):
                     item.setText(scene.name)
                     model.appendRow(item)
 
-                # TODO: also check for start and stop animation action annotation
-                if self.radio_button_catch.isChecked() and len(animation_annotations) > 0:
+                if self.radio_button_catch.isChecked() and len(animation_annotations) > 0 \
+                        and count_start_action > 0 and count_stop_action > 0:
                     item = QStandardItem()
                     item.setText(scene.name)
                     model.appendRow(item)
