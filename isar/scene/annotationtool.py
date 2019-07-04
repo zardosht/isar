@@ -1129,8 +1129,8 @@ class CurveAnnotationTool(AnnotationTool):
 
             start = self.annotation.line_positions[len(self.annotation.line_positions) - 1]
             end = self.annotation.line_positions[len(self.annotation.line_positions) - 2]
-            cv2.line(self._img, start, end, self.annotation.color.get_value(),
-                     self.annotation.thickness.get_value())
+            cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
+                     self.annotation.line_thickness.get_value())
 
             if len(self.compute_line_positions) > 0:
                self.compute_line_positions = self.compute_line_positions \
@@ -1164,9 +1164,14 @@ class CurveAnnotationTool(AnnotationTool):
         if self.is_annotation_valid():
             if self.annotation.end.get_value() is not None:
                 self.annotation.line_positions[0] = self.annotation.start.get_value()
-                self.annotation.line_positions[len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
-                cv2.circle(self._img, self.annotation.start.get_value(), 7,(0,255,255), -1)
-                cv2.circle(self._img, self.annotation.end.get_value(), 7,(0,255,255), -1)
+                self.annotation.line_positions[
+                    len(self.annotation.line_positions) - 1] = self.annotation.end.get_value()
+                cv2.circle(self._img, self.annotation.start.get_value(),
+                           self.annotation.start_stop_radius.get_value(),
+                           self.annotation.start_stop_color.get_value(), -1)
+                cv2.circle(self._img, self.annotation.end.get_value(),
+                           self.annotation.start_stop_radius.get_value(),
+                           self.annotation.start_stop_color.get_value(), -1)
 
             if self.annotation.show_points.get_value() is False:
                 for i in range(len(self.annotation.line_positions) - 1):
@@ -1175,13 +1180,14 @@ class CurveAnnotationTool(AnnotationTool):
                     end = sceneutil.convert_object_to_image(self.annotation.line_positions[i + 1], self.phys_obj,
                                                             self.scene_scale_factor)
 
-                    cv2.line(self._img, start, end, self.annotation.color.get_value(),
-                             self.annotation.thickness.get_value())
+                    cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
+                             self.annotation.line_thickness.get_value())
             else:
-                self.annotation.line_points_distributed = distribute_points(self.annotation.points.get_value(), self.annotation.line_positions)
+                self.annotation.line_points_distributed = distribute_points(self.annotation.points.get_value(),
+                                                                            self.annotation.line_positions)
                 for point in self.annotation.line_points_distributed:
-                    cv2.circle(self._img, point, self.annotation.thickness.get_value(),
-                               self.annotation.color.get_value(), -1)
+                    cv2.circle(self._img, point, self.annotation.line_thickness.get_value(),
+                               self.annotation.line_color.get_value(), -1)
 
     def is_annotation_valid(self):
         # Are there any coordinates saved?
@@ -1354,7 +1360,6 @@ annotation_tool_btns = {
     "animation_btn": AnimationAnnotationTool(),
     "feedback_btn": FeedbackAnnotationTool()
 }
-
 
 """
 Implementation of a method that takes two distant points and returns 

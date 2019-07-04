@@ -621,22 +621,26 @@ class CurveAnnotation(Annotation):
         super(CurveAnnotation, self).__init__()
 
         # TODO: implement position that should move the line
-        # TODO: add thickness for start and end
         self.start = IntTupleAnnotationProperty("Start", None, self)
         self.properties.append(self.start)
 
         self.end = IntTupleAnnotationProperty("End", None, self)
         self.properties.append(self.end)
 
-        # TODO: make points no bigger than line position size
-        self.points = IntAnnotationProperty("Points", None, self)
+        self.points = IntAnnotationProperty("Points", None, self, self.set_points.__name__)
         self.properties.append(self.points)
 
-        self.color = ColorAnnotationProperty("Color", (0, 0, 0), self)
-        self.properties.append(self.color)
+        self.line_color = ColorAnnotationProperty("Line color", (0, 0, 0), self)
+        self.properties.append(self.line_color)
 
-        self.thickness = IntAnnotationProperty("Thickness", 2, self)
-        self.properties.append(self.thickness)
+        self.line_thickness = IntAnnotationProperty("Line thickness", 2, self)
+        self.properties.append(self.line_thickness)
+
+        self.start_stop_color = ColorAnnotationProperty("Start/Stop color", (0, 255, 255), self)
+        self.properties.append(self.start_stop_color)
+
+        self.start_stop_radius = IntAnnotationProperty("Start/Stop radius", 7, self)
+        self.properties.append(self.start_stop_radius)
 
         # TODO: show just points not the line
         self.show_points = BooleanAnnotationProperty("Show points", False, self)
@@ -646,6 +650,12 @@ class CurveAnnotation(Annotation):
         self.line_points_distributed = []
 
         self.exercise = None
+
+    def set_points(self, value):
+        if value <= len(self.line_positions):
+            self.points._value = value
+            return True
+        return False
 
     def intersects_with_point(self, point):
         if self.exercise is not None:
