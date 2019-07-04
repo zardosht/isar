@@ -836,6 +836,7 @@ class SceneDefinitionWindow(QMainWindow):
         self._camera_view_timer.start(isar.CAMERA_UPDATE_INTERVAL)
 
         t = Thread(target=self.run_object_detection)
+        t.daemon = True
         t.start()
 
     def setup_models(self):

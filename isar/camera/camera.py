@@ -79,7 +79,7 @@ class CameraService(Service):
                 continue
 
             if self._queue.full():
-                # logger.warning("Camera _queue is full! continue.")
+                logger.warning("Camera _queue is full! continue.")
                 continue
 
             # time.sleep(0.05)
@@ -105,7 +105,7 @@ class CameraService(Service):
             self._queue.put(isar.POISON_PILL)
 
         # TODO: this hangs on stop! why? I don't know
-        # self._capture.release()
+        self._capture.release()
 
     def start_capture(self):
         self._do_capture = True
