@@ -38,17 +38,21 @@ def main():
     # See: https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr
     # os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
 
-    configure_logging()
-    logger = logging.getLogger("isar")
-
-    app = QtWidgets.QApplication(sys.argv)
-
+    use_cases = ["1", "2", "3", "4"]
     use_case = input(
         "1 - Scene Definition \n" +
         "2 - Domain Learning \n" +
         "3 - Hand skill Exercise Definition \n" +
         "4 - Hand skill Exercise Execution \n\n" +
         "Enter option [1, 2, 3, 4]: ")
+
+    if use_case not in use_cases:
+        return
+
+    configure_logging()
+    logger = logging.getLogger("isar")
+
+    app = QtWidgets.QApplication(sys.argv)
 
     all_services_initialized = servicemanager.start_services()
     if not all_services_initialized:

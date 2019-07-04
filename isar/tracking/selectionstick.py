@@ -70,18 +70,25 @@ class SelectionStickService(Service):
         self._camera_service.start_capture()
 
         tracking_thread = threading.Thread(name="SelectionStickTrackingThread", target=self._start_tracking)
+        tracking_thread.daemon = True
         tracking_thread.start()
 
         event_detection_thread = threading.Thread(name="SelectionStickEventDetectionThread",
                                                   target=self._start_event_detection)
+        event_detection_thread.daemon = True
         event_detection_thread.start()
 
     def _start_tracking(self):
+        self._camera_service.start_capture()
         while not self._stop_tracking_event.is_set():
 
             time.sleep(isar.SELECTION_STICK_TRACKING_INTERVAL)
 
             camera_frame = self._camera_service.get_frame()
+            if camera_frame is isar.POISON_PILL:
+                self._stop_event_detection_event.set()
+                break
+
             if camera_frame is None:
                 continue
 
@@ -190,7 +197,6 @@ class SelectionStickService(Service):
     def stop(self):
         self._stop_tracking_event.set()
         self._stop_event_detection_event.set()
-        self._camera_service.stop_capture()
 
     def fire_event(self, target):
         logger.info("Fire SelectionEvent on: " + str(target))

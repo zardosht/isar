@@ -4,6 +4,7 @@ import os
 import time
 import traceback
 
+import isar
 from isar.camera.camera import CameraFrame
 from isar.tracking.objectdetection import ObjectDetectionPrediction, POISON_PILL
 from objectdetectors.yolo_tool_detector import physical_objects, object_detector_package_path, temp_folder_path, \
@@ -40,7 +41,9 @@ def get_predictions(obj_detection_request):
     # compute the homography from the set of matched features
     # apply homograph to the position of the annotations.
 
-    frame: CameraFrame = obj_detection_request.camera_frame
+    frame = obj_detection_request.camera_frame
+    if frame is isar.POISON_PILL:
+        return
 
     if tfnet is None:
         init_yolo()

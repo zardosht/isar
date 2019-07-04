@@ -1,4 +1,5 @@
 import glob
+import os
 import time
 import traceback
 
@@ -297,6 +298,27 @@ def f8():
     cv2.destroyAllWindows()
 
 
+def f9():
+    if os.name == "posix":
+        cam_id = 2
+        _capture = cv2.VideoCapture(cam_id)
+        width = 1920
+        height = 1080
+        _capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        _capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+        while True:
+            ret, frame = _capture.read()
+            if ret:
+                cv2.imshow("camera", frame)
+                key = cv2.waitKey(1)
+                if key & 0xFF == ord('q'):
+                    break
+
+        _capture.release()
+        cv2.destroyAllWindows()
+
+
 if __name__ == "__main__":
     # f2()
     # f3()
@@ -304,7 +326,8 @@ if __name__ == "__main__":
     # f5()
     # f6()
     # f7()
-    f8()
+    # f8()
+    f9()
 
     # img = cv2.imread("tmp_files/tmp_image.jpg")
     # cv2.imshow("tmp_package", img)

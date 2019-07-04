@@ -1,6 +1,8 @@
 import functools
 import logging
 import os
+import time
+from threading import Thread
 
 from PyQt5 import uic, QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import QTimer, QItemSelectionModel, Qt, QItemSelection
@@ -833,9 +835,8 @@ class SceneDefinitionWindow(QMainWindow):
         self._camera_view_timer.timeout.connect(self.update_camera_view)
         self._camera_view_timer.start(isar.CAMERA_UPDATE_INTERVAL)
 
-        self._object_detection_timer = QTimer()
-        self._object_detection_timer.timeout.connect(self.run_object_detection)
-        self._object_detection_timer.start(isar.OBJECT_DETECTION_INTERVAL)
+        t = Thread(target=self.run_object_detection)
+        t.start()
 
     def setup_models(self):
         self.scenes_model = ScenesModel()
@@ -903,15 +904,24 @@ class SceneDefinitionWindow(QMainWindow):
         self.camera_view.set_camera_frame(camera_frame)
 
     def run_object_detection(self):
-        if self.track_objects_checkbox.isChecked():
-            self._object_detection_service.start_object_detection()
-            scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
-            if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
-               self._object_detection_service.get_present_objects(scene_phys_objs_names,
-                                                                   callback=self.on_obj_detection_complete)
-        else:
-            self._object_detection_service.stop_object_detection()
-            self.physical_objects_model.update_present_physical_objects(None)
+        while True:
+            time.sleep(isar.OBJECT_DETECTION_INTERVAL)
+            if self.track_objects_checkbox.isChecked():
+                camera_frame = self._camera_service.get_frame()
+                if camera_frame is isar.POISON_PILL:
+                    logger.info(
+                        "Object detection thread in scene definition window got poison pill from camera. Break.")
+                    break
+
+                self._object_detection_service.start_object_detection()
+                scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
+                if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
+                    self._object_detection_service.get_present_objects(camera_frame,
+                                                                       scene_phys_objs_names,
+                                                                       callback=self.on_obj_detection_complete)
+            else:
+                self._object_detection_service.stop_object_detection()
+                self.physical_objects_model.update_present_physical_objects(None)
 
     def on_obj_detection_complete(self, phys_obj_predictions):
         self.physical_objects_model.update_present_physical_objects(phys_obj_predictions)

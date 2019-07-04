@@ -4,6 +4,7 @@ import cv2
 import logging
 import time
 
+import isar
 from isar.tracking.objectdetection import ObjectDetectionPrediction
 from objectdetectors.dummy_detector import physical_objects, temp_folder_path
 
@@ -18,6 +19,8 @@ description = "Dummy detector"
 def get_predictions(obj_detection_request):
 
     frame = obj_detection_request.camera_frame
+    if frame is isar.POISON_PILL:
+        return
 
     ## TODO: Remove. Dummy test code
     # x += 10

@@ -5,6 +5,7 @@ import time
 from queue import Queue, LifoQueue
 import cv2
 
+import isar
 from isar.services.service import Service
 
 logger = logging.getLogger("isar.camera")
@@ -18,11 +19,11 @@ class CameraService(Service):
     def __init__(self, service_name=None, cam_id=0):
         super().__init__(service_name)
 
-        _queue_size = 100
-        self._queue = LifoQueue(_queue_size)
+        # _queue_size = 100
+        # self._queue = LifoQueue(_queue_size)
 
-        # _queue_size = 1
-        # self._queue = Queue(_queue_size)
+        self._queue_size = 20
+        self._queue = Queue(self._queue_size)
 
         self.cam_id = cam_id
         self._capture = None
@@ -61,6 +62,7 @@ class CameraService(Service):
 
     def start(self):
         t = threading.Thread(name="CameraThread", target=self._start_capture)
+        t.daemon = True
         t.start()
 
     def _start_capture(self):
@@ -96,16 +98,14 @@ class CameraService(Service):
         :return:
         """
         self._stop_event.set()
+        while not self._queue.empty():
+            self._queue.get()
 
-        # camera service must stop last.
-        # when it stops, it puts three None objects in its queue (very dirty! this is not the way to solve it.
-        # but I don't care now. Why three? because I have three services waiting for this camera frame)
-        # if any thread is waiting for camera service queue, it can pick the None object and continue termination.
-        self._queue.put(None)
-        self._queue.put(None)
-        self._queue.put(None)
+        while not self._queue.full():
+            self._queue.put(isar.POISON_PILL)
 
-        self._capture.release()
+        # TODO: this hangs on stop! why? I don't know
+        # self._capture.release()
 
     def start_capture(self):
         self._do_capture = True

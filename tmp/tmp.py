@@ -1,38 +1,292 @@
-import multiprocessing
+import random
 import time
-
-call_counter = 0
-
-
-def do_work():
-    global call_counter
-    call_counter += 1
-    start_time = time.time()
-    print("Started long operation {}.".format(call_counter))
-    length = 1.0e7
-    sum = 0
-    for i in range(int(length)):
-        sum += i
-
-    print("Long operation {} took {}".format(call_counter, time.time() - start_time))
+from queue import Queue
+from threading import Event, Thread
 
 
-p = multiprocessing.Process(target=do_work)
+POISON_PILL = "poison_pill"
+
+
+class Item:
+    def __init__(self, item_number):
+        self.item_number = item_number
+
+    def __str__(self):
+        return "Item" + str(self.item_number)
+
+
+class Producer:
+    def __init__(self):
+        self.queue_size = 20
+        self._queue = Queue(self.queue_size)
+        self.stop_event = Event()
+
+    def start(self):
+        t = Thread(target=self._start)
+        t.start()
+        print("producer started")
+
+    def _start(self):
+        item_number = 0
+        while not self.stop_event.is_set():
+            item = Item(item_number)
+            self._queue.put(item)
+            item_number += 1
+
+    def get_item(self):
+        item = self._queue.get()
+        return item
+
+    def stop(self):
+        self.stop_event.set()
+        while not self._queue.empty():
+            self._queue.get()
+
+        while not self._queue.full():
+            print("producer put poison pill")
+            self._queue.put(POISON_PILL)
+
+
+class Consumer:
+    def __init__(self, id):
+        self.id = id
+
+    def start(self):
+        t = Thread(target=self._start)
+        t.start()
+        print("{} started".format(self))
+
+    def _start(self):
+        producer = get_service("producer")
+        while True:
+            time.sleep(random.random())
+
+            item = producer.get_item()
+            if item is POISON_PILL:
+                print("{} got poison pill. Break.".format(self))
+                break
+
+            print("{} got item {}".format(self, item))
+
+    def stop(self):
+        pass
+
+    def __str__(self):
+        return "Consumer" + str(self.id)
+
+
+services = {}
+consumers = []
+
+
+def get_service(service_name):
+    return services[service_name]
+
+
+p = Producer()
+services["producer"] = p
 p.start()
 
-print("process started")
-print("sleeping for 2 sec.")
+c1 = Consumer(1)
+c1.start()
+consumers.append(c1)
 
-time.sleep(2)
-
-print("woke up")
-print("restarting process")
-
-p.start()
-
-print("end")
+c2 = Consumer(2)
+c2.start()
+consumers.append(c2)
 
 
+# c3 = Consumer(1)
+# c3.start()
+# print("Consumer3 started.")
+# consumers.append(c3)
+
+
+print("Waiting on main thread for 10 sec...............")
+time.sleep(10)
+print("Finished waiting on main .......................")
+
+# print("Stopping...")
+#
+# c1.stop()
+# print("Consumer1 stopped.")
+#
+# c2.stop()
+# print("Consumer2 stopped.")
+#
+# c3.stop()
+# print("Consumer3 stopped.")
+
+p.stop()
+print("bye")
+
+# # ============================================================
+#
+# import random
+# import time
+#
+# from queue import Empty, Queue
+# from threading import Thread
+#
+# max_product = 10
+# cur_product = 0
+#
+# done = False
+#
+#
+# def produce(queue):
+#     global cur_product, done
+#     nums = range(5)
+#     while True:
+#         if cur_product >= max_product:
+#             done = True
+#             break
+#
+#         num = random.choice(nums)
+#         queue.put(num)
+#         print('Produced:', num)
+#         time.sleep(random.randint(0, 5))
+#
+#         cur_product += 1
+#
+#     print('Exiting producer thread...')
+#
+#
+# def consume(name, queue):
+#     while not done:
+#         try:
+#             num = queue.get(timeout=0.1)
+#             queue.task_done()
+#             print('{} consumed: {}'.format(name, num))
+#             time.sleep(random.randint(0, 5))
+#         except Empty:
+#             pass
+#
+#     print('Exiting consumer thread', name)
+#
+#
+# def main():
+#     q = Queue(10)
+#
+#     producer = Thread(target=produce, args=(q,))
+#     producer.start()
+#
+#     consumers = []
+#     for i in range(3):
+#         name = 'Consumer-{}'.format(i)
+#         consumer = Thread(target=consume, args=(name, q))
+#         consumer.start()
+#         consumers.append(consumer)
+#
+#     producer.join()
+#
+#     for consumer in consumers:
+#         consumer.join()
+#
+#
+# if __name__ == '__main__':
+#     main()
+#
+#
+# # ============================================================
+#
+#
+# import threading
+# import time
+# import logging
+# import random
+# from queue import Queue
+#
+# logging.basicConfig(level=logging.DEBUG,
+#                     format='(%(threadName)-9s) %(message)s', )
+#
+# BUF_SIZE = 10
+# q = Queue(BUF_SIZE)
+#
+#
+# class ProducerThread(threading.Thread):
+#     def __init__(self, group=None, target=None, name=None,
+#                  args=(), kwargs=None, verbose=None):
+#         super(ProducerThread, self).__init__()
+#         self.target = target
+#         self.name = name
+#
+#     def run(self):
+#         while True:
+#             if not q.full():
+#                 item = random.randint(1, 10)
+#                 q.put(item)
+#                 logging.debug('Putting ' + str(item)
+#                               + ' : ' + str(q.qsize()) + ' items in queue')
+#                 time.sleep(random.random())
+#         return
+#
+#
+# class ConsumerThread(threading.Thread):
+#     def __init__(self, group=None, target=None, name=None,
+#                  args=(), kwargs=None, verbose=None):
+#         super(ConsumerThread, self).__init__()
+#         self.target = target
+#         self.name = name
+#         return
+#
+#     def run(self):
+#         while True:
+#             if not q.empty():
+#                 item = q.get()
+#                 logging.debug('Getting ' + str(item)
+#                               + ' : ' + str(q.qsize()) + ' items in queue')
+#                 time.sleep(random.random())
+#         return
+#
+#
+# if __name__ == '__main__':
+#     p = ProducerThread(name='producer')
+#     c = ConsumerThread(name='consumer')
+#
+#     p.start()
+#     time.sleep(2)
+#     c.start()
+#     time.sleep(2)
+#
+#
+# # ============================================================
+#
+# import multiprocessing
+# import time
+#
+# call_counter = 0
+#
+#
+# def do_work():
+#     global call_counter
+#     call_counter += 1
+#     start_time = time.time()
+#     print("Started long operation {}.".format(call_counter))
+#     length = 1.0e7
+#     sum = 0
+#     for i in range(int(length)):
+#         sum += i
+#
+#     print("Long operation {} took {}".format(call_counter, time.time() - start_time))
+#
+#
+# p = multiprocessing.Process(target=do_work)
+# p.start()
+#
+# print("process started")
+# print("sleeping for 2 sec.")
+#
+# time.sleep(2)
+#
+# print("woke up")
+# print("restarting process")
+#
+# p.start()
+#
+# print("end")
+#
+# # ============================================================
 # import sys
 # import time
 #

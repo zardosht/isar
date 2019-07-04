@@ -10,6 +10,7 @@ import traceback
 from queue import Queue
 from typing import List
 
+import isar
 from isar.services.service import Service
 
 logger = logging.getLogger("isar.objectdetection")
@@ -103,12 +104,13 @@ class ObjectDetectionService(Service):
         """
         global object_detectors
         for obj_detector_name in object_detectors:
-            request_queue = mp.JoinableQueue()
+            request_queue = mp.JoinableQueue(maxsize=1)
             response_queue = mp.Queue()
             obj_detector_worker = ObjectDetectorWorker(obj_detector_name, request_queue, response_queue)
             # obj_detector_worker.daemon = False
             self.object_detector_workers.append(obj_detector_worker)
             observer_thread = ObjectDetectionObserverThread(Queue(maxsize=1), obj_detector_worker)
+            # observer_thread.daemon = True
             self.observer_threads.append(observer_thread)
 
         for worker in self.object_detector_workers:
@@ -123,12 +125,11 @@ class ObjectDetectionService(Service):
     def stop_object_detection(self):
         self._do_object_detection = False
 
-    def get_present_objects(self, scene_phys_objs_names, callback=None):
+    def get_present_objects(self, camera_frame, scene_phys_objs_names, callback=None):
         if not self._do_object_detection:
             logger.info("Object detection is deactivated. Return. Did you call start_object_detection() first?")
             return
 
-        camera_frame = self._camera_service.get_frame()
         if camera_frame is None:
             return
 
@@ -139,11 +140,27 @@ class ObjectDetectionService(Service):
 
     def stop(self):
         for observer_thread in self.observer_threads:
-            observer_thread.request_queue.put(POISON_PILL)
-            observer_thread.join(timeout=2)
+            if observer_thread.request_queue.empty():
+                observer_thread.request_queue.put(POISON_PILL)
+            else:
+                observer_thread.request_queue.get()
+                observer_thread.request_queue.task_done()
+                # observer_thread.request_queue.put(POISON_PILL)
+                # observer_thread.join(timeout=2)
 
         for obj_detector_worker in self.object_detector_workers:
             obj_detector_worker.shut_down()
+            if obj_detector_worker.request_queue.empty():
+                obj_detector_worker.request_queue.put(isar.POISON_PILL)
+            else:
+                obj_detector_worker.request_queue.get()
+                obj_detector_worker.request_queue.task_done()
+
+            if obj_detector_worker.response_queue.empty():
+                obj_detector_worker.response_queue.put(isar.POISON_PILL)
+            # else:
+            #     obj_detector_worker.response_queue.get()
+
             obj_detector_worker.terminate()
 
     @staticmethod
@@ -176,6 +193,9 @@ class ObjectDetectionObserverThread(threading.Thread):
             phys_obj_predictions = {}
             self.obj_detector_worker.request_queue.put(obj_detection_req)
             obj_detection_response = self.obj_detector_worker.response_queue.get()
+            if obj_detection_response == POISON_PILL:
+                break
+
             phys_obj_predictions[obj_detection_response.object_detector_name] = obj_detection_response.predictions
             if self.callback is not None:
                 try:
@@ -233,23 +253,29 @@ class ObjectDetectorWorker(mp.Process):
         self.object_detector = object_detectors[object_detector_name]
         self.request_queue = request_queue
         self.response_queue = response_queue
-        self.shut_down_event = mp.Event()
+        self.stop_event = mp.Event()
 
     def run(self):
         while True:
-            if self.shut_down_event.is_set():
-                logger.info("Shutting down: ", self.object_detector.name)
-                self.request_queue.task_done()
+            if self.stop_event.is_set():
+                if not self.request_queue.empty():
+                    self.request_queue.get()
+                    self.request_queue.task_done()
                 sys.exit(0)
 
-            if not self.request_queue.empty():
-                obj_detection_request = self.request_queue.get()
-                t1 = time.time()
-                obj_detection_predictions = self.object_detector.get_predictions(obj_detection_request)
-                self.request_queue.task_done()
-                self.response_queue.put(ObjectDetectionResponse(self.object_detector.name, obj_detection_predictions))
-                logger.debug("Detection of objects by {} took {}".format(self.object_detector.name, time.time() - t1))
+            obj_detection_request = self.request_queue.get()
+            if obj_detection_request is isar.POISON_PILL:
+                logger.info("{} received poison pill. sys.exit()".format(self))
+                sys.exit(0)
+
+            t1 = time.time()
+            obj_detection_predictions = self.object_detector.get_predictions(obj_detection_request)
+            self.request_queue.task_done()
+            self.response_queue.put(ObjectDetectionResponse(self.object_detector.name, obj_detection_predictions))
+            logger.debug("Detection of objects by {} took {}".format(self.object_detector.name, time.time() - t1))
 
     def shut_down(self):
+        logger.info("Shutting down: {}".format(self.object_detector.name))
+        self.stop_event.set()
         self.object_detector.terminate()
-        self.shut_down_event.set()
+

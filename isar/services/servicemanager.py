@@ -11,6 +11,8 @@ from isar.events.objecttrackingservice import ObjectTrackingService
 from isar.events.rulesservice import RulesService
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
+from isar.services.DummyObjectDetectionService import DummyObjectDetectionService
+from isar.services.service import Service
 from isar.tracking import objectdetection
 from isar.tracking.handtracking import HandTrackingService
 from isar.tracking.objectdetection import ObjectDetectionService
@@ -49,7 +51,10 @@ def start_services():
 
     try:
         objectdetection.init()
-        objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION, camera1_service)
+        # objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION, camera1_service)
+
+        objectdetection_service = DummyObjectDetectionService(ServiceNames.OBJECT_DETECTION)
+
         objectdetection_service.start()
         __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
     except Exception as exp:
@@ -96,18 +101,24 @@ def start_services():
 
 
 def stop_services():
+    camera_service = get_service(ServiceNames.CAMERA1)
+    camera_service.stop()
+
+    obj_detection_service = get_service(ServiceNames.OBJECT_DETECTION)
+    obj_detection_service.stop()
+
     for service in __services.values():
+        if service.name == ServiceNames.CAMERA1:
+            continue
+
+        if service.name == ServiceNames.OBJECT_DETECTION:
+            continue
+
         try:
             service.stop()
         except Exception as exp:
             logger.error(exp)
             traceback.print_tb(exp.__traceback__)
-
-    # camera service must stop last.
-    # when it stops, it puts some None objects in its queue
-    # if any thread is waiting for camera service queue, it can pick the None object and continue termination.
-    camera_service = get_service(ServiceNames.CAMERA1)
-    camera_service.stop()
 
 
 def get_service(service_name):
