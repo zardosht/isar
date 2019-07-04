@@ -499,6 +499,11 @@ class CompositeAction(Action):
     @classmethod
     def update_action_properties_frame(cls, scene, select_target_dialog, qt_frame):
         layout = qt_frame.layout()
+        for i in reversed(range(layout.count())):
+            widget_to_remove = layout.itemAt(i).widget()
+            layout.removeWidget(widget_to_remove)
+            widget_to_remove.setParent(None)
+
         select_actions_btn = QPushButton()
         select_actions_btn.setText("Select Actions ...")
         layout.addWidget(select_actions_btn)
@@ -536,7 +541,8 @@ class ParallelCompositeAction(Action):
 
     def run(self):
         for action in self.actions:
-            t = Thread(target=lambda a: self._action_service.perform_action(a), args=(action, ))
+            t = Thread(name="ParallelCompositeActionThread",
+                       target=lambda a: self._action_service.perform_action(a), args=(action, ))
             t.start()
 
     @classmethod
@@ -562,7 +568,7 @@ class SequentialCompositeAction(Action):
         self.time_between_actions = 1
 
     def run(self):
-        t = Thread(target=self.do_run)
+        t = Thread(name="SequentialCompositeActionThread", target=self.do_run)
         t.start()
 
     def do_run(self):

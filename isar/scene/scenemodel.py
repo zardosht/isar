@@ -336,6 +336,12 @@ class Scene:
     def get_physical_objects(self):
         return tuple(self.__physical_objects)
 
+    def get_physical_object_names(self):
+        phys_objs_names = []
+        for phys_obj in self.__physical_objects:
+            phys_objs_names.append(phys_obj.name)
+        return tuple(phys_objs_names)
+
     def get_physical_object_by_name(self, name):
         phys_objs = self.get_physical_objects()
         for phys_obj in phys_objs:

@@ -146,7 +146,7 @@ class ProjectorView(QtWidgets.QWidget):
         self.calibrating = True
         pattern_size, chessboard_img = projectionutil.create_chessboard_image(self.projector_width, self.projector_height)
         self.set_scene_image(chessboard_img)
-        t_calib = threading.Thread(target=self.calibrate, args=(chessboard_img,))
+        t_calib = threading.Thread(name="ProjectorCalibrationThread", target=self.calibrate, args=(chessboard_img,))
         t_calib.start()
 
     def calibrate(self, projector_img):

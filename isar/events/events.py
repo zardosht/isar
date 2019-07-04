@@ -1,5 +1,7 @@
 import logging
 
+from PyQt5.QtWidgets import QPushButton, QLabel, QDialog
+
 from isar.scene.physicalobjectmodel import PhysicalObject
 from isar.scene.scenemodel import Scene
 
@@ -189,8 +191,6 @@ class PhysicalObjectDisappearedEvent(Event):
 
 class PhysicalObjectPickedEvent(Event):
     target_types = [PhysicalObject]
-
-    # TODO: implement
     pass
 
 
@@ -198,6 +198,61 @@ class PhysicalObjectGroupAppearedEvent(Event):
     target_types = [PhysicalObject]
     has_multiple_targets = True
 
+    pass
+
+
+class PhysicalObjectPlacedInAreaEvent(Event):
+    from isar.scene.annotationmodel import ObjectAreaAnnotation
+    target_types = [ObjectAreaAnnotation]
+
+    has_properties = True
+
+    physical_object = None
+
+    @classmethod
+    def update_event_properties_frame(cls, scene, select_target_dialog, qt_frame):
+        layout = qt_frame.layout()
+        for i in reversed(range(layout.count())):
+            widget_to_remove = layout.itemAt(i).widget()
+            layout.removeWidget(widget_to_remove)
+            widget_to_remove.setParent(None)
+
+        select_phys_obj_btn = QPushButton()
+        select_phys_obj_btn.setText("Select Physical Object ...")
+        layout.addWidget(select_phys_obj_btn)
+
+        phys_obj_label = QLabel()
+        phys_obj_label.setWordWrap(True)
+        layout.addWidget(phys_obj_label)
+
+        select_phys_obj_btn.clicked.connect(lambda: cls.show_select_target_dialog(
+                                               scene, select_target_dialog, phys_obj_label))
+
+    @classmethod
+    def show_select_target_dialog(cls, scene, select_target_dialog, phys_obj_label):
+        cls.physical_object = None
+        select_target_dialog.scene = scene
+        select_target_dialog.set_target_types(PhysicalObject)
+        select_target_dialog.setModal(True)
+        select_target_dialog.exec()
+        if select_target_dialog.result() == QDialog.Accepted:
+            targets = select_target_dialog.get_targets()
+            if not len(targets) > 0:
+                return
+
+            cls.physical_object = targets[0]
+            phys_obj_label.setText(cls.physical_object.name)
+
+    @classmethod
+    def reset_properties(cls):
+        cls.physical_object = None
+
+    @classmethod
+    def set_properties(cls, instance):
+        instance.physical_object = cls.physical_object
+
+
+class PhysicalObjectRemovedFromAreaEvent(PhysicalObjectPlacedInAreaEvent):
     pass
 
 
@@ -238,6 +293,8 @@ event_types = {
     PhysicalObjectDisappearedEvent.__name__: PhysicalObjectDisappearedEvent,
     PhysicalObjectPickedEvent.__name__: PhysicalObjectPickedEvent,
     PhysicalObjectGroupAppearedEvent.__name__: PhysicalObjectGroupAppearedEvent,
+    PhysicalObjectPlacedInAreaEvent.__name__: PhysicalObjectPlacedInAreaEvent,
+    PhysicalObjectRemovedFromAreaEvent.__name__: PhysicalObjectRemovedFromAreaEvent,
 
     SceneShownEvent.__name__: SceneShownEvent,
     SceneLeftEvent.__name__: SceneLeftEvent

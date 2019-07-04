@@ -82,7 +82,7 @@ class FollowThePathExercise(HandSkillExercise):
             feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
             feedback_annotations[0].set_show_inactive(True)
 
-            collect_points_thread = Thread(target=self.start_collect_points)
+            collect_points_thread = Thread(name="CollectPointsThread", target=self.start_collect_points)
             collect_points_thread.start()
 
     def start_collect_points(self):

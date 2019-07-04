@@ -1,7 +1,8 @@
 import logging
 import os
 import threading
-from queue import Queue
+import time
+from queue import Queue, LifoQueue
 import cv2
 
 from isar.services.service import Service
@@ -16,8 +17,13 @@ class CameraService(Service):
 
     def __init__(self, service_name=None, cam_id=0):
         super().__init__(service_name)
+
+        # _queue_size = 100
+        # self._queue = LifoQueue(_queue_size)
+
         _queue_size = 1
         self._queue = Queue(_queue_size)
+
         self.cam_id = cam_id
         self._capture = None
         self._open_capture()
@@ -46,7 +52,7 @@ class CameraService(Service):
             raise Exception(message)
 
     def start(self):
-        t = threading.Thread(target=self._start_capture)
+        t = threading.Thread(name="CameraThread", target=self._start_capture)
         t.start()
 
     def _start_capture(self):
@@ -65,6 +71,8 @@ class CameraService(Service):
             if self._queue.full():
                 continue
 
+            # time.sleep(0.05)
+
             ret, frame = self._capture.read()
             if ret:
                 frame_number += 1
@@ -79,6 +87,15 @@ class CameraService(Service):
         :return:
         """
         self._stop_event.set()
+
+        # camera service must stop last.
+        # when it stops, it puts three None objects in its queue (very dirty! this is not the way to solve it.
+        # but I don't care now. Why three? because I have three services waiting for this camera frame)
+        # if any thread is waiting for camera service queue, it can pick the None object and continue termination.
+        self._queue.put(None)
+        self._queue.put(None)
+        self._queue.put(None)
+
         self._capture.release()
 
     def start_capture(self):

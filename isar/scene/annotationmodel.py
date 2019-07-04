@@ -317,7 +317,8 @@ Timer
 ActionButton
 Curve
 Animation
-ObjectTrackingArea
+FeedbackAnnotation
+ObjectAreaAnnotation
 """
 
 
@@ -439,6 +440,12 @@ class RectangleAnnotation(Annotation):
         height = self.height.get_value()
         return position[0] - int(width / 2) <= point[0] <= position[0] + int(width / 2) and \
             position[1] - int(height / 2) <= point[1] <= position[1] + int(height / 2)
+
+
+class ObjectAreaAnnotation(RectangleAnnotation):
+    def __init__(self):
+        super().__init__()
+        self.is_selectable = False
 
 
 class CircleAnnotation(Annotation):
@@ -761,7 +768,7 @@ class AnimationAnnotation(Annotation):
 
 class AnimationThread(Thread):
     def __init__(self, animation_annotation):
-        super().__init__()
+        super().__init__(name="AnimationThread")
         self.animation_annotation = animation_annotation
         self.image_positions = numpy.add(self.animation_annotation.line_points,
                                          self.animation_annotation.position.get_value())
@@ -788,7 +795,7 @@ class AnimationThread(Thread):
                         self.animation_annotation.image_position = tuple(point)
                         time.sleep(self.speed)
                     self.loop_direction = False
-        logger.info("Thread finished.")
+        logger.info("Animation thread finished.")
 
     def stop(self):
         self.stop_event.set()
@@ -1016,7 +1023,7 @@ class TimerThread(Thread):
     # I had to add this class because of the weired Lock exception I got,
     # when the timer thread was inside the TimerAnnotation class
     def __init__(self, timer_annotation):
-        super().__init__()
+        super().__init__(name="TimerThread")
         self.timer_annotation = timer_annotation
         self.scene = self.timer_annotation.scene
         self.stop_event = Event()
@@ -1195,7 +1202,8 @@ annotation_counters = {
     ActionButtonAnnotation.__name__: 0,
     CurveAnnotation.__name__: 0,
     AnimationAnnotation.__name__: 0,
-    FeedbackAnnotation.__name__: 0
+    FeedbackAnnotation.__name__: 0,
+    ObjectAreaAnnotation.__name__: 0
 
 }
 

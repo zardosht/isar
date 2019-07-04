@@ -54,7 +54,8 @@ class SceneDefinitionWindow(QMainWindow):
 
         self.setup_signals()
 
-        self._timer = None
+        self._camera_view_timer = None
+        self._object_detection_timer = None
         self.setup_timer()
 
     def setup_ui(self):
@@ -297,9 +298,13 @@ class SceneDefinitionWindow(QMainWindow):
         self._hand_tracking_service = servicemanager.get_service(ServiceNames.HAND_TRACKING_SERVICE)
 
     def setup_timer(self):
-        self._timer = QTimer()
-        self._timer.timeout.connect(self.update_camera_view)
-        self._timer.start(5)
+        self._camera_view_timer = QTimer()
+        self._camera_view_timer.timeout.connect(self.update_camera_view)
+        self._camera_view_timer.start(5)
+
+        self._object_detection_timer = QTimer()
+        self._object_detection_timer.timeout.connect(self.run_object_detection)
+        self._object_detection_timer.start(5)
 
     def setup_models(self):
         self.scenes_model = ScenesModel()
@@ -355,7 +360,6 @@ class SceneDefinitionWindow(QMainWindow):
         self.properties_view.setItemDelegate(annotation_property_item_delegate)
 
     def update_camera_view(self):
-        # camera_frame = self._camera_service.get_frame(flipped_y=True)
         camera_frame = self._camera_service.get_frame()
 
         if camera_frame is None:
@@ -365,24 +369,21 @@ class SceneDefinitionWindow(QMainWindow):
         if not self.scene_size_initialized:
             logger.warning("Scene size is not initialized.")
 
-        self._selection_stick_service.camera_img = camera_frame.raw_image
-        self._hand_tracking_service.camera_img = camera_frame.raw_image
-
         self.camera_view.set_camera_frame(camera_frame)
 
-        phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
+    def run_object_detection(self):
         if self.track_objects_checkbox.isChecked():
-            scene_phys_objs_names = phys_obj_model.get_scene_physical_objects_names()
+            self._object_detection_service.start_object_detection()
+            scene_phys_objs_names = self.physical_objects_model.get_scene_physical_objects_names()
             if scene_phys_objs_names is not None and len(scene_phys_objs_names) > 0:
-                self._object_detection_service.get_present_objects(camera_frame,
-                                                                   scene_phys_objs_names,
+               self._object_detection_service.get_present_objects(scene_phys_objs_names,
                                                                    callback=self.on_obj_detection_complete)
         else:
-            phys_obj_model.update_present_physical_objects(None)
+            self._object_detection_service.stop_object_detection()
+            self.physical_objects_model.update_present_physical_objects(None)
 
     def on_obj_detection_complete(self, phys_obj_predictions):
-        phys_obj_model: PhysicalObjectsModel = self.objects_view.model()
-        phys_obj_model.update_present_physical_objects(phys_obj_predictions)
+        self.physical_objects_model.update_present_physical_objects(phys_obj_predictions)
 
     def initialize_scene_size(self):
         max_iter = 100

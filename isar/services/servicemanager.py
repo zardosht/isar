@@ -49,7 +49,7 @@ def start_services():
 
     try:
         objectdetection.init()
-        objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION)
+        objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION, camera1_service)
         objectdetection_service.start()
         __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
     except Exception as exp:
@@ -61,7 +61,7 @@ def start_services():
         actions_service = ActionsService(ServiceNames.ACTIONS_SERVICE)
         __services[ServiceNames.ACTIONS_SERVICE] = actions_service
 
-        selection_stick_service = SelectionStickService(ServiceNames.SELECTION_STICK)
+        selection_stick_service = SelectionStickService(ServiceNames.SELECTION_STICK, camera1_service)
         selection_stick_service.start()
         __services[ServiceNames.SELECTION_STICK] = selection_stick_service
 
@@ -69,7 +69,7 @@ def start_services():
         selection_service.actions_service = actions_service
         __services[ServiceNames.SELECTION_SERVICE] = selection_service
 
-        hand_tracking_service = HandTrackingService(ServiceNames.HAND_TRACKING_SERVICE)
+        hand_tracking_service = HandTrackingService(ServiceNames.HAND_TRACKING_SERVICE, camera1_service)
         hand_tracking_service.start()
         __services[ServiceNames.HAND_TRACKING_SERVICE] = hand_tracking_service
 
@@ -102,6 +102,12 @@ def stop_services():
         except Exception as exp:
             logger.error(exp)
             traceback.print_tb(exp.__traceback__)
+
+    # camera service must stop last.
+    # when it stops, it puts some None objects in its queue
+    # if any thread is waiting for camera service queue, it can pick the None object and continue termination.
+    camera_service = get_service(ServiceNames.CAMERA1)
+    camera_service.stop()
 
 
 def get_service(service_name):
