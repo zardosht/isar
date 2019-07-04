@@ -105,6 +105,9 @@ class CameraService(Service):
             self._queue.put(isar.POISON_PILL)
 
         # TODO: this hangs on stop! why? I don't know
+        # self._capture.release()
+
+    def release_capture(self):
         self._capture.release()
 
     def start_capture(self):

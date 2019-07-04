@@ -909,7 +909,7 @@ class SceneDefinitionWindow(QMainWindow):
             time.sleep(isar.OBJECT_DETECTION_INTERVAL)
             if self.track_objects_checkbox.isChecked():
                 camera_frame = self._camera_service.get_frame()
-                if camera_frame is isar.POISON_PILL:
+                if camera_frame == isar.POISON_PILL:
                     logger.info(
                         "Object detection thread in scene definition window got poison pill from camera. Break.")
                     break

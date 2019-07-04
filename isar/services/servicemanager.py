@@ -3,20 +3,18 @@ import traceback
 from enum import Enum
 
 from isar.camera.camera import CameraService
-from isar.events import eventmanager
 from isar.events.actionsservice import ActionsService
 from isar.events.checkboxservice import CheckboxService
-from isar.events.events import SelectionEvent, TimerTickEvent, TimerFinishedEvent, TimerTimeout1Event
 from isar.events.objecttrackingservice import ObjectTrackingService
 from isar.events.rulesservice import RulesService
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
 from isar.services.DummyObjectDetectionService import DummyObjectDetectionService
-from isar.services.service import Service
 from isar.tracking import objectdetection
 from isar.tracking.handtracking import HandTrackingService
 from isar.tracking.objectdetection import ObjectDetectionService
 from isar.tracking.selectionstick import SelectionStickService
+
 
 __services = {}
 
@@ -51,10 +49,8 @@ def start_services():
 
     try:
         objectdetection.init()
-        # objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION, camera1_service)
-
-        objectdetection_service = DummyObjectDetectionService(ServiceNames.OBJECT_DETECTION)
-
+        objectdetection_service = ObjectDetectionService(ServiceNames.OBJECT_DETECTION, camera1_service)
+        # objectdetection_service = DummyObjectDetectionService(ServiceNames.OBJECT_DETECTION)
         objectdetection_service.start()
         __services[ServiceNames.OBJECT_DETECTION] = objectdetection_service
     except Exception as exp:
@@ -119,6 +115,8 @@ def stop_services():
         except Exception as exp:
             logger.error(exp)
             traceback.print_tb(exp.__traceback__)
+
+    camera_service.release_capture()
 
 
 def get_service(service_name):

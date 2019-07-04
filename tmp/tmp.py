@@ -62,7 +62,7 @@ class Consumer:
             time.sleep(random.random())
 
             item = producer.get_item()
-            if item is POISON_PILL:
+            if item == POISON_PILL:
                 print("{} got poison pill. Break.".format(self))
                 break
 

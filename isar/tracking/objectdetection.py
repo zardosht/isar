@@ -107,7 +107,7 @@ class ObjectDetectionService(Service):
             request_queue = mp.JoinableQueue(maxsize=1)
             response_queue = mp.Queue()
             obj_detector_worker = ObjectDetectorWorker(obj_detector_name, request_queue, response_queue)
-            # obj_detector_worker.daemon = False
+            obj_detector_worker.daemon = True
             self.object_detector_workers.append(obj_detector_worker)
             observer_thread = ObjectDetectionObserverThread(Queue(maxsize=1), obj_detector_worker)
             # observer_thread.daemon = True
@@ -261,10 +261,11 @@ class ObjectDetectorWorker(mp.Process):
                 if not self.request_queue.empty():
                     self.request_queue.get()
                     self.request_queue.task_done()
+                logger.info("{} stop event is set. sys.exit()".format(self))
                 sys.exit(0)
 
             obj_detection_request = self.request_queue.get()
-            if obj_detection_request is isar.POISON_PILL:
+            if obj_detection_request == isar.POISON_PILL:
                 logger.info("{} received poison pill. sys.exit()".format(self))
                 sys.exit(0)
 

@@ -85,7 +85,7 @@ class SelectionStickService(Service):
             time.sleep(isar.SELECTION_STICK_TRACKING_INTERVAL)
 
             camera_frame = self._camera_service.get_frame()
-            if camera_frame is isar.POISON_PILL:
+            if camera_frame == isar.POISON_PILL:
                 self._stop_event_detection_event.set()
                 break
 

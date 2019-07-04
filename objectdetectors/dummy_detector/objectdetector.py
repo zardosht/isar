@@ -18,9 +18,10 @@ description = "Dummy detector"
 
 def get_predictions(obj_detection_request):
 
-    frame = obj_detection_request.camera_frame
-    if frame is isar.POISON_PILL:
+    if obj_detection_request == isar.POISON_PILL:
         return
+
+    frame = obj_detection_request.camera_frame
 
     ## TODO: Remove. Dummy test code
     # x += 10
