@@ -537,13 +537,3 @@ class Ui_SceneDefinitionWindow(object):
         self.actionEvents.setText(_translate("SceneDefinitionWindow", "Events ..."))
         self.actionActions.setText(_translate("SceneDefinitionWindow", "Actions ..."))
         self.actionRules.setText(_translate("SceneDefinitionWindow", "Rules ..."))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    SceneDefinitionWindow = QtWidgets.QMainWindow()
-    ui = Ui_SceneDefinitionWindow()
-    ui.setupUi(SceneDefinitionWindow)
-    SceneDefinitionWindow.show()
-    sys.exit(app.exec_())

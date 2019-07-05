@@ -3,6 +3,7 @@ import multiprocessing as mp
 import os
 import random
 import sys
+import traceback
 
 import cv2
 import numpy as np
@@ -61,22 +62,27 @@ class PoseEstimator(mp.Process):
             best_pe.error = self.compute_error(best_pe.homography, physical_object_image, cropped_image, "_best")
 
         if self.recompute_homography_using_ECC:
-            better_pe = best_pe if best_pe is not None and best_pe.error < pe_result.error else pe_result
-            if self.recompute_homography_using_ECC_threshold_min < better_pe.error < self.recompute_homography_using_ECC_threshold_max:
-                criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 1000, 1e-6)
-                physical_object_image_gray, cropped_image_gray = self.convert_to_gray_scale(physical_object_image, cropped_image)
-                better_homography_float32 = better_pe.homography.astype(np.float32)
+            try:
+                better_pe = best_pe if best_pe is not None and best_pe.error < pe_result.error else pe_result
+                if self.recompute_homography_using_ECC_threshold_min < better_pe.error < self.recompute_homography_using_ECC_threshold_max:
+                    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 1000, 1e-6)
+                    physical_object_image_gray, cropped_image_gray = self.convert_to_gray_scale(physical_object_image, cropped_image)
+                    better_homography_float32 = better_pe.homography.astype(np.float32)
 
-                # (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
-                #                                    cv2.MOTION_HOMOGRAPHY, criteria)
+                    # (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
+                    #                                    cv2.MOTION_HOMOGRAPHY, criteria)
 
-                (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
-                                                   cv2.MOTION_AFFINE, criteria)
+                    (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
+                                                       cv2.MOTION_AFFINE, criteria)
 
-                errror_ecc = self.compute_error(h_ECC, physical_object_image, cropped_image, "_ecc")
-                if h_ECC is not None and errror_ecc < better_pe.error:
-                    pe_result.homography = h_ECC
-                    pe_result.error = errror_ecc
+                    errror_ecc = self.compute_error(h_ECC, physical_object_image, cropped_image, "_ecc")
+                    if h_ECC is not None and errror_ecc < better_pe.error:
+                        pe_result.homography = h_ECC
+                        pe_result.error = errror_ecc
+            except Exception as exp:
+                logger.error("Error recomputing homography using ECC")
+                logger.error(exp)
+                traceback.print_tb(exp.__traceback__)
 
         epsilon = 5e0
         if best_pe is None or pe_result.error < best_pe.error:

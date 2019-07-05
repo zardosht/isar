@@ -67,7 +67,7 @@ def main():
 
     elif use_case == "2":
         isar.application_mode = ApplicationMode.EXECUTION
-        domain_learning_window = DomainLearningWindow(screen_id=2)
+        domain_learning_window = DomainLearningWindow(screen_id=1)
         if domain_learning_window.projector_initialized:
             domain_learning_window.move(100, 100)
             domain_learning_window.show()
