@@ -11,7 +11,7 @@ from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
     CheckboxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation, FeedbackAnnotation, \
-    ObjectAreaAnnotation
+    ObjectAreaAnnotation, CounterAnnotation
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -1061,11 +1061,12 @@ class FeedbackAnnotationTool(AnnotationTool):
         show_average = self.annotation.show_average.get_value()
         show_bad = self.annotation.show_bad.get_value()
 
-        # TODO: generate this according to the circle radius
+        font_scale = self.annotation.font_scale.get_value()
+        text_thickness = self.annotation.text_thickness.get_value()
+        text_color = self.annotation.text_color.get_value()
+
+        # TODO: add font property
         font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.75
-        text_thickness = 1
-        text_color = 0, 0, 0
         line_type = cv2.LINE_AA
 
         if show_inactive:
@@ -1336,6 +1337,80 @@ class AnimationAnnotationTool(AnnotationTool):
         return True
 
 
+class CounterAnnotationTool(AnnotationTool):
+    def __init__(self):
+        super(CounterAnnotationTool, self).__init__()
+
+    def mouse_press_event(self, camera_view, event):
+        self.set_drawing(True)
+        self.annotation = CounterAnnotation()
+
+        # convert mouse coordinates to image coordinates
+        camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())
+        img_x, img_y = sceneutil.mouse_coordinates_to_image_coordinates(
+            event.pos().x(), event.pos().y(), camera_view_size, self._image_frame)
+        self.annotation.position.set_value((img_x, img_y))
+
+    def mouse_move_event(self, camera_view, event):
+        # do nothing
+        pass
+
+    def mouse_release_event(self, camera_view, event):
+        self.annotations_model.add_annotation(self.annotation)
+        self.set_drawing(False)
+
+    def draw(self):
+        if not self._drawing:
+            return
+
+        if not self.annotation:
+            return
+
+        position = sceneutil.convert_object_to_image(self.annotation.position.get_value(),
+                                                     self.phys_obj, self.scene_scale_factor)
+        text = self.annotation.text.get_value()
+        font_scale = self.annotation.font_scale.get_value()
+        text_color = self.annotation.text_color.get_value()
+        text_thickness = self.annotation.text_thickness.get_value()
+
+        # TODO: add font property
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        line_type = cv2.LINE_AA
+
+        current_number = self.annotation.current_number
+        target_number = self.annotation.target_number.get_value()
+
+        text_size, _ = cv2.getTextSize(str(target_number), font, font_scale, text_thickness)
+        width = text_size[0] + 2 * text_thickness
+        height = 2 * text_size[1] + 5 * text_thickness
+        fraction_image = numpy.zeros((height, width, 3), numpy.uint8)
+        fraction_image[:] = (255, 255, 255)
+
+        text_size, _ = cv2.getTextSize(str(target_number), font, font_scale, text_thickness)
+        width = text_size[0] + 2 * text_thickness
+        height = 2 * text_size[1] + 10 * text_thickness
+        fraction_image = numpy.zeros((height, width, 3), numpy.uint8)
+        fraction_image[:] = (128, 128, 128)
+
+        cv2.putText(fraction_image, str(current_number).zfill(len(str(target_number))),
+                    (text_thickness, text_thickness + text_size[1]),
+                    font, font_scale, text_color, text_thickness, line_type)
+        cv2.line(fraction_image,
+                 (text_thickness, 4 * text_thickness + text_size[1]),
+                 (2 * text_thickness + text_size[0], 4 * text_thickness + text_size[1]),
+                 text_color, text_thickness)
+        cv2.putText(fraction_image, str(target_number),
+                    (text_thickness, 6 * text_thickness + 2 * text_size[1]),
+                    font, font_scale, text_color, text_thickness, line_type)
+
+        sceneutil.draw_image_on(self._img, fraction_image, position,
+                                position_is_topleft=False,
+                                position_is_bottom_left=True)
+        cv2.putText(self._img, text,
+                    (position[0], position[1] + text_thickness + text_size[1]),
+                    font, font_scale, text_color, text_thickness, line_type)
+
+
 annotation_tools = {
     LineAnnotation.__name__: LineAnnotationTool(),
     RectangleAnnotation.__name__: RectangleAnnotationTool(),
@@ -1352,7 +1427,8 @@ annotation_tools = {
     CurveAnnotation.__name__: CurveAnnotationTool(),
     AnimationAnnotation.__name__: AnimationAnnotationTool(),
     FeedbackAnnotation.__name__: FeedbackAnnotationTool(),
-    ObjectAreaAnnotation.__name__: ObjectAreaAnnotationTool()
+    ObjectAreaAnnotation.__name__: ObjectAreaAnnotationTool(),
+    CounterAnnotation.__name__: CounterAnnotationTool()
 }
 
 annotation_tool_btns = {
@@ -1372,7 +1448,8 @@ annotation_tool_btns = {
     "curve_btn": CurveAnnotationTool(),
     "animation_btn": AnimationAnnotationTool(),
     "feedback_btn": FeedbackAnnotationTool(),
-    "object_area_btn": ObjectAreaAnnotationTool()
+    "object_area_btn": ObjectAreaAnnotationTool(),
+    "counter_btn": CounterAnnotationTool()
 }
 
 """

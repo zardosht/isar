@@ -627,7 +627,6 @@ class CurveAnnotation(Annotation):
     def __init__(self):
         super(CurveAnnotation, self).__init__()
 
-        # TODO: implement position that should move the line
         self.start = IntTupleAnnotationProperty("Start", None, self)
         self.properties.append(self.start)
 
@@ -774,7 +773,8 @@ class AnimationThread(Thread):
                                          self.animation_annotation.position.get_value())
         self.stop_event = Event()
         # TODO: compute the speed differently because of to many points
-        self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
+        # self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
+        self.speed = 1 / self.animation_annotation.animation_speed.get_value()
         self.loop_direction = False
 
     def run(self):
@@ -1135,6 +1135,15 @@ class FeedbackAnnotation(Annotation):
         self.radius = IntAnnotationProperty("Radius", 50, self)
         self.properties.append(self.radius)
 
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 1, self)
+        self.properties.append(self.text_thickness)
+
+        self.font_scale = FloatAnnotationProperty("Font Scale", .75, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 0, 0), self)
+        self.properties.append(self.text_color)
+
     def set_show_inactive(self, value):
         self.show_inactive._value = value
         if value:
@@ -1187,6 +1196,43 @@ class FeedbackAnnotation(Annotation):
         self.set_show_inactive(True)
 
 
+class CounterAnnotation(Annotation):
+
+    def __init__(self):
+        super().__init__()
+
+        self.target_number = IntAnnotationProperty("Target number", 50, self)
+        self.properties.append(self.target_number)
+
+        self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
+        self.properties.append(self.text)
+
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 1, self)
+        self.properties.append(self.text_thickness)
+
+        self.font_scale = FloatAnnotationProperty("Font Scale", .5, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 0, 0), self)
+        self.properties.append(self.text_color)
+
+        self.current_number = 0
+
+    def increment(self):
+        if self.current_number < self.target_number:
+            self.current_number = self.current_number + 1
+
+    def decrement(self):
+        if self.current_number > 0:
+            self.current_number = self.current_number - 1
+
+    def reset(self):
+        self.current_number = 0
+
+    def reset_runtime_state(self):
+        self.current_number = 0
+
+
 annotation_counters = {
     LineAnnotation.__name__: 0,
     RectangleAnnotation.__name__: 0,
@@ -1203,7 +1249,8 @@ annotation_counters = {
     CurveAnnotation.__name__: 0,
     AnimationAnnotation.__name__: 0,
     FeedbackAnnotation.__name__: 0,
-    ObjectAreaAnnotation.__name__: 0
+    ObjectAreaAnnotation.__name__: 0,
+    CounterAnnotation.__name__: 0
 
 }
 
