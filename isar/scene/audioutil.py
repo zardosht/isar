@@ -29,6 +29,8 @@ class AudioPlayer:
         self.mediaList.add_media(media)
 
         self.player = self.vlc_instance.media_list_player_new()
+        # setting the volume seems no to have effect
+        self.player.get_media_player().audio_set_volume(100)
         self.player.set_media_list(self.mediaList)
 
     def play(self):

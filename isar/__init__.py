@@ -10,9 +10,9 @@ application_mode = ApplicationMode.AUTHORING
 
 POISON_PILL = "poison_pill"
 
-CAMERA_UPDATE_INTERVAL = 100     # it is QTimer timeout interval in ms
+CAMERA_UPDATE_INTERVAL = 50     # it is QTimer timeout interval in ms
 OBJECT_DETECTION_INTERVAL = 0.1    # it is QTimer timeout interval in ms
-SELECTION_STICK_TRACKING_INTERVAL = 0.1    # it is time.sleep() in sec
+SELECTION_STICK_TRACKING_INTERVAL = 0.05    # it is time.sleep() in sec
 
 
 

@@ -154,12 +154,13 @@ class ProjectorView(QtWidgets.QWidget):
         max_iterations = 100
         iter = 0
         found_homography = False
+        camera_frame = None
         while not found_homography:
             try:
                 # projector_img = cv2.flip(projector_img, -1)
                 projector_points = projectionutil.get_chessboard_points("projector_points", projector_img)
 
-                camera_frame: CameraFrame = self.camera_service.get_frame()
+                camera_frame = self.camera_service.get_frame()
                 if camera_frame is None:
                     continue
 
@@ -193,7 +194,6 @@ class ProjectorView(QtWidgets.QWidget):
                 traceback.print_tb(exp.__traceback__)
 
         # testing the found homography
-        camera_frame: CameraFrame = self.camera_service.get_frame()
         if camera_frame is not None:
             camera_img = camera_frame.raw_image
             if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
