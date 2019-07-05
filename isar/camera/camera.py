@@ -19,11 +19,11 @@ class CameraService(Service):
     def __init__(self, service_name=None, cam_id=0):
         super().__init__(service_name)
 
-        # _queue_size = 100
-        # self._queue = LifoQueue(_queue_size)
+        _queue_size = 20
+        self._queue = LifoQueue(_queue_size)
 
-        self._queue_size = 20
-        self._queue = Queue(self._queue_size)
+        # self._queue_size = 20
+        # self._queue = Queue(self._queue_size)
 
         self.cam_id = cam_id
         self._capture = None
