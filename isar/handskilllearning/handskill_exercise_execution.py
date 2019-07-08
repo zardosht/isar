@@ -27,7 +27,7 @@ class HandSkillExerciseExecution(QMainWindow):
         self.setup_signals()
         self.setup_constraints()
         self.setWindowTitle("Handskill Exercise Execution")
-        self.exercise = FollowThePathExercise()
+        self.exercise = None
         self._projector_view_timer = None
 
         self._camera_service: CameraService = None
@@ -116,7 +116,9 @@ class HandSkillExerciseExecution(QMainWindow):
         index = self.list_exercises.currentIndex()
         selected = index.data()
         self.line_selected_exercises.setText(selected)
-        self.exercise = scenemodel.current_project.exercises[self.list_exercises.currentIndex().row()]
+        for exercise_object in scenemodel.current_project.exercises:
+            if exercise_object.name == selected:
+                self.exercise = exercise_object
         self.button_start.setEnabled(True)
 
     def start_exercise(self):
@@ -130,18 +132,28 @@ class HandSkillExerciseExecution(QMainWindow):
         self.projector_view.set_annotations_model(self.annotations_model)
 
         # check which radio button is checked and set the duration and feedback target value
+        # TODO: check if counter existing and set target value of counter
+        timers = current_scene.get_all_annotations_by_type(TimerAnnotation)
         if self.radio_button_beginner.isChecked():
-            self.exercise.feedback.set_target_value(self.exercise.error.beginner.get_value())
-            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
-            timer[0].duration.set_value(self.exercise.time.beginner.get_value())
+            timers[0].duration.set_value(self.exercise.time.beginner.get_value())
+            if self.radio_button_follow.isChecked():
+                self.exercise.feedback.set_target_value(self.exercise.error.beginner.get_value())
+            if self.radio_button_catch.isChecked():
+                self.exercise.feedback.set_target_value(self.exercise.number.beginner.get_value())
+
         if self.radio_button_intermediate.isChecked():
-            self.exercise.feedback.set_target_value(self.exercise.error.intermediate.get_value())
-            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
-            timer[0].duration.set_value(self.exercise.time.intermediate.get_value())
+            timers[0].duration.set_value(self.exercise.time.intermediate.get_value())
+            if self.radio_button_follow.isChecked():
+                self.exercise.feedback.set_target_value(self.exercise.error.intermediate.get_value())
+            if self.radio_button_catch.isChecked():
+                self.exercise.feedback.set_target_value(self.exercise.number.intermediate.get_value())
+
         if self.radio_button_competent.isChecked():
-            self.exercise.feedback.set_target_value(self.exercise.error.competent.get_value())
-            timer = current_scene.get_all_annotations_by_type(TimerAnnotation)
-            timer[0].duration.set_value(self.exercise.time.competent.get_value())
+            timers[0].duration.set_value(self.exercise.time.competent.get_value())
+            if self.radio_button_follow.isChecked():
+                self.exercise.feedback.set_target_value(self.exercise.error.competent.get_value())
+            if self.radio_button_catch.isChecked():
+                self.exercise.feedback.set_target_value(self.exercise.number.competent.get_value())
 
         self._selection_stick_service.set_annotations_model(self.annotations_model)
         self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)
@@ -266,10 +278,10 @@ class HandSkillExerciseExecution(QMainWindow):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(MainWindow)
+        self.retranslate_ui(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslateUi(self, MainWindow):
+    def retranslate_ui(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.button_calibrate_projector.setText(_translate("MainWindow", "Calibrate Projector"))

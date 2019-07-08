@@ -69,6 +69,7 @@ class FollowThePathExercise(HandSkillExercise):
     def set_feedback(self, value):
         self.feedback = value
 
+    # TODO: check if counter existing and implement counter function while exercise running
     def start(self):
         if not self.running:
             logger.info("Start follow the path exercise")
