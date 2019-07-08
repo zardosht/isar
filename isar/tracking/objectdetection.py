@@ -3,6 +3,7 @@ import importlib.util
 import logging
 import multiprocessing as mp
 import os
+import queue
 import sys
 import threading
 import time
@@ -153,13 +154,16 @@ class ObjectDetectionService(Service):
             if obj_detector_worker.request_queue.empty():
                 obj_detector_worker.request_queue.put(isar.POISON_PILL)
             else:
-                obj_detector_worker.request_queue.get()
+                try:
+                    obj_detector_worker.request_queue.get(block=True, timeout=2)
+                except queue.Empty:
+                    # do nothing
+                    pass
+
                 obj_detector_worker.request_queue.task_done()
 
             if obj_detector_worker.response_queue.empty():
                 obj_detector_worker.response_queue.put(isar.POISON_PILL)
-            # else:
-            #     obj_detector_worker.response_queue.get()
 
             obj_detector_worker.terminate()
 
