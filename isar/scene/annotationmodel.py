@@ -666,7 +666,6 @@ class CurveAnnotation(Annotation):
                 self.exercise.start()
 
             if in_circle(point, self.end.get_value(), CurveAnnotation.RADIUS) and self.exercise.running:
-                print("Stop exercise STICK")
                 self.exercise.register_points.append(point)
                 self.exercise.stop()
 
