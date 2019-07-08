@@ -627,32 +627,37 @@ class CurveAnnotation(Annotation):
     def __init__(self):
         super(CurveAnnotation, self).__init__()
 
-        # TODO: implement position that should move the line
-        # TODO: add thickness for start and end
         self.start = IntTupleAnnotationProperty("Start", None, self)
         self.properties.append(self.start)
 
         self.end = IntTupleAnnotationProperty("End", None, self)
         self.properties.append(self.end)
 
-        # TODO: make points no bigger than line position size
-        self.points = IntAnnotationProperty("Points", None, self)
+        self.points = IntAnnotationProperty("Points", None, self, self.set_points.__name__)
         self.properties.append(self.points)
 
-        self.color = ColorAnnotationProperty("Color", (0, 0, 0), self)
-        self.properties.append(self.color)
+        self.points_color = ColorAnnotationProperty("Points color", (0, 0, 0), self)
+        self.properties.append(self.points_color)
 
-        self.thickness = IntAnnotationProperty("Thickness", 2, self)
-        self.properties.append(self.thickness)
+        self.points_radius = IntAnnotationProperty("Points radius", 2, self)
+        self.properties.append(self.points_radius)
 
-        # TODO: show just points not the line
-        self.show_points = BooleanAnnotationProperty("Show points", False, self)
-        self.properties.append(self.show_points)
+        self.start_stop_color = ColorAnnotationProperty("Start/Stop color", (0, 255, 255), self)
+        self.properties.append(self.start_stop_color)
 
-        self.line_positions = []
+        self.start_stop_radius = IntAnnotationProperty("Start/Stop radius", 7, self)
+        self.properties.append(self.start_stop_radius)
+
+        self.line_points = []
         self.line_points_distributed = []
 
         self.exercise = None
+
+    def set_points(self, value):
+        if value <= len(self.line_points):
+            self.points._value = value
+            return True
+        return False
 
     def intersects_with_point(self, point):
         if self.exercise is not None:
@@ -693,10 +698,10 @@ class AnimationAnnotation(Annotation):
         self.image_path = FilePathAnnotationProperty("Image Filename", None, self)
         self.properties.append(self.image_path)
 
-        self.image_width = IntAnnotationProperty("Image Width", 20, self)
+        self.image_width = IntAnnotationProperty("Image Width", 30, self)
         self.properties.append(self.image_width)
 
-        self.image_height = IntAnnotationProperty("Image Height", 20, self)
+        self.image_height = IntAnnotationProperty("Image Height", 30, self)
         self.properties.append(self.image_height)
 
         self.animation_speed = IntAnnotationProperty("Animation Speed", 2, self)
@@ -705,7 +710,7 @@ class AnimationAnnotation(Annotation):
         self.loop = BooleanAnnotationProperty("Loop", False, self)
         self.properties.append(self.loop)
 
-        self.line_positions = []
+        self.line_points = []
         self.line_start = None
         self.image_position = None
         self.image_shown = False
@@ -764,10 +769,12 @@ class AnimationThread(Thread):
     def __init__(self, animation_annotation):
         super().__init__(name="AnimationThread")
         self.animation_annotation = animation_annotation
-        self.image_positions = numpy.add(self.animation_annotation.line_positions,
+        self.image_positions = numpy.add(self.animation_annotation.line_points,
                                          self.animation_annotation.position.get_value())
         self.stop_event = Event()
-        self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
+        # TODO: compute the speed differently because of to many points
+        # self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
+        self.speed = 1 / self.animation_annotation.animation_speed.get_value()
         self.loop_direction = False
 
     def run(self):
@@ -1128,6 +1135,15 @@ class FeedbackAnnotation(Annotation):
         self.radius = IntAnnotationProperty("Radius", 50, self)
         self.properties.append(self.radius)
 
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 1, self)
+        self.properties.append(self.text_thickness)
+
+        self.font_scale = FloatAnnotationProperty("Font Scale", .75, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 0, 0), self)
+        self.properties.append(self.text_color)
+
     def set_show_inactive(self, value):
         self.show_inactive._value = value
         if value:
@@ -1180,6 +1196,43 @@ class FeedbackAnnotation(Annotation):
         self.set_show_inactive(True)
 
 
+class CounterAnnotation(Annotation):
+
+    def __init__(self):
+        super().__init__()
+
+        self.target_number = IntAnnotationProperty("Target number", 50, self)
+        self.properties.append(self.target_number)
+
+        self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
+        self.properties.append(self.text)
+
+        self.text_thickness = IntAnnotationProperty("Text Thickness", 1, self)
+        self.properties.append(self.text_thickness)
+
+        self.font_scale = FloatAnnotationProperty("Font Scale", .5, self)
+        self.properties.append(self.font_scale)
+
+        self.text_color = ColorAnnotationProperty("Text Color", (0, 0, 0), self)
+        self.properties.append(self.text_color)
+
+        self.current_number = 0
+
+    def increment(self):
+        if self.current_number < self.target_number:
+            self.current_number = self.current_number + 1
+
+    def decrement(self):
+        if self.current_number > 0:
+            self.current_number = self.current_number - 1
+
+    def reset(self):
+        self.current_number = 0
+
+    def reset_runtime_state(self):
+        self.current_number = 0
+
+
 annotation_counters = {
     LineAnnotation.__name__: 0,
     RectangleAnnotation.__name__: 0,
@@ -1196,7 +1249,8 @@ annotation_counters = {
     CurveAnnotation.__name__: 0,
     AnimationAnnotation.__name__: 0,
     FeedbackAnnotation.__name__: 0,
-    ObjectAreaAnnotation.__name__: 0
+    ObjectAreaAnnotation.__name__: 0,
+    CounterAnnotation.__name__: 0
 
 }
 

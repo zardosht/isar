@@ -1004,6 +1004,26 @@
                 </widget>
                </item>
                <item>
+                <widget class="QToolButton" name="counter_btn">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>images/counter.png</normaloff>images/counter.png</iconset>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="autoExclusive">
+                  <bool>true</bool>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">annotation_buttons</string>
+                 </attribute>
+                </widget>
+               </item>
+               <item>
                 <spacer name="horizontalSpacer_2">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
@@ -1035,7 +1055,7 @@
      <x>0</x>
      <y>0</y>
      <width>1543</width>
-     <height>22</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
