@@ -374,6 +374,7 @@ class StartAnimationAction(Action):
     def __init__(self):
         super().__init__()
         self.animation_names = None
+        self.exercise = None
 
     def run(self):
         if self.target is None:
@@ -384,8 +385,11 @@ class StartAnimationAction(Action):
             logger.warning("self.target is not a list. Return")
             return
 
-        for animation in self.target:
-            animation.start()
+        if self.exercise is None:
+            for animation in self.target:
+                animation.start()
+        elif not self.exercise.running:
+            self.exercise.start()
 
 
 class StopAnimationAction(Action):
@@ -395,6 +399,7 @@ class StopAnimationAction(Action):
     def __init__(self):
         super().__init__()
         self.animation_names = None
+        self.exercise = None
 
     def run(self):
         if self.target is None:
@@ -405,8 +410,11 @@ class StopAnimationAction(Action):
             logger.warning("self.target is not a list. Return")
             return
 
-        for animation in self.target:
-            animation.stop()
+        if self.exercise is None:
+            for animation in self.target:
+                animation.stop()
+        elif self.exercise.running:
+            self.exercise.stop()
 
 
 class HighlightPhysicalObjectsAction(Action):

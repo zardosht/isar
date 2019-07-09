@@ -715,8 +715,6 @@ class AnimationAnnotation(Annotation):
         self.image_shown = False
         self.animation_thread = None
 
-        self.exercise = None
-
     def __getstate__(self):
         state = self.__dict__.copy()
         del state["animation_thread"]
@@ -739,8 +737,8 @@ class AnimationAnnotation(Annotation):
 
     def on_select(self):
         logger.info("On Select.")
-        self.image_shown = False
-        if self.animation_thread is not None:
+        if self.animation_thread is not None and self.animation_thread.is_alive():
+            self.image_shown = False
             self.animation_thread.stop()
             self.animation_thread = None
 
@@ -771,8 +769,6 @@ class AnimationThread(Thread):
         self.image_positions = numpy.add(self.animation_annotation.line_points,
                                          self.animation_annotation.position.get_value())
         self.stop_event = Event()
-        # TODO: compute the speed differently because of to many points
-        # self.speed = 1 - self.animation_annotation.animation_speed.get_value() / 10 + 0.1
         self.speed = 1 / self.animation_annotation.animation_speed.get_value()
         self.loop_direction = False
 

@@ -1,6 +1,8 @@
 import logging
 
 import numpy
+
+from isar.events.actions import StartAnimationAction, StopAnimationAction
 from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle, FeedbackAnnotation, \
     AnimationAnnotation
 from threading import Thread
@@ -17,6 +19,7 @@ class HandSkillExercise:
     def __init__(self):
         self.name = None
         self.scene = None
+        self.running = False
         self.feedback = Feedback()
         self.selection_stick = None
 
@@ -46,8 +49,7 @@ class FollowThePathExercise(HandSkillExercise):
         super().__init__()
         self.error = Error()
         self.time = Time()
-        self.running = False
-        self.register_points = []
+        self.captured_points = []
 
     def get_error(self):
         return self.error
@@ -70,15 +72,17 @@ class FollowThePathExercise(HandSkillExercise):
         self.feedback = value
 
     # TODO: check if counter existing and implement counter function while exercise running
+    # Should we always have a CounterAnnotation or not?
     def start(self):
         if not self.running:
             logger.info("Start follow the path exercise")
-            self.register_points = []
+            self.captured_points = []
             self.running = True
 
+            # TODO: add timer to listeners outside the start method to eliminate duplicates
             timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
-            timer_annotations[0].start()
             timer_annotations[0].add_timer_finished_listener(self)
+            timer_annotations[0].start()
 
             feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
             feedback_annotations[0].set_show_inactive(True)
@@ -95,7 +99,7 @@ class FollowThePathExercise(HandSkillExercise):
             if stick_point is not None:
                 for point in actual[0].line_points_distributed:
                     if in_circle(stick_point, point, CurveAnnotation.RADIUS):
-                        self.register_points.append(point)
+                        self.captured_points.append(point)
 
     def on_timer_finished(self):
         if self.running:
@@ -105,32 +109,32 @@ class FollowThePathExercise(HandSkillExercise):
         if self.running:
             logger.info("Stop follow the path exercise")
             self.running = False
-            timer_annotation = self.scene.get_all_annotations_by_type(TimerAnnotation)
-            timer_annotation[0].stop()
-            timer_annotation[0].reset()
+            timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotations[0].stop()
+            timer_annotations[0].reset()
 
-            # TODO: delete print
+            # TODO: delete print (now just for testing)
             print("Captured")
-            no_duplicates = numpy.unique(self.register_points, axis=0)
+            no_duplicates = numpy.unique(self.captured_points, axis=0)
             number_captured = len(no_duplicates)
             print(number_captured)
 
-            feedback_annotation = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
+            feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
             print("Target")
             target_number_points = self.feedback.get_target_value()
             print(target_number_points)
 
             if number_captured >= (self.feedback.get_good() * target_number_points)/100:
-                feedback_annotation[0].set_show_good(True)
+                feedback_annotations[0].set_show_good(True)
                 print("FEEDBACK GOOD!!!!!!!!")
             elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
-                feedback_annotation[0].set_show_average(True)
+                feedback_annotations[0].set_show_average(True)
                 print("FEEDBACK AVERAGE!!!!!!!!")
             elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
-                feedback_annotation[0].set_show_bad(True)
+                feedback_annotations[0].set_show_bad(True)
                 print("FEEDBACK BAD!!!!!!!!")
             else:
-                feedback_annotation[0].set_show_inactive(True)
+                feedback_annotations[0].set_show_inactive(True)
                 print("FEEDBACK NOT EXISTING")
 
 
@@ -139,8 +143,7 @@ class CatchTheObjectExercise(HandSkillExercise):
         super().__init__()
         self.number = Number()
         self.time = Time()
-        self.running = False
-        self.register_objects = []
+        self.number_captured = 0
 
     def get_number(self):
         return self.number
@@ -157,18 +160,72 @@ class CatchTheObjectExercise(HandSkillExercise):
     def set_scene(self, value):
         self.scene = value
 
-        # TODO: not sure if needed for this type exercise
-        animations = self.scene.get_all_annotations_by_type(AnimationAnnotation)
-        animations[0].exercise = self
+        # start the exercise from the actions
+        scene_actions = self.scene.get_actions()
+        for action in scene_actions:
+            if isinstance(action, StartAnimationAction):
+                start_animation_action = action
+            if isinstance(action, StopAnimationAction):
+                stop_animation_action = action
+
+        start_animation_action.exercise = self
+        stop_animation_action.exercise = self
 
     def set_feedback(self, value):
         self.feedback = value
 
     def start(self):
-        logger.info("Start catch the object exercise")
+        if not self.running:
+            logger.info("Start catch the object exercise")
+            self.number_captured = 0
+            self.running = True
+
+            timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotations[0].add_timer_finished_listener(self)
+            timer_annotations[0].start()
+
+            feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
+            feedback_annotations[0].set_show_inactive(True)
+
+            # start all animation threads
+            animation_annotations = self.scene.get_all_annotations_by_type(AnimationAnnotation)
+            for animation in animation_annotations:
+                animation.start()
+
+    def on_timer_finished(self):
+        if self.running:
+            self.stop()
 
     def stop(self):
-        logger.info("Stop catch the object exercise")
+        if self.running:
+            logger.info("Stop catch the object exercise")
+            self.running = False
+            timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
+            timer_annotations[0].stop()
+            timer_annotations[0].reset()
+
+            # stop all animation threads
+            animation_annotations = self.scene.get_all_annotations_by_type(AnimationAnnotation)
+            for animation in animation_annotations:
+                if not animation.image_shown:
+                    register_objects = register_objects + 1
+                animation.stop()
+
+            feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
+            target_number = self.feedback.get_target_value()
+
+            if register_objects >= (self.feedback.get_good() * target_number)/100:
+                feedback_annotations[0].set_show_good(True)
+                print("FEEDBACK GOOD!!!!!!!!")
+            elif register_objects >= (self.feedback.get_average() * target_number)/100:
+                feedback_annotations[0].set_show_average(True)
+                print("FEEDBACK AVERAGE!!!!!!!!")
+            elif register_objects >= (self.feedback.get_good() * target_number)/100:
+                feedback_annotations[0].set_show_bad(True)
+                print("FEEDBACK BAD!!!!!!!!")
+            else:
+                feedback_annotations[0].set_show_inactive(True)
+                print("FEEDBACK NOT EXISTING")
 
 
 """
