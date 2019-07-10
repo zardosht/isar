@@ -78,6 +78,15 @@ class HandSkillExerciseExecution(QMainWindow):
         self.annotations_model = AnnotationsModel()
         self.physical_objects_model = PhysicalObjectsModel()
 
+        self.scenes_model.scene_changed.connect(self.current_scene_changed)
+
+    def current_scene_changed(self):
+        self.annotations_model.set_scene(self.scenes_model.get_current_scene())
+        self.physical_objects_model.set_scene(self.scenes_model.get_current_scene())
+        self.projector_view.set_annotations_model(self.annotations_model)
+
+        servicemanager.current_scene_changed(self.scenes_model.get_current_scene())
+
     def calibrate_projector(self):
         self.projector_view.calibrating = True
         self.projector_view.calibrate_projector()
@@ -173,7 +182,6 @@ class HandSkillExerciseExecution(QMainWindow):
             if camera_frame is None:
                 return
 
-            self._selection_stick_service.camera_img = camera_frame.raw_image
             self.projector_view.update_projector_view(camera_frame)
 
     def close(self):

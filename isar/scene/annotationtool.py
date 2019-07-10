@@ -1294,7 +1294,7 @@ class AnimationAnnotationTool(AnnotationTool):
                 cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
                          self.annotation.line_thickness.get_value())
 
-        self.annotation.line_start = tuple(numpy.add(self.annotation.line_points[0], self.annotation.position.get_value()))
+            self.annotation.line_start = tuple(numpy.add(self.annotation.line_points[0], self.annotation.position.get_value()))
 
         if self.annotation.animation_thread is None:
             self.annotation.image_position = self.annotation.line_start

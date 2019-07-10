@@ -125,6 +125,12 @@ class SelectionStickService(Service):
             if self._current_scene is None:
                 continue
 
+            if self._annotations_model is None:
+                continue
+
+            if self._physical_objects_model is None:
+                continue
+
             center_point = self.get_center_point(in_image_coordinates=True)
             if center_point is None:
                 continue

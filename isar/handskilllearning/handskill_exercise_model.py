@@ -21,7 +21,6 @@ class HandSkillExercise:
         self.scene = None
         self.running = False
         self.feedback = Feedback()
-        self.selection_stick = None
 
     def get_scene(self):
         return self.scene
@@ -50,6 +49,7 @@ class FollowThePathExercise(HandSkillExercise):
         self.error = Error()
         self.time = Time()
         self.captured_points = []
+        self.selection_stick = None
 
     def get_error(self):
         return self.error
@@ -72,14 +72,12 @@ class FollowThePathExercise(HandSkillExercise):
         self.feedback = value
 
     # TODO: check if counter existing and implement counter function while exercise running
-    # Should we always have a CounterAnnotation or not?
     def start(self):
         if not self.running:
             logger.info("Start follow the path exercise")
             self.captured_points = []
             self.running = True
 
-            # TODO: add timer to listeners outside the start method to eliminate duplicates
             timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
             timer_annotations[0].add_timer_finished_listener(self)
             timer_annotations[0].start()
@@ -126,16 +124,12 @@ class FollowThePathExercise(HandSkillExercise):
 
             if number_captured >= (self.feedback.get_good() * target_number_points)/100:
                 feedback_annotations[0].set_show_good(True)
-                print("FEEDBACK GOOD!!!!!!!!")
             elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
                 feedback_annotations[0].set_show_average(True)
-                print("FEEDBACK AVERAGE!!!!!!!!")
             elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
                 feedback_annotations[0].set_show_bad(True)
-                print("FEEDBACK BAD!!!!!!!!")
             else:
                 feedback_annotations[0].set_show_inactive(True)
-                print("FEEDBACK NOT EXISTING")
 
 
 class CatchTheObjectExercise(HandSkillExercise):
@@ -208,24 +202,20 @@ class CatchTheObjectExercise(HandSkillExercise):
             animation_annotations = self.scene.get_all_annotations_by_type(AnimationAnnotation)
             for animation in animation_annotations:
                 if not animation.image_shown:
-                    register_objects = register_objects + 1
+                    self.number_captured = self.number_captured + 1
                 animation.stop()
 
             feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
             target_number = self.feedback.get_target_value()
 
-            if register_objects >= (self.feedback.get_good() * target_number)/100:
+            if self.number_captured >= (self.feedback.get_good() * target_number)/100:
                 feedback_annotations[0].set_show_good(True)
-                print("FEEDBACK GOOD!!!!!!!!")
-            elif register_objects >= (self.feedback.get_average() * target_number)/100:
+            elif self.number_captured >= (self.feedback.get_average() * target_number)/100:
                 feedback_annotations[0].set_show_average(True)
-                print("FEEDBACK AVERAGE!!!!!!!!")
-            elif register_objects >= (self.feedback.get_good() * target_number)/100:
+            elif self.number_captured >= (self.feedback.get_good() * target_number)/100:
                 feedback_annotations[0].set_show_bad(True)
-                print("FEEDBACK BAD!!!!!!!!")
             else:
                 feedback_annotations[0].set_show_inactive(True)
-                print("FEEDBACK NOT EXISTING")
 
 
 """

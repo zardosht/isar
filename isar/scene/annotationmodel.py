@@ -622,7 +622,7 @@ class ActionButtonAnnotation(RectangleAnnotation):
 
 class CurveAnnotation(Annotation):
     MINIMUM_NUMBER_POSITIONS = 7
-    RADIUS = 10
+    RADIUS = 15
 
     def __init__(self):
         super(CurveAnnotation, self).__init__()
@@ -662,11 +662,11 @@ class CurveAnnotation(Annotation):
     def intersects_with_point(self, point):
         if self.exercise is not None:
             if in_circle(point, self.start.get_value(), CurveAnnotation.RADIUS) and not self.exercise.running:
-                self.exercise.register_points.append(point)
+                self.exercise.captured_points.append(point)
                 self.exercise.start()
 
             if in_circle(point, self.end.get_value(), CurveAnnotation.RADIUS) and self.exercise.running:
-                self.exercise.register_points.append(point)
+                self.exercise.captured_points.append(point)
                 self.exercise.stop()
 
 
