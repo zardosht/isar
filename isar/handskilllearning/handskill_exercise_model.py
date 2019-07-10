@@ -1,11 +1,9 @@
 import logging
-
-import numpy
+from threading import Thread
 
 from isar.events.actions import StartAnimationAction, StopAnimationAction
 from isar.scene.annotationmodel import CurveAnnotation, TimerAnnotation, in_circle, FeedbackAnnotation, \
-    AnimationAnnotation
-from threading import Thread
+    AnimationAnnotation, CounterAnnotation
 
 """
 Defining the exercises: FollowThePath, CatchTheObjects
@@ -21,6 +19,7 @@ class HandSkillExercise:
         self.scene = None
         self.running = False
         self.feedback = Feedback()
+        self.hasCounterAnnotation = False
 
     def get_scene(self):
         return self.scene
@@ -48,7 +47,7 @@ class FollowThePathExercise(HandSkillExercise):
         super().__init__()
         self.error = Error()
         self.time = Time()
-        self.captured_points = []
+        self.captured_points = set()
         self.selection_stick = None
 
     def get_error(self):
@@ -71,11 +70,9 @@ class FollowThePathExercise(HandSkillExercise):
     def set_feedback(self, value):
         self.feedback = value
 
-    # TODO: check if counter existing and implement counter function while exercise running
     def start(self):
         if not self.running:
             logger.info("Start follow the path exercise")
-            self.captured_points = []
             self.running = True
 
             timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
@@ -85,6 +82,9 @@ class FollowThePathExercise(HandSkillExercise):
             feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
             feedback_annotations[0].set_show_inactive(True)
 
+            counter_annotations = self.scene.get_all_annotations_by_type(CounterAnnotation)
+            counter_annotations[0].current_number = 0
+
             collect_points_thread = Thread(name="CollectPointsThread", target=self.start_collect_points)
             collect_points_thread.start()
 
@@ -93,11 +93,15 @@ class FollowThePathExercise(HandSkillExercise):
             if not self.running:
                 break
             stick_point = self.selection_stick.get_center_point(in_image_coordinates=False)
-            actual = self.scene.get_all_annotations_by_type(CurveAnnotation)
+            curve_annotations = self.scene.get_all_annotations_by_type(CurveAnnotation)
+            counter_annotations = self.scene.get_all_annotations_by_type(CounterAnnotation)
             if stick_point is not None:
-                for point in actual[0].line_points_distributed:
+                for point in curve_annotations[0].line_points_distributed:
                     if in_circle(stick_point, point, CurveAnnotation.RADIUS):
-                        self.captured_points.append(point)
+                        self.captured_points.add(point)
+                        if self.hasCounterAnnotation:
+                            counter_annotations[0].current_number = len(self.captured_points)
+
 
     def on_timer_finished(self):
         if self.running:
@@ -111,16 +115,9 @@ class FollowThePathExercise(HandSkillExercise):
             timer_annotations[0].stop()
             timer_annotations[0].reset()
 
-            # TODO: delete print (now just for testing)
-            print("Captured")
-            no_duplicates = numpy.unique(self.captured_points, axis=0)
-            number_captured = len(no_duplicates)
-            print(number_captured)
-
+            number_captured = len(self.captured_points)
             feedback_annotations = self.scene.get_all_annotations_by_type(FeedbackAnnotation)
-            print("Target")
             target_number_points = self.feedback.get_target_value()
-            print(target_number_points)
 
             if number_captured >= (self.feedback.get_good() * target_number_points)/100:
                 feedback_annotations[0].set_show_good(True)

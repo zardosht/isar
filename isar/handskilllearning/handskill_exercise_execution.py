@@ -10,7 +10,7 @@ from isar.camera.camera import CameraService
 from isar.handskilllearning.handskill_exercise_model import FollowThePathExercise, CatchTheObjectExercise
 from isar.projection.projector import ProjectorView
 from isar.scene import scenemodel
-from isar.scene.annotationmodel import AnnotationsModel, TimerAnnotation
+from isar.scene.annotationmodel import AnnotationsModel, TimerAnnotation, CounterAnnotation
 from isar.scene.physicalobjectmodel import PhysicalObjectsModel
 from isar.scene.scenemodel import ScenesModel
 from isar.services import servicemanager
@@ -141,7 +141,6 @@ class HandSkillExerciseExecution(QMainWindow):
         self.projector_view.set_annotations_model(self.annotations_model)
 
         # check which radio button is checked and set the duration and feedback target value
-        # TODO: check if counter existing and set target value of counter
         timers = current_scene.get_all_annotations_by_type(TimerAnnotation)
         if self.radio_button_beginner.isChecked():
             timers[0].duration.set_value(self.exercise.time.beginner.get_value())
@@ -163,6 +162,11 @@ class HandSkillExerciseExecution(QMainWindow):
                 self.exercise.feedback.set_target_value(self.exercise.error.competent.get_value())
             if self.radio_button_catch.isChecked():
                 self.exercise.feedback.set_target_value(self.exercise.number.competent.get_value())
+
+        counters = current_scene.get_all_annotations_by_type(CounterAnnotation)
+        if len(counters) > 0:
+            self.exercise.hasCounterAnnotation = True
+            counters[0].target_number.set_value(self.exercise.feedback.target_value)
 
         self._selection_stick_service.set_annotations_model(self.annotations_model)
         self._selection_stick_service.set_physical_objects_model(self.physical_objects_model)

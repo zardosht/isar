@@ -319,6 +319,7 @@ Curve
 Animation
 FeedbackAnnotation
 ObjectAreaAnnotation
+CounterAnnotation
 """
 
 
@@ -620,9 +621,15 @@ class ActionButtonAnnotation(RectangleAnnotation):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
 
 
+# TODO: Implement points
+class CurveAnnotationPoint():
+    def __init__(self):
+        self.point = None
+        self.hit = False
+
 class CurveAnnotation(Annotation):
     MINIMUM_NUMBER_POSITIONS = 7
-    RADIUS = 15
+    RADIUS = 12
 
     def __init__(self):
         super(CurveAnnotation, self).__init__()
@@ -662,11 +669,12 @@ class CurveAnnotation(Annotation):
     def intersects_with_point(self, point):
         if self.exercise is not None:
             if in_circle(point, self.start.get_value(), CurveAnnotation.RADIUS) and not self.exercise.running:
-                self.exercise.captured_points.append(point)
+                self.exercise.captured_points = set()
+                self.exercise.captured_points.add(point)
                 self.exercise.start()
 
             if in_circle(point, self.end.get_value(), CurveAnnotation.RADIUS) and self.exercise.running:
-                self.exercise.captured_points.append(point)
+                self.exercise.captured_points.add(point)
                 self.exercise.stop()
 
 
@@ -775,10 +783,16 @@ class AnimationThread(Thread):
     def run(self):
         if self.animation_annotation.loop.get_value() is False:
             for point in self.image_positions:
+                if self.stop_event.is_set():
+                    logger.info("Animation thread force stop.")
+                    break;
                 self.animation_annotation.image_position = tuple(point)
                 time.sleep(self.speed)
         else:
-            while self.stop_event.is_set() is False:
+            while True:
+                if self.stop_event.is_set():
+                    logger.info("Animation thread force stop.")
+                    break;
                 if self.loop_direction is False:
                     for point in self.image_positions:
                         self.animation_annotation.image_position = tuple(point)
