@@ -1,111 +1,153 @@
-import random
 import time
-from queue import Queue
-from threading import Event, Thread
+from multiprocessing import Process, Queue
 
 
-POISON_PILL = "poison_pill"
+class MyProcess(Process):
+    def __init__(self, rect_queue):
+        super().__init__()
+        self.rect = (-1, -1)
+        self.rect_queue = rect_queue
 
-
-class Item:
-    def __init__(self, item_number):
-        self.item_number = item_number
-
-    def __str__(self):
-        return "Item" + str(self.item_number)
-
-
-class Producer:
-    def __init__(self):
-        self.queue_size = 20
-        self._queue = Queue(self.queue_size)
-        self.stop_event = Event()
-
-    def start(self):
-        t = Thread(target=self._start)
-        t.start()
-        print("producer started")
-
-    def _start(self):
-        item_number = 0
-        while not self.stop_event.is_set():
-            item = Item(item_number)
-            self._queue.put(item)
-            item_number += 1
-
-    def get_item(self):
-        item = self._queue.get()
-        return item
-
-    def stop(self):
-        self.stop_event.set()
-        while not self._queue.empty():
-            self._queue.get()
-
-        while not self._queue.full():
-            print("producer put poison pill")
-            self._queue.put(POISON_PILL)
-
-
-class Consumer:
-    def __init__(self, id):
-        self.id = id
-
-    def start(self):
-        t = Thread(target=self._start)
-        t.start()
-        print("{} started".format(self))
-
-    def _start(self):
-        producer = get_service("producer")
+    def run(self):
         while True:
-            time.sleep(random.random())
+            time.sleep(0.5)
+            aa = int(time.time())
+            try:
+                self.rect_queue.get_nowait()
+            except:
+                pass
 
-            item = producer.get_item()
-            if item == POISON_PILL:
-                print("{} got poison pill. Break.".format(self))
-                break
+            self.rect_queue.put((aa, aa + 1))
 
-            print("{} got item {}".format(self, item))
-
-    def stop(self):
-        pass
-
-    def __str__(self):
-        return "Consumer" + str(self.id)
+    def get_rect(self):
+        return self.rect_queue.get()
 
 
-services = {}
-consumers = []
+def main():
+    rect_queue = Queue(1)
+    my_process = MyProcess(rect_queue)
+    my_process.start()
+
+    while True:
+        time.sleep(5)
+        rect = my_process.get_rect()
+        print(time.time(), rect)
 
 
-def get_service(service_name):
-    return services[service_name]
+if __name__ == "__main__":
+    main()
 
 
-p = Producer()
-services["producer"] = p
-p.start()
-
-c1 = Consumer(1)
-c1.start()
-consumers.append(c1)
-
-c2 = Consumer(2)
-c2.start()
-consumers.append(c2)
-
-
-# c3 = Consumer(1)
-# c3.start()
-# print("Consumer3 started.")
-# consumers.append(c3)
-
-
-print("Waiting on main thread for 10 sec...............")
-time.sleep(10)
-print("Finished waiting on main .......................")
-
+# # ===================================================================
+#
+# import random
+# import time
+# from queue import Queue
+# from threading import Event, Thread
+#
+#
+# POISON_PILL = "poison_pill"
+#
+#
+# class Item:
+#     def __init__(self, item_number):
+#         self.item_number = item_number
+#
+#     def __str__(self):
+#         return "Item" + str(self.item_number)
+#
+#
+# class Producer:
+#     def __init__(self):
+#         self.queue_size = 20
+#         self._queue = Queue(self.queue_size)
+#         self.stop_event = Event()
+#
+#     def start(self):
+#         t = Thread(target=self._start)
+#         t.start()
+#         print("producer started")
+#
+#     def _start(self):
+#         item_number = 0
+#         while not self.stop_event.is_set():
+#             item = Item(item_number)
+#             self._queue.put(item)
+#             item_number += 1
+#
+#     def get_item(self):
+#         item = self._queue.get()
+#         return item
+#
+#     def stop(self):
+#         self.stop_event.set()
+#         while not self._queue.empty():
+#             self._queue.get()
+#
+#         while not self._queue.full():
+#             print("producer put poison pill")
+#             self._queue.put(POISON_PILL)
+#
+#
+# class Consumer:
+#     def __init__(self, id):
+#         self.id = id
+#
+#     def start(self):
+#         t = Thread(target=self._start)
+#         t.start()
+#         print("{} started".format(self))
+#
+#     def _start(self):
+#         producer = get_service("producer")
+#         while True:
+#             time.sleep(random.random())
+#
+#             item = producer.get_item()
+#             if item == POISON_PILL:
+#                 print("{} got poison pill. Break.".format(self))
+#                 break
+#
+#             print("{} got item {}".format(self, item))
+#
+#     def stop(self):
+#         pass
+#
+#     def __str__(self):
+#         return "Consumer" + str(self.id)
+#
+#
+# services = {}
+# consumers = []
+#
+#
+# def get_service(service_name):
+#     return services[service_name]
+#
+#
+# p = Producer()
+# services["producer"] = p
+# p.start()
+#
+# c1 = Consumer(1)
+# c1.start()
+# consumers.append(c1)
+#
+# c2 = Consumer(2)
+# c2.start()
+# consumers.append(c2)
+#
+#
+# # c3 = Consumer(1)
+# # c3.start()
+# # print("Consumer3 started.")
+# # consumers.append(c3)
+#
+#
+# print("Waiting on main thread for 10 sec...............")
+# time.sleep(10)
+# print("Finished waiting on main .......................")
+#
 # print("Stopping...")
 #
 # c1.stop()
@@ -116,10 +158,10 @@ print("Finished waiting on main .......................")
 #
 # c3.stop()
 # print("Consumer3 stopped.")
-
-p.stop()
-print("bye")
-
+#
+# p.stop()
+# print("bye")
+#
 # # ============================================================
 #
 # import random
