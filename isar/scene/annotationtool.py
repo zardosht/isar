@@ -1143,9 +1143,8 @@ class CurveAnnotationTool(AnnotationTool):
 
             self.annotation.line_points.append((img_x, img_y))
 
-            if len(self.all_line_points) > 0:
-               self.all_line_points = self.all_line_points \
-                                      + line_iterator(self.all_line_points.pop(), (img_x, img_y))
+            self.all_line_points = self.all_line_points \
+                                   + line_iterator(self.all_line_points.pop(), (img_x, img_y))
 
     def mouse_release_event(self, camera_view, event):
         camera_view_size = Frame(camera_view.size().width(), camera_view.size().height())

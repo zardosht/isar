@@ -91,15 +91,16 @@ class FollowThePathExercise(HandSkillExercise):
             counter_annotations[0].current_number = 0
 
             collect_points_thread = Thread(name="CollectPointsThread", target=self.start_collect_points)
+            collect_points_thread.daemon = True
             collect_points_thread.start()
 
     def start_collect_points(self):
+        curve_annotations = self.scene.get_all_annotations_by_type(CurveAnnotation)
+        counter_annotations = self.scene.get_all_annotations_by_type(CounterAnnotation)
         while True:
             if not self.running:
                 break
             stick_point = self.selection_stick.get_center_point(in_image_coordinates=False)
-            curve_annotations = self.scene.get_all_annotations_by_type(CurveAnnotation)
-            counter_annotations = self.scene.get_all_annotations_by_type(CounterAnnotation)
             if stick_point is not None:
                 for point in curve_annotations[0].line_points_distributed:
                     if in_circle(stick_point, point.get_point(), CurveAnnotation.RADIUS):
@@ -128,7 +129,7 @@ class FollowThePathExercise(HandSkillExercise):
                 feedback_annotations[0].set_show_good(True)
             elif number_captured >= (self.feedback.get_average() * target_number_points)/100:
                 feedback_annotations[0].set_show_average(True)
-            elif number_captured >= (self.feedback.get_good() * target_number_points)/100:
+            elif number_captured >= (self.feedback.get_bad() * target_number_points)/100:
                 feedback_annotations[0].set_show_bad(True)
             else:
                 feedback_annotations[0].set_show_inactive(True)
@@ -214,7 +215,7 @@ class CatchTheObjectExercise(HandSkillExercise):
                 feedback_annotations[0].set_show_good(True)
             elif self.number_captured >= (self.feedback.get_average() * target_number)/100:
                 feedback_annotations[0].set_show_average(True)
-            elif self.number_captured >= (self.feedback.get_good() * target_number)/100:
+            elif self.number_captured >= (self.feedback.get_bad() * target_number)/100:
                 feedback_annotations[0].set_show_bad(True)
             else:
                 feedback_annotations[0].set_show_inactive(True)

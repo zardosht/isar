@@ -641,7 +641,7 @@ class CurveAnnotationPoint:
 
 class CurveAnnotation(Annotation):
     MINIMUM_NUMBER_POSITIONS = 7
-    RADIUS = 12
+    RADIUS = 25
 
     def __init__(self):
         super(CurveAnnotation, self).__init__()
@@ -715,7 +715,7 @@ class AnimationAnnotation(Annotation):
         self.line_color = ColorAnnotationProperty("Line Color", (0, 0, 0), self)
         self.properties.append(self.line_color)
 
-        self.line_thickness = IntAnnotationProperty("Line Thickness", 8, self)
+        self.line_thickness = IntAnnotationProperty("Line Thickness", 2, self)
         self.properties.append(self.line_thickness)
 
         self.image_path = FilePathAnnotationProperty("Image Filename", None, self)
@@ -727,7 +727,7 @@ class AnimationAnnotation(Annotation):
         self.image_height = IntAnnotationProperty("Image Height", 30, self)
         self.properties.append(self.image_height)
 
-        self.animation_speed = IntAnnotationProperty("Animation Speed", 2, self)
+        self.animation_speed = IntAnnotationProperty("Animation Speed", 10, self)
         self.properties.append(self.animation_speed)
 
         self.loop = BooleanAnnotationProperty("Loop", False, self)
@@ -778,6 +778,7 @@ class AnimationAnnotation(Annotation):
         self.image_shown = True
         self.image_position = self.line_start
         self.animation_thread = AnimationThread(self)
+        self.animation_thread.daemon = True
         self.animation_thread.start()
 
     def stop(self):
