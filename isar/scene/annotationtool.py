@@ -1297,22 +1297,23 @@ class AnimationAnnotationTool(AnnotationTool):
             return
 
         if self.is_annotation_valid():
-            for i in range(len(self.annotation.line_points) - 1):
-                start_add = tuple(numpy.add(self.annotation.line_points[i], self.annotation.position.get_value()))
-                start = sceneutil.convert_object_to_image(start_add, self.phys_obj, self.scene_scale_factor)
+            if self.annotation.show_line.get_value():
+                for i in range(len(self.annotation.line_points) - 1):
+                    start_add = tuple(numpy.add(self.annotation.line_points[i], self.annotation.position.get_value()))
+                    start = sceneutil.convert_object_to_image(start_add, self.phys_obj, self.scene_scale_factor)
 
-                end_add = tuple(numpy.add(self.annotation.line_points[i + 1], self.annotation.position.get_value()))
-                end = sceneutil.convert_object_to_image(end_add, self.phys_obj, self.scene_scale_factor)
+                    end_add = tuple(numpy.add(self.annotation.line_points[i + 1], self.annotation.position.get_value()))
+                    end = sceneutil.convert_object_to_image(end_add, self.phys_obj, self.scene_scale_factor)
 
-                cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
-                         self.annotation.line_thickness.get_value())
+                    cv2.line(self._img, start, end, self.annotation.line_color.get_value(),
+                             self.annotation.line_thickness.get_value())
 
             self.annotation.line_start = tuple(numpy.add(self.annotation.line_points[0], self.annotation.position.get_value()))
 
         if self.annotation.animation_thread is None:
             self.annotation.image_position = self.annotation.line_start
 
-        if self.annotation.image_shown is True:
+        if self.annotation.image_shown:
             self.draw_image()
 
     def draw_image(self):

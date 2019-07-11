@@ -715,7 +715,7 @@ class AnimationAnnotation(Annotation):
         self.line_color = ColorAnnotationProperty("Line Color", (0, 0, 0), self)
         self.properties.append(self.line_color)
 
-        self.line_thickness = IntAnnotationProperty("Line Thickness", 2, self)
+        self.line_thickness = IntAnnotationProperty("Line Thickness", 8, self)
         self.properties.append(self.line_thickness)
 
         self.image_path = FilePathAnnotationProperty("Image Filename", None, self)
@@ -732,6 +732,9 @@ class AnimationAnnotation(Annotation):
 
         self.loop = BooleanAnnotationProperty("Loop", False, self)
         self.properties.append(self.loop)
+
+        self.show_line = BooleanAnnotationProperty("Show line", True, self)
+        self.properties.append(self.show_line)
 
         self.line_points = []
         self.line_start = None
