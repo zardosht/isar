@@ -11,10 +11,17 @@ logger = logging.getLogger("isar.scene.physicalobjecttool")
 
 colors = [tuple(255 * np.random.rand(3)) for i in range(10)]
 
+scaled_phys_obj_images = {}
+
 
 def draw_physical_object_image(opencv_img, scene_scale_factor, phys_obj: PhysicalObject):
-    template_image = phys_obj.template_image
-    template_image_scaled = cv2.resize(template_image, dsize=(0, 0), fx=scene_scale_factor[0], fy=scene_scale_factor[1])
+    global scaled_phys_obj_images
+    template_image_scaled = scaled_phys_obj_images.get(phys_obj.name)
+    if template_image_scaled is None:
+        template_image = phys_obj.template_image
+        template_image_scaled = cv2.resize(template_image, dsize=(0, 0), fx=scene_scale_factor[0], fy=scene_scale_factor[1])
+        scaled_phys_obj_images[phys_obj.name] = template_image_scaled
+
     sceneutil.draw_image_on(opencv_img, template_image_scaled, phys_obj.scene_position, position_is_topleft=True)
     if phys_obj.highlight:
         highlight_physical_object(opencv_img,

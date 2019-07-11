@@ -209,7 +209,7 @@ class SelectionStickService(Service):
         scene_id = self._annotations_model.get_current_scene().name
         eventmanager.fire_selection_event(target, scene_id)
 
-    def draw_current_rect(self, img, camera_projector_homography=None, scene_homography=None):
+    def draw_current_rect(self, img, camera_projector_homography=None, debug=False):
         current_rect = self._current_rect
         if current_rect is not None:
             if camera_projector_homography is not None:
@@ -226,25 +226,26 @@ class SelectionStickService(Service):
 
             cv2.rectangle(img, v1, v2, self.drawing_color, thickness=2)
 
-            camera_coord = current_rect[1]
-            scene_c_coord = sceneutil.camera_coord_to_scene_coord_c(camera_coord)
-            projector_coord = v1
-            scene_p_coord = sceneutil.projector_coord_to_scene_coord_p(projector_coord)
-            persisted_coord = ()
-            if self.annotation_name is not None:
-                persisted_coord = self.annotation_position
+            if debug:
+                camera_coord = current_rect[1]
+                scene_c_coord = sceneutil.camera_coord_to_scene_coord_c(camera_coord)
+                projector_coord = v1
+                scene_p_coord = sceneutil.projector_coord_to_scene_coord_p(projector_coord)
+                persisted_coord = ()
+                if self.annotation_name is not None:
+                    persisted_coord = self.annotation_position
 
-            cv2.putText(img, "C: " + str(camera_coord), (v2[0], v2[1]), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
-            cv2.putText(img, "per: " + str(persisted_coord), (v2[0], v2[1] + 15), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
-            cv2.putText(img, "SC_C: " + str(scene_c_coord), (v2[0], v2[1] + 30), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
-            cv2.putText(img, "P: " + str(projector_coord), (v2[0], v2[1] + 45), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
-            cv2.putText(img, "SC_P: " + str(scene_p_coord), (v2[0], v2[1] + 60), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                cv2.putText(img, "C: " + str(camera_coord), (v2[0], v2[1]), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                cv2.putText(img, "per: " + str(persisted_coord), (v2[0], v2[1] + 15), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                cv2.putText(img, "SC_C: " + str(scene_c_coord), (v2[0], v2[1] + 30), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                cv2.putText(img, "P: " + str(projector_coord), (v2[0], v2[1] + 45), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                cv2.putText(img, "SC_P: " + str(scene_p_coord), (v2[0], v2[1] + 60), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
 
-            if self.object_name is not None:
-                cv2.putText(img, self.object_name, (v1[0], v1[1] - 10), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                if self.object_name is not None:
+                    cv2.putText(img, self.object_name, (v1[0], v1[1] - 10), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
 
-            if self.annotation_name is not None:
-                cv2.putText(img, self.annotation_name, (v1[0], v1[1] - 10), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
+                if self.annotation_name is not None:
+                    cv2.putText(img, self.annotation_name, (v1[0], v1[1] - 10), cv2.FONT_HERSHEY_COMPLEX, .5, self.drawing_color, 1)
 
     def get_current_rect(self):
         return self._current_rect

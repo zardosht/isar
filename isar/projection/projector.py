@@ -308,7 +308,7 @@ class ProjectorView(QtWidgets.QWidget):
 
         # =========== experimental =============
         selection_stick_service = servicemanager.get_service(ServiceNames.SELECTION_STICK)
-        selection_stick_service.draw_current_rect(projector_image, self.homography_matrix, self.scene_homography)
+        selection_stick_service.draw_current_rect(projector_image, self.homography_matrix)
         # ======================================
 
         if debug: cv2.imwrite("tmp/tmp_files/projector_image.jpg", projector_image)
