@@ -75,6 +75,11 @@ class FollowThePathExercise(HandSkillExercise):
             logger.info("Start follow the path exercise")
             self.running = True
 
+            curve_annotations = self.scene.get_all_annotations_by_type(CurveAnnotation)
+            curve_annotations[0].show_feedback = True
+            for point in curve_annotations[0].line_points_distributed:
+                point.set_hit(False)
+
             timer_annotations = self.scene.get_all_annotations_by_type(TimerAnnotation)
             timer_annotations[0].add_timer_finished_listener(self)
             timer_annotations[0].start()
@@ -97,11 +102,11 @@ class FollowThePathExercise(HandSkillExercise):
             counter_annotations = self.scene.get_all_annotations_by_type(CounterAnnotation)
             if stick_point is not None:
                 for point in curve_annotations[0].line_points_distributed:
-                    if in_circle(stick_point, point, CurveAnnotation.RADIUS):
-                        self.captured_points.add(point)
+                    if in_circle(stick_point, point.get_point(), CurveAnnotation.RADIUS):
+                        self.captured_points.add(point.get_point())
+                        point.set_hit(True)
                         if self.hasCounterAnnotation:
                             counter_annotations[0].current_number = len(self.captured_points)
-
 
     def on_timer_finished(self):
         if self.running:
@@ -280,7 +285,7 @@ class EvaluationAspect:
     def get_competent(self):
         return self.beginner
 
-    def set_competent (self, value):
+    def set_competent(self, value):
         # It is important that the subclass sets its value.
         raise TypeError("Must be implemented by subclasses")
 

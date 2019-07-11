@@ -11,7 +11,7 @@ from isar.scene import sceneutil, scenemodel
 from isar.scene.annotationmodel import LineAnnotation, RectangleAnnotation, CircleAnnotation, TimerAnnotation, \
     VideoAnnotation, AudioAnnotation, ImageAnnotation, TextAnnotation, ArrowAnnotation, RelationshipAnnotation, \
     CheckboxAnnotation, ActionButtonAnnotation, CurveAnnotation, AnimationAnnotation, FeedbackAnnotation, \
-    ObjectAreaAnnotation, CounterAnnotation
+    ObjectAreaAnnotation, CounterAnnotation, CurveAnnotationPoint
 from isar.scene.sceneutil import Frame
 
 logger = logging.getLogger("isar.scene.annotationtool")
@@ -1156,10 +1156,13 @@ class CurveAnnotationTool(AnnotationTool):
 
         self.all_line_points = self.all_line_points \
                                + line_iterator(self.all_line_points.pop(), (img_x, img_y))
-        self.annotation.line_points = self.all_line_points
+
+        self.annotation.line_points = []
+        for one_point in self.all_line_points:
+            self.annotation.line_points.append(CurveAnnotationPoint(one_point))
+
         self.annotation.points.set_value(len(self.annotation.line_points))
         self.annotation.end.set_value((img_x, img_y))
-
         if self.is_annotation_valid():
             self.annotations_model.add_annotation(self.annotation)
 
@@ -1173,18 +1176,28 @@ class CurveAnnotationTool(AnnotationTool):
             return
 
         if self.is_annotation_valid():
+            # drawing the line after mouse released
             if self.annotation.end.get_value() is not None:
                 # possibility to change the start and end point
-                self.annotation.line_points[0] = self.annotation.start.get_value()
+                self.annotation.line_points[0].set_point(self.annotation.start.get_value())
                 self.annotation.line_points[
-                    len(self.annotation.line_points) - 1] = self.annotation.end.get_value()
+                    len(self.annotation.line_points) - 1].set_point(self.annotation.end.get_value())
 
-                # computing the distributed line points if points is changed
-                self.annotation.line_points_distributed = distribute_points(self.annotation.points.get_value(),
-                                                                            self.annotation.line_points)
-                for point in self.annotation.line_points_distributed:
-                    cv2.circle(self._img, point, self.annotation.points_radius.get_value(),
-                               self.annotation.points_color.get_value(), -1)
+                if self.annotation.show_feedback:
+                    for point in self.annotation.line_points_distributed:
+                        if point.is_hit():
+                            cv2.circle(self._img, point.get_point(), self.annotation.points_radius.get_value(),
+                                       self.annotation.color_hit.get_value(), -1)
+                        else:
+                            cv2.circle(self._img, point.get_point(), self.annotation.points_radius.get_value(),
+                                       self.annotation.color_not_hit.get_value(), -1)
+                else:
+                    # computing the distributed line points if points is changed
+                    self.annotation.line_points_distributed = distribute_points(self.annotation.points.get_value(),
+                                                                                self.annotation.line_points)
+                    for point in self.annotation.line_points_distributed:
+                        cv2.circle(self._img, point.get_point(), self.annotation.points_radius.get_value(),
+                                   self.annotation.color_not_hit.get_value(), -1)
 
                 # drawing circles around the start and end point
                 cv2.circle(self._img, self.annotation.start.get_value(),
@@ -1201,7 +1214,7 @@ class CurveAnnotationTool(AnnotationTool):
                     end = sceneutil.convert_object_to_image(self.annotation.line_points[i + 1], self.phys_obj,
                                                             self.scene_scale_factor)
 
-                    cv2.line(self._img, start, end, self.annotation.points_color.get_value(),
+                    cv2.line(self._img, start, end, self.annotation.color_not_hit.get_value(),
                              self.annotation.points_radius.get_value())
 
     def is_annotation_valid(self):
@@ -1529,8 +1542,8 @@ def distribute_points(distribution, line_positions):
     p_x = []
     p_y = []
     for point in line_positions:
-        p_x.append(point[0])
-        p_y.append(point[1])
+        p_x.append(point.get_point()[0])
+        p_y.append(point.get_point()[1])
 
     # equally spaced in arc length
     distribution = numpy.transpose(numpy.linspace(0, 1, distribution))
@@ -1562,6 +1575,6 @@ def distribute_points(distribution, line_positions):
     return_positions = []
     for position in distributed_points:
         pos = (int(position[0]), int(position[1]))
-        return_positions.append(tuple(pos))
+        return_positions.append(CurveAnnotationPoint(tuple(pos)))
 
     return return_positions

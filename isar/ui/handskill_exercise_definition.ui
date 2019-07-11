@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Wizard</class>
+ <widget class="QWizard" name="Wizard">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>235</width>
+    <height>270</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <widget class="QWizardPage" name="project">
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="2" column="0" colspan="2">
+     <widget class="QRadioButton" name="radio_button_catch">
+      <property name="text">
+       <string>Catch The Object</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_project_name">
+      <property name="text">
+       <string>Project name:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QRadioButton" name="radio_button_follow">
+      <property name="text">
+       <string>Follow The Path</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="label_exercise_type">
+      <property name="text">
+       <string>Choose which exercise you want to define:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="line_project_name"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="button_load_project">
+      <property name="text">
+       <string>Load project</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="scene">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="3" column="2">
+     <widget class="QPushButton" name="button_select_scene">
+      <property name="text">
+       <string>Select</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" colspan="3">
+     <widget class="QListView" name="list_scenes"/>
+    </item>
+    <item row="4" column="0" colspan="2">
+     <widget class="QLabel" name="label_selected">
+      <property name="text">
+       <string>Selected scene:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_scenes">
+      <property name="text">
+       <string>Scenes:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="QLineEdit" name="line_selected_scenes"/>
+    </item>
+    <item row="0" column="0" colspan="3">
+     <widget class="QLabel" name="label_choose_scene">
+      <property name="text">
+       <string>Select the scene for the exercise:</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="target_value">
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="3" column="1" colspan="2">
+     <widget class="QLineEdit" name="line_err_nr_beg"/>
+    </item>
+    <item row="4" column="0" colspan="3">
+     <widget class="QLabel" name="label_skill_level_2">
+      <property name="text">
+       <string>Skill level intermediate:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2" colspan="2">
+     <widget class="QLineEdit" name="line_number"/>
+    </item>
+    <item row="6" column="0" colspan="3">
+     <widget class="QLabel" name="label_skill_level_3">
+      <property name="text">
+       <string>Skill level competent:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="4">
+     <widget class="QLineEdit" name="line_time_int"/>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_err_nr_3">
+      <property name="text">
+       <string>Error:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_err_nr_2">
+      <property name="text">
+       <string>Error:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1" colspan="2">
+     <widget class="QLineEdit" name="line_err_nr_com"/>
+    </item>
+    <item row="3" column="3">
+     <widget class="QLabel" name="label_time">
+      <property name="text">
+       <string>Time:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QLabel" name="label_number">
+      <property name="text">
+       <string>Number of points:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_err_nr">
+      <property name="text">
+       <string>Error:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="4">
+     <widget class="QLineEdit" name="line_time_com"/>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="QLabel" name="label_skill_level">
+      <property name="text">
+       <string>Skill level beginner:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="4">
+     <widget class="QLineEdit" name="line_time_beg"/>
+    </item>
+    <item row="5" column="1" colspan="2">
+     <widget class="QLineEdit" name="line_err_nr_int"/>
+    </item>
+    <item row="7" column="3">
+     <widget class="QLabel" name="label_time_3">
+      <property name="text">
+       <string>Time:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="3">
+     <widget class="QLabel" name="label_time_2">
+      <property name="text">
+       <string>Time:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="5">
+     <widget class="QLabel" name="label_values">
+      <property name="text">
+       <string>Define the target values of the exercise:</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="feedback">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_good">
+      <property name="text">
+       <string>Good min number points:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="line_average"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="line_bad"/>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLabel" name="label_prozent_1">
+      <property name="text">
+       <string>%</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="line_good"/>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_exercise_name">
+      <property name="text">
+       <string>Name of the exercise:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QLabel" name="label_prozent_3">
+      <property name="text">
+       <string>%</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_average">
+      <property name="text">
+       <string>Average min number points:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLabel" name="label_prozent_2">
+      <property name="text">
+       <string>%</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_bad">
+      <property name="text">
+       <string>Bad min number points:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLineEdit" name="line_exercise_name"/>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="label_feeback">
+      <property name="text">
+       <string>Define the feedback of the exercise:</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>list_scenes</tabstop>
+  <tabstop>line_selected_scenes</tabstop>
+  <tabstop>line_err_nr_beg</tabstop>
+  <tabstop>line_time_beg</tabstop>
+  <tabstop>line_err_nr_int</tabstop>
+  <tabstop>line_time_int</tabstop>
+  <tabstop>line_err_nr_com</tabstop>
+  <tabstop>line_time_com</tabstop>
+  <tabstop>line_good</tabstop>
+  <tabstop>line_average</tabstop>
+  <tabstop>line_bad</tabstop>
+  <tabstop>line_exercise_name</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

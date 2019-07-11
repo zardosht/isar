@@ -621,11 +621,23 @@ class ActionButtonAnnotation(RectangleAnnotation):
         logger.info("Action Button Selected -------------------------------<><><><><><><<<<<<<<<")
 
 
-# TODO: Implement points
-class CurveAnnotationPoint():
-    def __init__(self):
-        self.point = None
-        self.hit = False
+class CurveAnnotationPoint:
+    def __init__(self, point, hit=False):
+        self.point = point
+        self.hit = hit
+
+    def get_point(self):
+        return self.point
+
+    def set_point(self, value):
+        self.point = value
+
+    def is_hit(self):
+        return self.hit
+
+    def set_hit(self, value):
+        self.hit = value
+
 
 class CurveAnnotation(Annotation):
     MINIMUM_NUMBER_POSITIONS = 7
@@ -643,8 +655,11 @@ class CurveAnnotation(Annotation):
         self.points = IntAnnotationProperty("Points", None, self, self.set_points.__name__)
         self.properties.append(self.points)
 
-        self.points_color = ColorAnnotationProperty("Points color", (0, 0, 0), self)
-        self.properties.append(self.points_color)
+        self.color_not_hit = ColorAnnotationProperty("Color not hit", (0, 0, 0), self)
+        self.properties.append(self.color_not_hit)
+
+        self.color_hit = ColorAnnotationProperty("Color hit", (0, 255, 0), self)
+        self.properties.append(self.color_hit)
 
         self.points_radius = IntAnnotationProperty("Points radius", 2, self)
         self.properties.append(self.points_radius)
@@ -659,6 +674,7 @@ class CurveAnnotation(Annotation):
         self.line_points_distributed = []
 
         self.exercise = None
+        self.show_feedback = False
 
     def set_points(self, value):
         if value <= len(self.line_points):
