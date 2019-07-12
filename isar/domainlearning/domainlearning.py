@@ -207,7 +207,9 @@ class DomainLearningWindow(QMainWindow):
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
-        project_filename = QFileDialog.getOpenFileName(parent=None, filter="(*.json)")[0]
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        project_filename = QFileDialog.getOpenFileName(parent=None, filter="(*.json)", options=options)[0]
         project_dir = os.path.dirname(project_filename)
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":

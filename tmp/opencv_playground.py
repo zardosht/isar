@@ -303,13 +303,16 @@ def f9():
     if os.name == "posix":
         cam_id = 0
         _capture = cv2.VideoCapture(cam_id, cv2.CAP_V4L2)
+        # _capture = cv2.VideoCapture(cam_id)
 
         width = 1920
         height = 1080
         capture_fps = 24
+        _capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
         _capture.set(cv2.CAP_PROP_FPS, capture_fps);
         _capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         _capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        # _capture.set(cv2.CAP_PROP_CONVERT_RGB, False)
 
         while True:
             start = time.time()

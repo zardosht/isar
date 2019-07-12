@@ -739,7 +739,9 @@ class SceneDefinitionWindow(QMainWindow):
 
     def create_project_btn_clicked(self):
         logger.info("Create project")
-        parent_dir = QFileDialog.getExistingDirectory()
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        parent_dir = QFileDialog.getExistingDirectory(options=options)
         if parent_dir is None or parent_dir == "":
             return
         project_name = self.project_name_le.text()
@@ -754,7 +756,9 @@ class SceneDefinitionWindow(QMainWindow):
 
     def load_project_btn_clicked(self):
         logger.info("Load project")
-        project_filename = QFileDialog.getOpenFileName(parent=None, filter="(*.json)")[0]
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        project_filename = QFileDialog.getOpenFileName(parent=None, filter="(*.json)", options=options)[0]
         project_dir = os.path.dirname(project_filename)
         project_name = os.path.splitext(os.path.basename(project_filename))[0]
         if project_dir is None or project_dir == "":

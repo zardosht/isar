@@ -10,6 +10,7 @@ from isar.events.rulesservice import RulesService
 from isar.events.selectionservice import SelectionService
 from isar.events.timerservice import TimerService
 from isar.services.DummyObjectDetectionService import DummyObjectDetectionService
+from isar.services.DummySelectionStickService import DummySelectionStickService
 from isar.tracking import objectdetection
 from isar.tracking.handtracking import HandTrackingService
 from isar.tracking.objectdetection import ObjectDetectionService
@@ -38,12 +39,13 @@ class ServiceNames(Enum):
 
 def start_services():
     try:
-        camera1_service = CameraService(ServiceNames.CAMERA1, 2)
+        camera1_service = CameraService(ServiceNames.CAMERA1, 0)
         camera1_service.start()
         __services[ServiceNames.CAMERA1] = camera1_service
     except Exception as exp:
         logger.error("Could not initialize camera service. Return.")
         logger.error("Please check the camera is connected and working.")
+        logger.error(str(exp))
         traceback.print_tb(exp.__traceback__)
         return False
 
@@ -70,7 +72,8 @@ def start_services():
         selection_service.actions_service = actions_service
         __services[ServiceNames.SELECTION_SERVICE] = selection_service
 
-        hand_tracking_service = HandTrackingService(ServiceNames.HAND_TRACKING_SERVICE, camera1_service)
+        # hand_tracking_service = HandTrackingService(ServiceNames.HAND_TRACKING_SERVICE, camera1_service)
+        hand_tracking_service = DummySelectionStickService(ServiceNames.HAND_TRACKING_SERVICE)
         hand_tracking_service.start()
         __services[ServiceNames.HAND_TRACKING_SERVICE] = hand_tracking_service
 
