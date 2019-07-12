@@ -299,22 +299,32 @@ def f8():
 
 
 def f9():
+    fpss = []
     if os.name == "posix":
-        cam_id = 2
-        _capture = cv2.VideoCapture(cam_id)
+        cam_id = 0
+        _capture = cv2.VideoCapture(cam_id, cv2.CAP_V4L2)
+
         width = 1920
         height = 1080
+        capture_fps = 24
+        _capture.set(cv2.CAP_PROP_FPS, capture_fps);
         _capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         _capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
         while True:
+            start = time.time()
             ret, frame = _capture.read()
             if ret:
+                duration = time.time() - start
+                fps = 1 / duration
+                fpss.append(fps)
+
                 cv2.imshow("camera", frame)
                 key = cv2.waitKey(1)
                 if key & 0xFF == ord('q'):
                     break
 
+        print("Average FPS: ", sum(fpss) / len(fpss))
         _capture.release()
         cv2.destroyAllWindows()
 
