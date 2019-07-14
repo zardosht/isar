@@ -20,6 +20,7 @@ def draw_physical_object_image(opencv_img, scene_scale_factor, phys_obj: Physica
     if template_image_scaled is None:
         template_image = phys_obj.template_image
         template_image_scaled = cv2.resize(template_image, dsize=(0, 0), fx=scene_scale_factor[0], fy=scene_scale_factor[1])
+        add_red_cross(template_image_scaled)
         scaled_phys_obj_images[phys_obj.name] = template_image_scaled
 
     sceneutil.draw_image_on(opencv_img, template_image_scaled, phys_obj.scene_position, position_is_topleft=True)
@@ -53,3 +54,21 @@ def draw_physical_object_bounding_box(opencv_img, phys_obj: PhysicalObject):
 def highlight_physical_object(opencv_img, position, size, color):
     br = (position[0] + size[0], position[1] + size[1])
     cv2.rectangle(opencv_img, position, br, color, 5)
+
+
+def add_red_cross(phys_obj_template_image):
+    # If pyhsical object is not available on the scene,
+    # its template image is drawn with a red cross.
+    # This has two reasons:
+    # 1) YOLO does not detect mistakenly the template image as the real object
+    # 2) Red cross indicated the object is missing
+    height, width = phys_obj_template_image.shape[0:2]
+    color = (0, 0, 255)
+    thickness = 5
+    p1 = (0, 0)
+    p2 = (width - 1, height -1)
+    template_image = cv2.line(phys_obj_template_image, p1, p2, color, thickness)
+    p1 = (0, height - 1)
+    p2 = (width - 1, 0)
+    template_image = cv2.line(phys_obj_template_image, p1, p2, color, thickness)
+    return template_image
