@@ -3,6 +3,7 @@ import random
 import numpy as np
 import cv2
 
+import isar
 from isar.scene import sceneutil
 from isar.scene.physicalobjectmodel import PhysicalObject
 
@@ -13,15 +14,24 @@ colors = [tuple(255 * np.random.rand(3)) for i in range(10)]
 
 scaled_phys_obj_images = {}
 
+scaled_phys_obj_images_with_red_cross = {}
+
 
 def draw_physical_object_image(opencv_img, scene_scale_factor, phys_obj: PhysicalObject):
     global scaled_phys_obj_images
-    template_image_scaled = scaled_phys_obj_images.get(phys_obj.name)
+    if isar.OBJECT_TRACKING_ACTIVE:
+        template_image_scaled = scaled_phys_obj_images_with_red_cross.get(phys_obj.name)
+    else:
+        template_image_scaled = scaled_phys_obj_images.get(phys_obj.name)
+
     if template_image_scaled is None:
         template_image = phys_obj.template_image
         template_image_scaled = cv2.resize(template_image, dsize=(0, 0), fx=scene_scale_factor[0], fy=scene_scale_factor[1])
-        add_red_cross(template_image_scaled)
-        scaled_phys_obj_images[phys_obj.name] = template_image_scaled
+        if isar.OBJECT_TRACKING_ACTIVE:
+            template_image_scaled_with_red_cross = add_red_cross(template_image_scaled)
+            scaled_phys_obj_images_with_red_cross[phys_obj.name] = template_image_scaled_with_red_cross
+        else:
+            scaled_phys_obj_images[phys_obj.name] = template_image_scaled
 
     sceneutil.draw_image_on(opencv_img, template_image_scaled, phys_obj.scene_position, position_is_topleft=True)
     if phys_obj.highlight:

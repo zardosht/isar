@@ -654,6 +654,8 @@ class SceneDefinitionWindow(QMainWindow):
         self.annotations_list.selectionModel().currentChanged.connect(self.annotationslist_current_changed)
         self.annotations_list.selectionModel().selectionChanged.connect(self.annotationslist_current_changed)
 
+        self.track_objects_checkbox.stateChanged.connect(self.toggle_object_tracking)
+
     def sceneslist_current_changed(self):
         current_index = self.scenes_list.selectionModel().currentIndex()
         self.scenes_list.selectionModel().select(current_index, QItemSelectionModel.Select)
@@ -918,10 +920,16 @@ class SceneDefinitionWindow(QMainWindow):
 
         self.camera_view.set_camera_frame(camera_frame)
 
+    def toggle_object_tracking(self):
+        if self.track_objects_checkbox.isChecked():
+            isar.OBJECT_TRACKING_ACTIVE = True
+        else:
+            isar.OBJECT_TRACKING_ACTIVE = False
+
     def run_object_detection(self):
         while True:
             time.sleep(isar.OBJECT_DETECTION_INTERVAL)
-            if self.track_objects_checkbox.isChecked():
+            if isar.OBJECT_TRACKING_ACTIVE:
                 camera_frame = self._camera_service.get_frame()
                 if camera_frame == isar.POISON_PILL:
                     logger.info(

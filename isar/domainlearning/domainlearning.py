@@ -197,6 +197,7 @@ class DomainLearningWindow(QMainWindow):
         self.init_scene_size_btn.clicked.connect(self.init_scene_size)
         self.load_proj_btn.clicked.connect(self.load_project_btn_clicked)
         self.scenes_list.selectionModel().currentChanged.connect(self.sceneslist_current_changed)
+        self.track_objects_checkbox.stateChanged.connect(self.toggle_object_tracking)
 
     def calibrate_projector(self):
         self.projector_view.calibrating = True
@@ -316,10 +317,16 @@ class DomainLearningWindow(QMainWindow):
 
             self.projector_view.update_projector_view(camera_frame)
 
+    def toggle_object_tracking(self):
+        if self.track_objects_checkbox.isChecked():
+            isar.OBJECT_TRACKING_ACTIVE = True
+        else:
+            isar.OBJECT_TRACKING_ACTIVE = False
+
     def run_object_detection(self):
         while True:
             time.sleep(isar.OBJECT_DETECTION_INTERVAL)
-            if self.track_objects_checkbox.isChecked():
+            if isar.OBJECT_TRACKING_ACTIVE:
                 camera_frame = self._camera_service.get_frame()
                 if camera_frame == isar.POISON_PILL:
                     logger.info(
