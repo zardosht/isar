@@ -99,11 +99,18 @@ class CameraService(Service):
         :return:
         """
         self._stop_event.set()
-        while not self._queue.empty():
-            self._queue.get()
 
-        while not self._queue.full():
-            self._queue.put(isar.POISON_PILL)
+        for i in range(100):
+            try:
+                self._queue.get_nowait()
+            except:
+                pass
+
+        for i in range(100):
+            try:
+                self._queue.put_nowait(isar.POISON_PILL)
+            except:
+                pass
 
         # TODO: this hangs on stop! why? I don't know
         # self._capture.release()

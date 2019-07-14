@@ -9,6 +9,7 @@ import numpy as np
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt, QPoint
 
+import isar
 from isar.camera.camera import CameraService, CameraFrame
 from isar.projection import projectionutil
 from isar.scene import sceneutil
@@ -164,6 +165,10 @@ class ProjectorView(QtWidgets.QWidget):
                 if camera_frame is None:
                     continue
 
+                if camera_frame == isar.POISON_PILL:
+                    logger.info("Projector calibration received POISON_PILL. Break.")
+                    break
+
                 camera_img = camera_frame.raw_image
                 # camera_img = cv2.resize(camera_img, self.scene_size)
                 # camera_img = cv2.flip(camera_img, -1)
@@ -190,11 +195,11 @@ class ProjectorView(QtWidgets.QWidget):
                     found_homography = True
 
             except Exception as exp:
-                logger.error("Error finding homography: ", str(exp))
+                logger.error("Error finding homography: {}".format(str(exp)))
                 traceback.print_tb(exp.__traceback__)
 
         # testing the found homography
-        if camera_frame is not None:
+        if camera_frame is not None and camera_frame != isar.POISON_PILL:
             camera_img = camera_frame.raw_image
             if debug: cv2.imwrite("tmp/tmp_files/what_camera_sees_on_table.jpg", camera_img)
             # camera_img = cv2.resize(camera_img, self.scene_size)
