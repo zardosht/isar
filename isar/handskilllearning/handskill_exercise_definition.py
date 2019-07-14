@@ -76,7 +76,6 @@ class HandSkillExerciseDefinition(QWizard):
             timer_annotations = scene.get_all_annotations_by_type(TimerAnnotation)
             feedback_annotations = scene.get_all_annotations_by_type(FeedbackAnnotation)
 
-            # TODO: implement method in scene get_al_actions by type
             scene_actions = scene.get_actions()
             count_start_action = 0
             count_stop_action = 0

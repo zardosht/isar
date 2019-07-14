@@ -133,7 +133,6 @@ class HandSkillExerciseExecution(QMainWindow):
     def start_exercise(self):
         current_scene = self.exercise.scene
 
-        # TODO: Fix me (find a proper place to configure the service).
         rules_service = servicemanager.get_service(ServiceNames.RULES_SERVICE)
         rules_service.set_current_scene(current_scene)
 
