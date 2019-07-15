@@ -436,7 +436,9 @@ class RectangleAnnotation(Annotation):
         self.is_selectable = True
 
     def intersects_with_point(self, point):
-        position = self.position.get_value()
+        position = sceneutil.convert_object_to_image(self.position.get_value(),
+                                                     self.attached_to.get_value(),
+                                                     sceneutil.scene_scale_factor)
         width = self.width.get_value()
         height = self.height.get_value()
         return position[0] - int(width / 2) <= point[0] <= position[0] + int(width / 2) and \
@@ -480,7 +482,9 @@ class CircleAnnotation(Annotation):
         return True
 
     def intersects_with_point(self, point):
-        position = self.position.get_value()
+        position = sceneutil.convert_object_to_image(self.position.get_value(),
+                                                     self.attached_to.get_value(),
+                                                     sceneutil.scene_scale_factor)
         distance = math.sqrt(math.pow((point[0] - position[0]), 2.0) + math.pow((point[0] - position[0]), 2.0))
         return distance <= self.radius.get_value()
 
@@ -507,7 +511,9 @@ class ImageAnnotation(Annotation):
         self.is_selectable = True
 
     def intersects_with_point(self, point):
-        position = self.position.get_value()
+        position = sceneutil.convert_object_to_image(self.position.get_value(),
+                                                     self.attached_to.get_value(),
+                                                     sceneutil.scene_scale_factor)
         width = self.width.get_value()
         height = self.height.get_value()
         return position[0] <= point[0] <= position[0] + width and \
@@ -552,7 +558,9 @@ class VideoAnnotation(Annotation):
         if point is None:
             return False
 
-        position = self.position.get_value()
+        position = sceneutil.convert_object_to_image(self.position.get_value(),
+                                                     self.attached_to.get_value(),
+                                                     sceneutil.scene_scale_factor)
         if position is None:
             return False
 
@@ -595,6 +603,7 @@ class VideoAnnotation(Annotation):
         self.playing = False
         self.paused = False
 
+
 class ActionButtonAnnotation(RectangleAnnotation):
     DEFAULT_TEXT = "Action"
 
@@ -619,7 +628,9 @@ class ActionButtonAnnotation(RectangleAnnotation):
         self.is_selectable = True
 
     def intersects_with_point(self, point):
-        position = self.position.get_value()
+        position = sceneutil.convert_object_to_image(self.position.get_value(),
+                                                     self.attached_to.get_value(),
+                                                     sceneutil.scene_scale_factor)
         if position is None:
             return False
 
@@ -880,7 +891,9 @@ class AudioAnnotation(Annotation):
         return True
 
     def intersects_with_point(self, point):
-        position = self.position.get_value()
+        position = sceneutil.convert_object_to_image(self.position.get_value(),
+                                                     self.attached_to.get_value(),
+                                                     sceneutil.scene_scale_factor)
         width = self.icon_size.get_value()
         height = self.icon_size.get_value()
         return position[0] <= point[0] <= position[0] + width and \
@@ -1127,7 +1140,9 @@ class CheckboxAnnotation(Annotation):
         self.properties.append(self.checked)
 
     def intersects_with_point(self, point):
-        position = self.position.get_value()
+        position = sceneutil.convert_object_to_image(self.position.get_value(),
+                                                     self.attached_to.get_value(),
+                                                     sceneutil.scene_scale_factor)
         if position is None or point is None:
             return False
 

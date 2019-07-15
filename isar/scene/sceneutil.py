@@ -20,6 +20,7 @@ scene_rect_c = None
 scene_rect_p = None
 scene_scale_factor_c = None
 scene_scale_factor_p = None
+scene_scale_factor = None
 cam_proj_homography = None
 
 

@@ -293,6 +293,7 @@ class ProjectorView(QtWidgets.QWidget):
 
         # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
         # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_p
+        sceneutil.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])
         self.scene_renderer.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])
 
         # self.scene_renderer.opencv_img = sceneutil.create_empty_image(scene_size_c, (255, 255, 255))
