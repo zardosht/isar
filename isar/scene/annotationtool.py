@@ -382,6 +382,8 @@ class ArrowAnnotationTool(AnnotationTool):
         font_scale = self.annotation.font_scale.get_value()
         text_color = self.annotation.text_color.get_value()
         text_thickness = self.annotation.text_thickness.get_value()
+        if text_thickness < 1:
+            text_thickness = 1
 
         # TODO: add font property to TextAnnotation()
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -680,6 +682,8 @@ class ActionButtonAnnotationTool(RectangleAnnotationTool):
             font_scale = self.annotation.font_scale.get_value()
             text_color = self.annotation.text_color.get_value()
             text_thickness = self.annotation.text_thickness.get_value()
+            if text_thickness < 1:
+                text_thickness = 1
 
             # TODO: add font property to TextAnnotation()
             font = cv2.FONT_HERSHEY_SIMPLEX
@@ -807,6 +811,8 @@ class AudioAnnotationTool(AnnotationTool):
         font_scale = self.annotation.font_scale.get_value()
         text_color = self.annotation.text_color.get_value()
         text_thickness = self.annotation.text_thickness.get_value()
+        if text_thickness < 1:
+            text_thickness = 1
 
         # TODO: add font property to TextAnnotation()
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -858,6 +864,8 @@ class TimerAnnotationTool(AnnotationTool):
         font_scale = self.annotation.font_scale.get_value()
         text_color = self.annotation.text_color.get_value()
         text_thickness = self.annotation.text_thickness.get_value()
+        if text_thickness < 1:
+            text_thickness = 1
 
         # TODO: add font property
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -1067,6 +1075,8 @@ class FeedbackAnnotationTool(AnnotationTool):
 
         font_scale = self.annotation.font_scale.get_value()
         text_thickness = self.annotation.text_thickness.get_value()
+        if text_thickness < 1:
+            text_thickness = 1
         text_color = self.annotation.text_color.get_value()
 
         # TODO: add font property
@@ -1391,6 +1401,8 @@ class CounterAnnotationTool(AnnotationTool):
         font_scale = self.annotation.font_scale.get_value()
         text_color = self.annotation.text_color.get_value()
         text_thickness = self.annotation.text_thickness.get_value()
+        if text_thickness < 1:
+            text_thickness = 1
 
         # TODO: add font property
         font = cv2.FONT_HERSHEY_SIMPLEX
