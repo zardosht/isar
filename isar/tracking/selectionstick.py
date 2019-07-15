@@ -62,6 +62,7 @@ class SelectionStickService(Service):
 
         self._camera_service = camera_service
         self._rect_queue = Queue(1)
+        self._cam_frame_queue = Queue(1)
 
         self.__current_rect = None
 
@@ -71,13 +72,14 @@ class SelectionStickService(Service):
     def start(self):
         self._camera_service.start_capture()
 
-        cam_frame_queue = Queue(1)
-        tracking_process = SelectionStickTrackingProcess(self._rect_queue, cam_frame_queue, self._stop_tracking_event)
+        tracking_process = SelectionStickTrackingProcess(self._rect_queue,
+                                                         self._cam_frame_queue,
+                                                         self._stop_tracking_event)
         tracking_process.name = "SelectionStickTrackingProcess"
         tracking_process.daemon = True
         tracking_process.start()
 
-        tracking_thread = threading.Thread(target=self._start_tracking, args=(cam_frame_queue,))
+        tracking_thread = threading.Thread(target=self._start_tracking, args=(self._cam_frame_queue,))
         tracking_thread.daemon = True
         tracking_thread.start()
 
@@ -186,6 +188,8 @@ class SelectionStickService(Service):
     def stop(self):
         self._stop_tracking_event.set()
         self._stop_event_detection_event.set()
+        self._cam_frame_queue.cancel_join_thread()
+        self._rect_queue.cancel_join_thread()
 
     def fire_event(self, target):
         logger.info("Fire SelectionEvent on: " + str(target))
@@ -272,6 +276,7 @@ class SelectionStickTrackingProcess(Process):
         while not self._stop_tracking_event.is_set():
             camera_frame = self._cam_frame_queue.get()
             if camera_frame == isar.POISON_PILL:
+                logger.info("SelectionStickTrackingProcess received POISON_PILL. Break.")
                 break
 
             if camera_frame is None:
