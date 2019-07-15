@@ -332,6 +332,31 @@ def f9():
         cv2.destroyAllWindows()
 
 
+def f10():
+    fpss = []
+    if os.name == "posix":
+        cam_id = 0
+        # _capture = cv2.VideoCapture("~/Dropbox/dropbox-tmp/00_TEMP/test_project/linemans_pliers.mp4", cv2.CAP_V4L2)
+        _capture = cv2.VideoCapture("~/Dropbox/dropbox-tmp/00_TEMP/test_project/linemans_pliers.mp4")
+        # _capture = cv2.VideoCapture(cam_id)
+        ret = True
+        while ret:
+            start = time.time()
+            ret, frame = _capture.read()
+            if ret:
+                duration = time.time() - start
+                fps = 1 / duration
+                fpss.append(fps)
+
+                cv2.imshow("camera", frame)
+                key = cv2.waitKey(1)
+                if key & 0xFF == ord('q'):
+                    break
+
+        print("Average FPS: ", sum(fpss) / len(fpss))
+        _capture.release()
+        cv2.destroyAllWindows()
+
 if __name__ == "__main__":
     # f2()
     # f3()
@@ -340,7 +365,8 @@ if __name__ == "__main__":
     # f6()
     # f7()
     # f8()
-    f9()
+    # f9()
+    f10()
 
     # img = cv2.imread("tmp_files/tmp_image.jpg")
     # cv2.imshow("tmp_package", img)

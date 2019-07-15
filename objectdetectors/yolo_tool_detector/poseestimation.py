@@ -72,12 +72,8 @@ class PoseEstimator(mp.Process):
                     # (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
                     #                                    cv2.MOTION_HOMOGRAPHY, criteria)
 
-                    # (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
-                    #                                    cv2.MOTION_AFFINE, criteria, inputMask=None, gaussFiltSize=5)
-
-                    (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray,
-                                                       better_homography_float32,
-                                                       cv2.MOTION_AFFINE, criteria, inputMask=None)
+                    (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
+                                                       cv2.MOTION_AFFINE, criteria, inputMask=None, gaussFiltSize=5)
 
                     errror_ecc = self.compute_error(h_ECC, physical_object_image, cropped_image, "_ecc")
                     if h_ECC is not None and errror_ecc < better_pe.error:
