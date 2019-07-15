@@ -158,6 +158,8 @@ def init_pose_estimators():
 def terminate():
     for i in range(num__pose_estimator_processes):
         pose_estimation_task_queue.put(POISON_PILL)
+        pose_estimation_task_queue.cancel_join_thread()
+        pose_estimation_results_queue.cancel_join_thread()
 
 
 def get_physical_objects():

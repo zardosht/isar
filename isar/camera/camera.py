@@ -1,8 +1,7 @@
 import logging
-import os
+import platform
 import threading
-import time
-from queue import Queue, LifoQueue
+from queue import LifoQueue
 import cv2
 
 import isar
@@ -32,14 +31,14 @@ class CameraService(Service):
         self._do_capture = False
 
     def _open_capture(self):
-        if os.name == "nt":
+        if platform.system() == "Windows":
             self._capture = cv2.VideoCapture(self.cam_id, cv2.CAP_DSHOW)
             width = 1920
             height = 1080
             self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
             self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-        elif os.name == "posix":
+        elif platform.system() == "Linux":
             self._capture = cv2.VideoCapture(self.cam_id, cv2.CAP_V4L2)
             self._capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
             width = 1920
@@ -47,7 +46,7 @@ class CameraService(Service):
             self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
             self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-        else:
+        else:  # Darwin
             self._capture = cv2.VideoCapture(self.cam_id)
 
             # TODO: possibly for later

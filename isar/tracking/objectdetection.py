@@ -150,20 +150,23 @@ class ObjectDetectionService(Service):
                 # observer_thread.join(timeout=2)
 
         for obj_detector_worker in self.object_detector_workers:
+            obj_detector_worker.request_queue.cancel_join_thread()
+            obj_detector_worker.response_queue.cancel_join_thread()
             obj_detector_worker.shut_down()
-            if obj_detector_worker.request_queue.empty():
-                obj_detector_worker.request_queue.put(isar.POISON_PILL)
-            else:
-                try:
-                    obj_detector_worker.request_queue.get(block=True, timeout=2)
-                except queue.Empty:
-                    # do nothing
-                    pass
-
+            try:
+                obj_detector_worker.request_queue.get(block=True, timeout=1)
                 obj_detector_worker.request_queue.task_done()
+            except queue.Empty:
+                # do nothing
+                pass
+            obj_detector_worker.request_queue.put(isar.POISON_PILL)
 
-            if obj_detector_worker.response_queue.empty():
-                obj_detector_worker.response_queue.put(isar.POISON_PILL)
+            try:
+                obj_detector_worker.response_queue.get(block=True, timeout=1)
+                obj_detector_worker.response_queue.task_done()
+            except:
+                pass
+            obj_detector_worker.response_queue.put(isar.POISON_PILL)
 
             obj_detector_worker.terminate()
 

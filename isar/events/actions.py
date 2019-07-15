@@ -347,8 +347,14 @@ class StartVideoAction(Action):
         super().__init__()
 
     def run(self):
-        # TODO: not implemented
-        pass
+        if self.target is None:
+            logger.error("self.target is None. Return.")
+            return
+
+        if type(self.target) == StartVideoAction.target_types[0]:
+            self.target.start()
+        else:
+            logger.error("self.target is not VideoAnnotation")
 
 
 class StopVideoAction(Action):
@@ -363,8 +369,14 @@ class StopVideoAction(Action):
         super().__init__()
 
     def run(self):
-        # TODO: not implemented
-        pass
+        if self.target is None:
+            logger.error("self.target is None. Return.")
+            return
+
+        if type(self.target) == StopVideoAction.target_types[0]:
+            self.target.stop()
+        else:
+            logger.error("self.target is not VideoAnnotation")
 
 
 class StartAnimationAction(Action):

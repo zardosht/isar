@@ -567,19 +567,33 @@ class VideoAnnotation(Annotation):
         #  Generally, the behavior of annotations upon selection, should be defined
         #  depending on if we are in AUTHORING or EXECUTION mode.
         if self.playing:
-            self.paused = True
-            self.playing = False
-            self.stopped = False
+            self.pause()
         elif self.stopped:
-            self.current_frame = 0
-            self.playing = True
-            self.paused = False
-            self.stopped = False
+            self.start()
         elif self.paused:
-            self.playing = True
-            self.paused = False
-            self.stopped = False
+            self.unpause()
 
+    def start(self):
+        self.current_frame = 0
+        self.playing = True
+        self.paused = False
+        self.stopped = False
+
+    def pause(self):
+        self.paused = True
+        self.playing = False
+        self.stopped = False
+
+    def unpause(self):
+        self.playing = True
+        self.paused = False
+        self.stopped = False
+
+    def stop(self):
+        self.current_frame = 0
+        self.stopped = True
+        self.playing = False
+        self.paused = False
 
 class ActionButtonAnnotation(RectangleAnnotation):
     DEFAULT_TEXT = "Action"
@@ -1524,9 +1538,7 @@ class FilePathEditorWidget(QWidget):
         self.layout.addWidget(self.widget)
 
     def btn_clicked(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        self.filename, _ = QFileDialog.getOpenFileName(options=options)
+        self.filename, _ = QFileDialog.getOpenFileName()
         if self.filename is not None:
             self.filename_selected.emit(self.filename)
 
@@ -1586,7 +1598,11 @@ class FilePathAnnotationProperty(AnnotationProperty):
         # copy the file to the project's basedir
         # set the _value to only the file name
         if os.path.exists(value):
-            shutil.copy(value, scenemodel.current_project.base_path)
+            try:
+                shutil.copy(value, scenemodel.current_project.base_path)
+            except shutil.SameFileError:
+                logger.warning("File already exists: {}".format(str(value)))
+
             value = os.path.basename(value)
             if self.setter_name is not None:
                 return getattr(self.annotation, self.setter_name)(value)
