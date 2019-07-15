@@ -31,14 +31,14 @@ class CameraService(Service):
         self._do_capture = False
 
     def _open_capture(self):
-        if platform.system() == "Windows":
+        if isar.PLATFORM == "Windows":
             self._capture = cv2.VideoCapture(self.cam_id, cv2.CAP_DSHOW)
             width = 1920
             height = 1080
             self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
             self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-        elif platform.system() == "Linux":
+        elif isar.PLATFORM == "Linux":
             self._capture = cv2.VideoCapture(self.cam_id, cv2.CAP_V4L2)
             self._capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
             width = 1920

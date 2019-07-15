@@ -1,4 +1,5 @@
 import logging
+import platform
 import sys
 import time
 
@@ -37,6 +38,8 @@ def configure_logging():
 def main():
     # See: https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr
     # os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
+
+    isar.PLATFORM = platform.system()
 
     use_cases = ["1", "2", "3", "4"]
     use_case = input(

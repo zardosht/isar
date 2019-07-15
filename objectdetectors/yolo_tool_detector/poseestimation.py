@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 import time
 
+import isar
 from isar.tracking.objectdetection import POISON_PILL
 from objectdetectors.yolo_tool_detector import temp_folder_path
 
@@ -69,11 +70,16 @@ class PoseEstimator(mp.Process):
                     physical_object_image_gray, cropped_image_gray = self.convert_to_gray_scale(physical_object_image, cropped_image)
                     better_homography_float32 = better_pe.homography.astype(np.float32)
 
-                    # (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
-                    #                                    cv2.MOTION_HOMOGRAPHY, criteria)
-
-                    (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray, better_homography_float32,
-                                                       cv2.MOTION_AFFINE, criteria, inputMask=None, gaussFiltSize=5)
+                    if isar.PLATFORM == "Darwin":
+                        (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray,
+                                                           better_homography_float32,
+                                                           cv2.MOTION_AFFINE, criteria)
+                    else:
+                        (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray,
+                                                           better_homography_float32,
+                                                           cv2.MOTION_AFFINE, criteria,
+                                                           inputMask=None,
+                                                           gaussFiltSize=5)
 
                     errror_ecc = self.compute_error(h_ECC, physical_object_image, cropped_image, "_ecc")
                     if h_ECC is not None and errror_ecc < better_pe.error:

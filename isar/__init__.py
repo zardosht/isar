@@ -8,6 +8,8 @@ class ApplicationMode(Enum):
 
 application_mode = ApplicationMode.AUTHORING
 
+PLATFORM = None
+
 OBJECT_TRACKING_ACTIVE = False
 
 POISON_PILL = "poison_pill"
