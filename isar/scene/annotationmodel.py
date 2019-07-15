@@ -1524,7 +1524,9 @@ class FilePathEditorWidget(QWidget):
         self.layout.addWidget(self.widget)
 
     def btn_clicked(self):
-        self.filename, _ = QFileDialog.getOpenFileName()
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        self.filename, _ = QFileDialog.getOpenFileName(options=options)
         if self.filename is not None:
             self.filename_selected.emit(self.filename)
 

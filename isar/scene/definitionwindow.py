@@ -726,7 +726,9 @@ class SceneDefinitionWindow(QMainWindow):
         parent_dir = None
         project_name = None
         if not scenemodel.current_project:
-            parent_dir = QFileDialog.getExistingDirectory()
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            parent_dir = QFileDialog.getExistingDirectory(options=options)
             if parent_dir is None or parent_dir == "":
                 return
             project_name = self.project_name_le.text()

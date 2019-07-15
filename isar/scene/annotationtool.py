@@ -466,7 +466,9 @@ class ImageAnnotationTool(AnnotationTool):
         height = self.v2[1] - self.v1[1]
         position = [self.v1[0] + int(width / 2), self.v1[1] + int(height / 2)]
 
-        file_path, _ = QFileDialog.getOpenFileName()
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_path, _ = QFileDialog.getOpenFileName(options=options)
         if file_path is None or file_path == "":
             return
 
@@ -769,7 +771,9 @@ class AudioAnnotationTool(AnnotationTool):
             self.set_drawing(False)
             return
 
-        file_path, _ = QFileDialog.getOpenFileName()
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_path, _ = QFileDialog.getOpenFileName(options=options)
         if file_path is None or file_path == "":
             return
 
@@ -1275,7 +1279,9 @@ class AnimationAnnotationTool(AnnotationTool):
                                + line_iterator(self.all_line_points.pop(), (img_x, img_y))
         self.annotation.line_points = self.all_line_points
 
-        file_path, _ = QFileDialog.getOpenFileName()
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_path, _ = QFileDialog.getOpenFileName(options=options)
         if file_path is None or file_path == "":
             self.set_drawing(False)
             return
