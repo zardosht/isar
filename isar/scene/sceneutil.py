@@ -288,15 +288,29 @@ def get_scene_scale_factor_c(camera_img_shape, scene_rect_c):
 def get_scene_scale_factor_p(projector_img_shape, scene_rect_p):
     scene_width_p = scene_rect_p[2]
     scene_height_p = scene_rect_p[3]
-    projector_img_width = projector_img_shape
-    projector_img_height = projector_img_shape
+    projector_img_width = projector_img_shape[1]
+    projector_img_height = projector_img_shape[0]
+    return scene_width_p / projector_img_width, scene_height_p / projector_img_height
 
 
-def camera_coord_to_scene_coord(cam_coord):
+def camera_coord_to_scene_coord(cam_coord, for_projector=False):
     if isar.application_mode == ApplicationMode.AUTHORING:
         return camera_coord_to_scene_coord_c(cam_coord)
     elif isar.application_mode == ApplicationMode.EXECUTION:
-        return camera_coord_to_scene_coord_p(cam_coord)
+        if scene_rect_c is None:
+            return cam_coord
+
+        if scene_rect_p is None:
+            return cam_coord
+
+        cam_to_scene_coord = camera_coord_to_scene_coord_c(cam_coord)
+        if for_projector:
+            sf = (scene_rect_p[2] / scene_rect_c[2], scene_rect_p[3] / scene_rect_c[3])
+            cam_to_scene_coord = int(cam_to_scene_coord[0] * sf[0]), int(cam_to_scene_coord[1] * sf[1])
+
+        return cam_to_scene_coord
+
+        # return camera_coord_to_scene_coord_p(cam_coord)
 
 
 def camera_coord_to_scene_coord_c(cam_coord):
@@ -330,10 +344,10 @@ def projector_coord_to_scene_coord_p(proj_coord):
     return proj_coord[0] - scene_rect_p[0], proj_coord[1] - scene_rect_p[1]
 
 
-def camera_coords_to_scene_coords(cam_coords):
+def camera_coords_to_scene_coords(cam_coords, for_projector=False):
     result = []
     for cam_coord in cam_coords:
-        result.append(camera_coord_to_scene_coord(cam_coord))
+        result.append(camera_coord_to_scene_coord(cam_coord, for_projector))
     return result
 
 

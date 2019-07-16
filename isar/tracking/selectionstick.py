@@ -114,11 +114,13 @@ class SelectionStickService(Service):
             if self._physical_objects_model is None:
                 continue
 
-            center_point = self.get_center_point(in_image_coordinates=True)
+            # center_point = self.get_center_point(in_image_coordinates=True)
+            center_point = self.get_center_point(in_image_coordinates=False)
             if center_point is None:
                 continue
 
-            center_in_scene = sceneutil.camera_coord_to_scene_coord(center_point)
+            # center_in_scene = sceneutil.camera_coord_to_scene_coord(center_point)
+            center_in_scene = center_point
 
             collides_with_object = False
             scene_phys_objs = self._current_scene.get_physical_objects()
@@ -204,7 +206,7 @@ class SelectionStickService(Service):
                 v1 = projected_points[0]
                 v2 = projected_points[1]
             else:
-                rect_in_scene = sceneutil.camera_coords_to_scene_coords(current_rect)
+                rect_in_scene = sceneutil.camera_coords_to_scene_coords(current_rect, for_projector=True)
                 v1 = (rect_in_scene[0][0], rect_in_scene[0][1])
                 v2 = (rect_in_scene[2][0], rect_in_scene[2][1])
 

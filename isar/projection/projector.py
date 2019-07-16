@@ -286,22 +286,30 @@ class ProjectorView(QtWidgets.QWidget):
                 cv2.line(projector_image, tuple(marker_corners_p[3]), tuple(marker_corners_p[0]), color=(255, 0, 255), thickness=5)
 
         srect_x_p, srect_y_p, srect_width_p, srect_height_p = self.scene_rect_p
+        srect_x_c, srect_y_c, srect_width_c, srect_height_c = self.scene_rect_c
+
         # scene_size_c = (self.projector_width, self.projector_height)
         # current_project = isar.scene.scenemodel.current_project
         # if current_project is not None:
         #     scene_size_c = current_project.scene_size
 
-        # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
-        # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_p
-        sceneutil.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])
-        self.scene_renderer.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])
+        sceneutil.scene_scale_factor = self.scene_scale_factor_c
+        self.scene_renderer.scene_scale_factor = self.scene_scale_factor_c
 
-        # self.scene_renderer.opencv_img = sceneutil.create_empty_image(scene_size_c, (255, 255, 255))
-        scene_image = sceneutil.create_empty_image((srect_width_p, srect_height_p), (255, 255, 255))
+        # self.scene_renderer.scene_scale_factor = self.scene_scale_factor_p
+        # sceneutil.scene_scale_factor = self.scene_scale_factor_p
+
+        # sceneutil.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])
+        # self.scene_renderer.scene_scale_factor = (self.scene_size_p[0] / camera_img.shape[1], self.scene_size_p[1] / camera_img.shape[0])
+
+        scene_image = sceneutil.create_empty_image((srect_width_c, srect_height_c), (255, 255, 255))
+        # scene_image = sceneutil.create_empty_image((srect_width_p, srect_height_p), (255, 255, 255))
         self.scene_renderer.opencv_img = scene_image
 
         self.scene_renderer.draw_scene_physical_objects()
         self.scene_renderer.draw_scene_annotations()
+
+        scene_image = cv2.resize(scene_image, (srect_width_p, srect_height_p))
 
         end_index_y = min(srect_y_p + srect_height_p, projector_image.shape[0])
         end_index_x = min(srect_x_p + srect_width_p, projector_image.shape[1])
