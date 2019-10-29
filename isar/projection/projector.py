@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtWidgets import QMessageBox
 
 import isar
 from isar.camera.camera import CameraService, CameraFrame
@@ -145,7 +146,8 @@ class ProjectorView(QtWidgets.QWidget):
         #                table show how far our homography is estimating.
 
         self.calibrating = True
-        pattern_size, chessboard_img = projectionutil.create_chessboard_image(self.projector_width, self.projector_height)
+        pattern_size, chessboard_img = projectionutil.create_chessboard_image(self.projector_width,
+                                                                              self.projector_height)
         self.set_scene_image(chessboard_img)
         t_calib = threading.Thread(name="ProjectorCalibrationThread", target=self.calibrate, args=(chessboard_img,))
         t_calib.start()
@@ -232,16 +234,27 @@ class ProjectorView(QtWidgets.QWidget):
                 continue
 
             # compute scene rect in projector-space
-            scene_rect_c, scene_rect_p, scene_homography = sceneutil.compute_scene_rect(camera_frame, self.homography_matrix)
+            scene_rect_c, scene_rect_p, scene_homography = sceneutil.compute_scene_rect(camera_frame,
+                                                                                        self.homography_matrix)
             if scene_rect_p is None and num_iter < max_iter:
                 continue
             elif scene_rect_p is not None:
+                if scene_rect_p[1] < 0:
+                    QMessageBox.warning(None, "Error", "Could not initialize the scene size. \n"
+                                                       "Please make sure the projection area covers both scene "
+                                                       "markers. "
+                                                       "Then recalibrate the camera-projector and "
+                                                       "try initializing scene size again\n")
+                    return
+
                 self.scene_rect_c = scene_rect_c
                 self.scene_rect_p = scene_rect_p
                 self.scene_size_p = (self.scene_rect_p[2], self.scene_rect_p[3])
                 self.scene_homography = scene_homography
-                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor_c(camera_frame.raw_image.shape, self.scene_rect_c)
-                self.scene_scale_factor_p = sceneutil.get_scene_scale_factor_p([self.projector_height, self.projector_width], self.scene_rect_p)
+                self.scene_scale_factor_c = sceneutil.get_scene_scale_factor_c(camera_frame.raw_image.shape,
+                                                                               self.scene_rect_c)
+                self.scene_scale_factor_p = sceneutil.get_scene_scale_factor_p(
+                    [self.projector_height, self.projector_width], self.scene_rect_p)
                 self.scene_size_p_initialized = True
 
                 sceneutil.scene_rect_c = self.scene_rect_c
@@ -280,10 +293,14 @@ class ProjectorView(QtWidgets.QWidget):
             marker_cornerss, marker_ids, _ = cv2.aruco.detectMarkers(camera_img, sceneutil.aruco_dictionary)
             for marker_corners in marker_cornerss:
                 marker_corners_p = cv2.perspectiveTransform(marker_corners, self.homography_matrix).squeeze()
-                cv2.line(projector_image, tuple(marker_corners_p[0]), tuple(marker_corners_p[1]), color=(255, 0, 255), thickness=5)
-                cv2.line(projector_image, tuple(marker_corners_p[1]), tuple(marker_corners_p[2]), color=(255, 0, 255), thickness=5)
-                cv2.line(projector_image, tuple(marker_corners_p[2]), tuple(marker_corners_p[3]), color=(255, 0, 255), thickness=5)
-                cv2.line(projector_image, tuple(marker_corners_p[3]), tuple(marker_corners_p[0]), color=(255, 0, 255), thickness=5)
+                cv2.line(projector_image, tuple(marker_corners_p[0]), tuple(marker_corners_p[1]), color=(255, 0, 255),
+                         thickness=5)
+                cv2.line(projector_image, tuple(marker_corners_p[1]), tuple(marker_corners_p[2]), color=(255, 0, 255),
+                         thickness=5)
+                cv2.line(projector_image, tuple(marker_corners_p[2]), tuple(marker_corners_p[3]), color=(255, 0, 255),
+                         thickness=5)
+                cv2.line(projector_image, tuple(marker_corners_p[3]), tuple(marker_corners_p[0]), color=(255, 0, 255),
+                         thickness=5)
 
         srect_x_p, srect_y_p, srect_width_p, srect_height_p = self.scene_rect_p
         srect_x_c, srect_y_c, srect_width_c, srect_height_c = self.scene_rect_c
@@ -327,7 +344,3 @@ class ProjectorView(QtWidgets.QWidget):
 
         if debug: cv2.imwrite("tmp/tmp_files/projector_image.jpg", projector_image)
         self.set_scene_image(projector_image)
-
-
-
-
