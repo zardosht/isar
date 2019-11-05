@@ -7,19 +7,19 @@ import traceback
 import isar
 from isar.camera.camera import CameraFrame
 from isar.tracking.objectdetection import ObjectDetectionPrediction, POISON_PILL
-from objectdetectors.yolo_tool_detector import physical_objects, object_detector_package_path, temp_folder_path, \
+from objectdetectors.yolo_mainboard_detector import physical_objects, object_detector_package_path, temp_folder_path, \
     physical_objects_dict
 
 import multiprocessing as mp
 
-from objectdetectors.yolo_tool_detector.poseestimation import PoseEstimator, PoseEstimationInput
+from objectdetectors.yolo_mainboard_detector.poseestimation import PoseEstimator, PoseEstimationInput
 
-logger = logging.getLogger("isar.objectdetectors.yolo_simple_tool_detector.detector")
+logger = logging.getLogger("isar.objectdetectors.yolo_mainboard_detector.detector")
 
-name = "YOLO_SIMPLE_TOOL_DETECTOR"
-description = "Yolo simple tool detector"
+name = "YOLO_MAINBOARD_DETECTOR"
+description = "Yolo mainboard detector"
 
-activate = False
+activate = True
 
 debug = False
 
@@ -135,7 +135,7 @@ def init_yolo():
     yolo_model_path = os.path.join(object_detector_package_path, "model/")
     yolo_options = {
         "model": str(yolo_model_path) + "miras_v2.cfg",
-        "load": str(yolo_model_path) + "miras_v2_12600.weights",
+        "load": str(yolo_model_path) + "miras_v2_47400.weights",
         "labels": str(yolo_model_path) + "labels.txt",
         "threshold": 0.5,
         "gpu": 1.0

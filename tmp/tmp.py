@@ -1,43 +1,55 @@
-import time
-from multiprocessing import Process, Queue
+
+import cv2
+
+print(cv2.__version__)
 
 
-class MyProcess(Process):
-    def __init__(self, rect_queue):
-        super().__init__()
-        self.rect = (-1, -1)
-        self.rect_queue = rect_queue
-
-    def run(self):
-        while True:
-            time.sleep(0.5)
-            aa = int(time.time())
-            try:
-                self.rect_queue.get_nowait()
-            except:
-                pass
-
-            self.rect_queue.put((aa, aa + 1))
-
-    def get_rect(self):
-        return self.rect_queue.get()
 
 
-def main():
-    rect_queue = Queue(1)
-    my_process = MyProcess(rect_queue)
-    my_process.start()
-
-    while True:
-        time.sleep(5)
-        rect = my_process.get_rect()
-        print(time.time(), rect)
 
 
-if __name__ == "__main__":
-    main()
-
-
+# # ===================================================================
+#
+# import time
+# from multiprocessing import Process, Queue
+#
+#
+# class MyProcess(Process):
+#     def __init__(self, rect_queue):
+#         super().__init__()
+#         self.rect = (-1, -1)
+#         self.rect_queue = rect_queue
+#
+#     def run(self):
+#         while True:
+#             time.sleep(0.5)
+#             aa = int(time.time())
+#             try:
+#                 self.rect_queue.get_nowait()
+#             except:
+#                 pass
+#
+#             self.rect_queue.put((aa, aa + 1))
+#
+#     def get_rect(self):
+#         return self.rect_queue.get()
+#
+#
+# def main():
+#     rect_queue = Queue(1)
+#     my_process = MyProcess(rect_queue)
+#     my_process.start()
+#
+#     while True:
+#         time.sleep(5)
+#         rect = my_process.get_rect()
+#         print(time.time(), rect)
+#
+#
+# if __name__ == "__main__":
+#     main()
+#
+#
 # # ===================================================================
 #
 # import random

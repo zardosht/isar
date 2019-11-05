@@ -14,24 +14,28 @@ from isar.tracking.objectdetection import POISON_PILL
 from objectdetectors.yolo_mainboard_detector import temp_folder_path
 
 logger = logging.getLogger('mirdl.yolo_pose_estimator')
-debug = False
+debug = True
 
 
 DEFAULT_HOMOGRAPHY = np.array([[1., 0., 0.], [0., 1., 0.]])
 MIN_IMAGE_DIMENSION = 150  # px
 SCALE_FACTOR = 2
 
-class PoseEstimator(mp.Process):
 
+class PoseEstimator(mp.Process):
     MAX_FEATURES = 500
     GOOD_MATCH_PERCENT = 0.90
     ransac_reprojection_threshold = 5
-    recompute_homography_using_only_inliers = False
+    # recompute_homography_using_only_inliers = False
+    recompute_homography_using_only_inliers = True
 
     # recompute_homography_using_ECC = False
     recompute_homography_using_ECC = True
     recompute_homography_using_ECC_threshold_min = 40
-    recompute_homography_using_ECC_threshold_max = 70
+    # recompute_homography_using_ECC_threshold_max = 70
+    # recompute_homography_using_ECC_threshold_max = 120
+    # recompute_homography_using_ECC_threshold_max = 90
+    recompute_homography_using_ECC_threshold_max = 80
 
     def __init__(self, task_queue, result_queue):
         mp.Process.__init__(self)
@@ -51,8 +55,7 @@ class PoseEstimator(mp.Process):
             # put a PoseEstimationOutput instance int the results queue
             t1 = time.time()
             try:
-                estimated_pose = self.find_best_homography(pe_input.template_image, pe_input.target_image,
-                                                           pe_input.best_homography)
+                estimated_pose = self.find_best_homography(pe_input.template_image, pe_input.target_image, pe_input.best_homography)
             except:
                 estimated_pose = PoseEstimationOutput(None, DEFAULT_HOMOGRAPHY, 1.)
 
@@ -75,6 +78,7 @@ class PoseEstimator(mp.Process):
             try:
                 better_pe = best_pe if best_pe is not None and best_pe.error < pe_result.error else pe_result
                 if self.recompute_homography_using_ECC_threshold_min < better_pe.error < self.recompute_homography_using_ECC_threshold_max:
+                    logger.info("Re-computing homography using ECC.")
                     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 1000, 1e-6)
                     physical_object_image_gray, cropped_image_gray = self.convert_to_gray_scale(physical_object_image, cropped_image)
                     better_homography_float32 = better_pe.homography.astype(np.float32)
@@ -120,10 +124,10 @@ class PoseEstimator(mp.Process):
         physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
             = self.extract_feature_points(physical_object_image, cropped_image, algorithm='AKAZE')
 
-        # matches = findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_L1')
+        # matches = self.findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_L1')
         matches = self.find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratio_test=False)
-        # matches = findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratioTest=True)
-        # matches = findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='FLANN')
+        # matches = self.findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratioTest=True)
+        # matches = self.findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='FLANN')
 
         # Draw top matches
         imMatches = cv2.drawMatches(physical_object_image, physicalObjectKeyPoints, cropped_image, croppedImageKeyPoints, matches, None)
@@ -133,9 +137,9 @@ class PoseEstimator(mp.Process):
 
         # h1, mask = cv2.findHomography(points1, points2, cv2.RANSAC, ransac_reprojection_threshold)
         try:
-            h1, mask = cv2.estimateAffine2D(points1, points2, method=cv2.RANSAC,
-                                            ransacReprojThreshold=self.ransac_reprojection_threshold)
+            h1, mask = cv2.estimateAffine2D(points1, points2, method=cv2.RANSAC, ransacReprojThreshold=self.ransac_reprojection_threshold)
         except:
+            logger.error("Could not estimateAffine2D(). Using DEFAULT_HOMOGRAPHY.")
             h1 = DEFAULT_HOMOGRAPHY
 
         # error = compute_error(h1, physical_object_image, cropped_image)
@@ -157,7 +161,6 @@ class PoseEstimator(mp.Process):
 
         logger.debug("Homography: %s", homography_result.homography)
         return homography_result
-
 
     @staticmethod
     def checkAndScaleImages(physical_obj_image, cropped_image):

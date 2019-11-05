@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Mainboard",
+    "image_path": "Mainboard.jpg"
+  },
+  {
+    "name": "RAM",
+    "image_path": "RAM.jpg"
+  },
+  {
+    "name": "CPU",
+    "image_path": "CPU.jpg"
+  },
+  {
+    "name": "CPU_FAN",
+    "image_path": "CPU_FAN.jpg"
+  },
+  {
+    "name": "Heatsink",
+    "image_path": "Heatsink.jpg"
+  },
+  {
+    "name": "Graphics_Card",
+    "image_path": "Graphics_Card.jpg"
+  }
+]
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 import time
 import traceback
@@ -357,6 +358,85 @@ def f10():
         _capture.release()
         cv2.destroyAllWindows()
 
+
+def f11():
+    cropped_image = cv2.imread("images/cropped_image.jpg")
+    template_image = cv2.imread("images/template_image.jpg")
+
+    cropped_image = cv2.resize(cropped_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    template_image = cv2.resize(template_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+
+    physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
+        = extract_feature_points(template_image, cropped_image, algorithm='AKAZE')
+
+    cropped_image_with_keypoints = np.copy(cropped_image)
+    cropped_image_with_keypoints = cv2.drawKeypoints(cropped_image, croppedImageKeyPoints, cropped_image_with_keypoints)
+    cv2.imshow("Keypoints", cropped_image_with_keypoints)
+    cv2.waitKey()
+
+    template_image_with_keypoints = np.copy(template_image)
+    template_image_with_keypoints = cv2.drawKeypoints(template_image, physicalObjectKeyPoints, template_image_with_keypoints)
+    cv2.imshow("Keypoints", template_image_with_keypoints)
+    cv2.waitKey()
+
+    matches = find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratio_test=False)
+    imMatches = cv2.drawMatches(template_image, physicalObjectKeyPoints, cropped_image, croppedImageKeyPoints,
+                                matches, None)
+    cv2.imshow("Matches", imMatches)
+    cv2.waitKey()
+
+
+def extract_feature_points(physical_object_image, cropped_image, algorithm='SURF'):
+    feature_extractor = None
+    if algorithm == 'SURF':
+        feature_extractor = cv2.xfeatures2d.SURF_create()
+    elif algorithm == 'SIFT':
+        feature_extractor = cv2.xfeatures2d.SIFT_create()
+    elif algorithm == 'ORB':
+        feature_extractor = cv2.ORB_create(MAX_FEATURES)
+    elif algorithm == 'AKAZE':
+        feature_extractor = cv2.AKAZE_create(threshold=1e-4)
+
+    physical_object_key_points, physical_object_descriptors = feature_extractor.detectAndCompute(physical_object_image, None)
+    cropped_image_key_points, cropped_image_descriptors = feature_extractor.detectAndCompute(cropped_image, None)
+
+    return physical_object_key_points, physical_object_descriptors, cropped_image_key_points, cropped_image_descriptors
+
+
+MAX_FEATURES = 500
+GOOD_MATCH_PERCENT = 0.90
+
+logger = logging.getLogger('opencv_playground')
+
+
+def find_matches(physical_object_descriptors, cropped_image_descriptors, algorithm=None, ratio_test=False):
+    matcher = None
+    if algorithm == 'FLANN':
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict(checks=50)
+        matcher = cv2.FlannBasedMatcher(index_params, search_params)
+    elif algorithm == 'BRUTE_FORCE_HAMMING':
+        matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+        # matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
+    elif algorithm == 'BRUTE_FORCE_L1':
+        matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_L1)
+
+    good_matches = []
+    if ratio_test:
+        matches = matcher.knnMatch(physical_object_descriptors, cropped_image_descriptors, k=2)
+        for m, n in matches:
+            if m.distance < 0.5 * n.distance:
+                good_matches.append(m)
+    else:
+        matches = matcher.match(physical_object_descriptors, cropped_image_descriptors)
+        matches.sort(key=lambda x: x.distance, reverse=False)
+        num_good_matches = int(len(matches) * GOOD_MATCH_PERCENT)
+        good_matches = matches[:num_good_matches]
+
+    logger.debug("Number of good matches: %s", len(good_matches))
+    return good_matches
+
 if __name__ == "__main__":
     # f2()
     # f3()
@@ -366,7 +446,8 @@ if __name__ == "__main__":
     # f7()
     # f8()
     # f9()
-    f10()
+    # f10()
+    f11()
 
     # img = cv2.imread("tmp_files/tmp_image.jpg")
     # cv2.imshow("tmp_package", img)

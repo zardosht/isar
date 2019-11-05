@@ -1,0 +1,6 @@
+Mainboard
+RAM
+CPU
+CPU_FAN
+Heatsink
+Graphics_Card
