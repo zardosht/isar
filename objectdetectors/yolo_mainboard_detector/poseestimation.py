@@ -1,3 +1,4 @@
+import itertools
 import logging
 import multiprocessing as mp
 import os
@@ -13,7 +14,7 @@ import isar
 from isar.tracking.objectdetection import POISON_PILL
 from objectdetectors.yolo_mainboard_detector import temp_folder_path
 
-logger = logging.getLogger('mirdl.yolo_pose_estimator')
+logger = logging.getLogger('isar.yolo_maiboard_detector.pose_estimator')
 debug = True
 
 
@@ -26,6 +27,10 @@ class PoseEstimator(mp.Process):
     MAX_FEATURES = 500
     GOOD_MATCH_PERCENT = 0.90
     ransac_reprojection_threshold = 5
+    AKAZE_THRESHOLD = 1e-4
+    # AKAZE_THRESHOLD = 1e-5
+    # AKAZE_THRESHOLD = 1e-3
+
     # recompute_homography_using_only_inliers = False
     recompute_homography_using_only_inliers = True
 
@@ -116,18 +121,18 @@ class PoseEstimator(mp.Process):
         physical_object_image, cropped_image = self.checkAndScaleImages(physical_object_image, cropped_image)
 
         # physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
-        #     = extractFeaturePoints(physicalObjectImage, croppedImage, algorithm='SURF')
+        #     = self.extract_feature_points(physical_object_image, cropped_image, algorithm='SURF')
         # physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
-        #     = extractFeaturePoints(physicalObjectImage, croppedImage, algorithm='SIFT')
+        #     = self.extract_feature_points(physical_object_image, cropped_image, algorithm='SIFT')
         # physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
-        #     = extractFeaturePoints(physicalObjectImage, croppedImage, algorithm='ORB')
+        #     = self.extract_feature_points(physical_object_image, cropped_image, algorithm='ORB')
         physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
             = self.extract_feature_points(physical_object_image, cropped_image, algorithm='AKAZE')
 
-        # matches = self.findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_L1')
+        # matches = self.find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_L1')
         matches = self.find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratio_test=False)
-        # matches = self.findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratioTest=True)
-        # matches = self.findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='FLANN')
+        # matches = self.find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratio_test=True)
+        # matches = self.find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='FLANN')
 
         # Draw top matches
         imMatches = cv2.drawMatches(physical_object_image, physicalObjectKeyPoints, cropped_image, croppedImageKeyPoints, matches, None)
@@ -152,9 +157,9 @@ class PoseEstimator(mp.Process):
             inlier_points1 = points1[boolean_inliers_mask.repeat(2, axis =1)].reshape((-1, 2))
             inlier_points2 = points2[boolean_inliers_mask.repeat(2, axis =1)].reshape((-1, 2))
             # h2, mask = cv2.findHomography(inlier_points1, inlier_points2, cv2.LMEDS)
-            h2, mask = cv2.estimateAffine2D(inlier_points1, inlier_points2, cv2.LMEDS)
             # prosac_reprojection_error = 2.5
             # h2, mask = cv2.findHomography(inlier_points1, inlier_points2, cv2.RHO, prosac_reprojection_error)
+            h2, mask = cv2.estimateAffine2D(inlier_points1, inlier_points2, cv2.LMEDS)
             if h2 is not None:
                 homography_result.homography = h2
                 # homography_result.error = compute_error(h2, physical_object_image, cropped_image)
@@ -194,7 +199,7 @@ class PoseEstimator(mp.Process):
         elif algorithm == 'ORB':
             feature_extractor = cv2.ORB_create(self.MAX_FEATURES)
         elif algorithm == 'AKAZE':
-            feature_extractor = cv2.AKAZE_create(threshold=1e-4)
+            feature_extractor = cv2.AKAZE_create(threshold=PoseEstimator.AKAZE_THRESHOLD)
 
         physical_object_key_points, physical_object_descriptors = feature_extractor.detectAndCompute(physical_object_image, None)
         cropped_image_key_points, cropped_image_descriptors = feature_extractor.detectAndCompute(cropped_image, None)
@@ -216,10 +221,13 @@ class PoseEstimator(mp.Process):
 
         good_matches = []
         if ratio_test:
-            matches = matcher.knnMatch(physical_object_descriptors, cropped_image_descriptors, k=2)
-            for m, n in matches:
-                if m.distance < 0.5 * n.distance:
-                    good_matches.append(m)
+            # matches = matcher.knnMatch(physical_object_descriptors, cropped_image_descriptors, k=2)
+            matches = matcher.knnMatch(physical_object_descriptors, cropped_image_descriptors, k=1)
+            for m, n in itertools.combinations(matches, 2):
+                if len(m) > 0:
+                    if len(n) > 0:
+                        if m[0].distance < 0.5 * n[0].distance:
+                            good_matches.append(m[0])
         else:
             matches = matcher.match(physical_object_descriptors, cropped_image_descriptors)
             matches.sort(key=lambda x: x.distance, reverse=False)
