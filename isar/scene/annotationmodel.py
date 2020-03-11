@@ -1152,10 +1152,6 @@ class CheckboxAnnotation(Annotation):
                position[1] <= point[1] <= position[1] + height
 
     def on_select(self):
-        # TODO: Actually the toggling of play mode upon selection should happen
-        #  when we are in ApplicationMode.EXECUTION
-        #  Generally, the bahavior of annotations upon selection, should be defined
-        #  depending on if we are in AUTHORING or EXECUTION mode.
         was_checked = self.checked.get_value()
         self.checked.set_value(not was_checked)
         if not was_checked:
@@ -1255,6 +1251,7 @@ class FeedbackAnnotation(Annotation):
 
 
 class CounterAnnotation(Annotation):
+    DEFAULT_TEXT = "--"
 
     def __init__(self):
         super().__init__()
@@ -1262,7 +1259,7 @@ class CounterAnnotation(Annotation):
         self.target_number = IntAnnotationProperty("Target number", 50, self)
         self.properties.append(self.target_number)
 
-        self.text = StringAnnotationProperty("Text", AudioAnnotation.DEFAULT_TEXT, self)
+        self.text = StringAnnotationProperty("Text", CounterAnnotation.DEFAULT_TEXT, self)
         self.properties.append(self.text)
 
         self.text_thickness = IntAnnotationProperty("Text Thickness", 1, self)

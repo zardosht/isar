@@ -1,3 +1,117 @@
+Abgabe Checklist: 
+
+* Titel
+* Master Zeugniss und Urkunde hochladen
+* Arbetisvertrag hochladen (abgabe bei Prom. Amt)
+* Dissertation Dokument hochladen
+* Meldung der Diss (bei bibliothek:  https://www.ub.tum.de/ediss .... Bestätigung von Bernd unterschriben... in DocGS hochladen ... bei Prom. Amt abgeben)
+* Eidesstattliche Erklärung (unterschrieben hochladen, und original bei Prom. Amt abgeben)
+* Tabelarische Lebenslauf
+* Liste der Veroeffentlichungen
+* Zusätzliche Akadem. Grad (Madrake Keashavarzi, tarjome hochladen, original und tarjomeh bei Prom. Amt abgeben)
+* Photo 
+
+
+
+
+
+
+
+Identifier: 1540378, Key: wUZhKc1bm43c20YW
+
+===============================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=============================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===================================
+
 
 Defining Domain learning exercises: 
 
@@ -158,4 +272,991 @@ When that paint method is called it draws itself on the given OpenCV frame, and 
 
 
 =================================================
+
+
+
+
+
+
+
+Interactive Tabletop for Hand-skill Training
+
+Motor skills training using interactive spatial augmented reality
+
+Interactive Tabletop for Motor skills training
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* Define the scope, focus, and purpose of the thesis. The focus should be on “Learning assembly and construction skills” and on “Authoring System". 
+
+* Implement the 2D hand-skill training
+
+* Make the distinction between the “Authoring System” and “Learning Environment” clear. Make clear that the are two phases of using the system: Authoring (by teacher), Learning (by student). Focus on Authoring System, that is, on creation of materials that help teachers.
+
+* Consistency of use-case model and object model
+* Contributions vs. Future Work
+	— Discuss why 3D hand movement tracking and feedback is out of scope. 
+	— Rational discussion: simplicity vs. using Kinect, environment sensor, haptic feedback
+
+
+
+---------------------------------------------------
+
+1) Authoring and learning for domain
+
+2) Authoring and learning for procedure steps
+
+3) Authoring and learning for 2D hand skills
+
+
+Science Center To Go project - Augmented Reality in Education 
+
+
+
+====================================================================
+
+
+
+
+
+
+
+As digital camera become popular in various types of computing devices, video based AR visualization can be easily implemented on a PC or laptop using webcams and recently even on smartphones and tablet computers.
+Video based AR also has an advantage of being able to accurately control the process of combining the real and virtual view images. Ad- vanced computer vision based tracking algorithms provide pixel ac- curate registration of virtual objects onto live video images (see sec- tion 4). Beyond geometric registration of the real and virtual worlds, with video based AR displays, real and virtual image composition can be controlled with more detail (e.g. correct depth occlusion or chro- matic consistency) using digital image processing.
+
+
+
+differences in lighting [Agusanto et al., 2003, Kán and Kaufmann, 2013] and colour space [Klein and Murray, 2010] between the real and virtual scenes can be also reduced relatively easily in video based AR systems during image composition process, as shown in Figure 5.5.
+
+Other benefits of video based AR displays include having no tem- poral gap between the real world image and the rendered virtual scene, and being more flexible with controlling the field of view of the AR scene using wide FOV lenses on the camera.
+
+
+
+The most prominent problem of video based AR displays is having an indirect view of the real world. Since the real world view is pro- vided by video image captured through a camera, it has limitations in terms of resolution, distortion, delay, and eye displacement. These problems can be critical in safety demanding applications where direct view of the real world is necessary. There are erts to reduce these problems, such as using a camera with higher resolution and faster up- date rate, undistorting the image while rendering, and using a specially designed optical system to match the eye displacement [Takagi et al., 2000]. However, there will be certain amount of limitations remaining compared to other types of AR displays.
+
+A final limitation of video based AR displays is requiring more com- putational power. While recent advance in computing hardware made even mobile phones able to run AR applications in real time, compared to other types of displays that use optical systems for image compo- sition, video based AR demand more computing power for combining real and virtual view images.
+
+==========================================================
+
+
+Compared to video based AR displays, the most prominent advan- tage of optical see-through AR displays is providing a direct view of the real world. With a direct view of the real world, optical see-through displays do not suffer from limitations in resolution, lens distortion, eye displacement, or time delay. 
+
+This could be a very important feature for safety demanding applications that require a direct view of the real ob- ject, such as medical or military applications. Optical see-through AR displays also needs simpler electronic components and demands less processing power since the composition of real and virtual view image is achieved physically.
+
+
+The main problems in optical see-through AR displays are less ac- curate registration between the real and virtual view images. In many cases, optical see-through displays require manual calibration process which ends up with relatively poor quality of registration compared to automated computer vision based approach in video based AR displays. 
+
+Since the calibration parameters are dependent on the spatial relation- ship between the user’s eyes and the display’s image plane, there is a higher chance of parameters changing over time (e.g. wearable displays sliding from the original position) and eventually causing misalign- ment between the real and virtual view images. Hence, accurate 3D eye tracking (relative to the display) becomes more important to visualize a correctly aligned AR scene with optical see-through displays.
+
+
+Temporal delay between the real world and the virtual views is an- other challenging problem in optical see-through displays. Even with a spatially accurate tracking system, there always would be temporal de- lay for tracking physical objects. As the virtual view is updated based on the tracking results, unless the physical scene and the user’s view- point is static, the virtual view will have temporal delay compared to the direct view of the real world in optical see-through displays.
+
+Lighting conditions in the real world environment can also affect perceived brightness of optical see-through displays. In many cases, optical combiners have a fixed physical attribute of amount of trans- parency that can lead to unbalanced brightness between the real world view and virtual view image depending on the lighting conditions in the real world. In outdoor environments, the virtual view image will appear relatively dim compared to the bright real world view. To overcome this problem, some types of head mounted display provide a replaceable cover with various level of transparency, while some researchers also experimented using grayscale LCD shutters to control the brightness of the real world view.
+
+
+================================================================
+
+
+
+
+In many cases, projection based AR displays use a projector mounted on a ceiling or a wall. While this could have an advantage of not requiring the user to wear anything, this could limit the display to be tied with certain locations where the projector can project im- ages. To make the projection based AR displays more mobile, there have been efforts to use projectors that are small enough to be carried by the user [Raskar et al., 2003]. Recent advance in electronics minia- turised the size of the projectors so that they could be held in hand [Schöning et al., 2009] or even worn on the head [Krum et al., 2012] or chest [Mistry and Maes, 2009].
+
+
+As projection based AR displays display virtual images directly on real object surface, it requires a physical surface where the image can be projected onto. This could limit its application to augmenting only objects near to the user, as it might not be appropriate to projecting images on far away objects as in outdoor AR applications. 
+
+Other limita- tions of projection based AR displays include being more vulnerable to lighting conditions, and suffering from shadows created by other phys- ical objects (such as user’s body). 
+
+While stereoscopic projectors can be used for presenting virtual objects that pop out from the projection surface, providing correct occlusion between another physical object (such as user’s hand) and the virtual object could be more challenging compared to video or optical see-through displays.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. Literature review on hand motion tracking (figure out what is state-of-the-art)
+2. Define elementary hand motion alphabet
+3. Define characteristics of combined motion 
+4. Track master's hand and translate the movement to a word made out of combination of elementary hand movements. 
+5. Track student's hand movements and translate the movement to a word made out of combination of elementary hand movements. 
+6. Try to match the student's movement with the given reference movement  [compute the distance between two words] (same movement or not, give feedback on quality) [give feedback based on the distance of the two word, Ideally, give feedback on what could be better? faster? slower? not good pattern, ]
+
+
+
+
+
+
+------------------------------------------------------------------------
+
+
+Title: 
+Integration of a Spatial Augmented Reality System into an Intelligent Tutoring System
+
+------------------------------------------------------------------------
+
+* Survey of ITS with focus on psychomotor learning and manual activities (not forgetting the authoring)
+
+* define a set of requirements and design goals for an ITS for physical world (in other words, for integration of the spatial AR system into the ITS)
+
+* [assuming there is one we can reuse] Select one ITS for integration and extension -- this will most probably be the GIFT Tutoring tool 
+
+* Integrate the camera-projector setup into the ITS as the communication module (thinking about how to define the domain model, how to track the student, how to use the pedagogical module)
+
+* Define some scenarios to evaluate the system (are really using the ITS or not?)
+
+
+Python, PyQt, Kinect, Camera-projector setup and calibration, Ontologies and knowledge representation
+
+
+===================================================
+
+
+
+
+* read about the example-tracing tutor and see what has been updated in CTAT
+* read ASPIRE paper
+* read again about the the GIFT and how it could be used in your work
+* read the RIDES paper
+* read Santo's Aikido paper
+
+* write down requirements of what you need to have, regarding specification of the solution: like you need to specify a part is positioned correctly, a part is oriented correctly, 
+
+
+----------------------------------------
+
+- Augmented visual, auditory, haptic, and multimodal feedback in motor learning- A review-2013.pdf
+
+- Effectiveness of Intelligent Tutoring Systems- A Meta-Analytic Review-2015
+
+- An overview of intelligent tutoring system authoring tools: updated analysis of the state of the art 2003
+
+- Exploring the assistance dilemma in experiments with cognitive tutors - 2007
+
+- The State-of-the-Art of Collaborative Technologies for Initial Vocational Education: A Systematic Literature Review
+
+- Augmenting the Senses-A Review on Sensor-Based Learning Support-2015
+
+- Augmented reality in education and training- pedagogical approaches and illustrative case studies-2017
+
+- Expanding Authoring Tools to Support Psychomotor Training Beyond the Desktop - Design Recommendations for Intelligent Tutoring Systems - Volume 3 - Authoring Tools and Expert Modeling Techniques - 2015 
+
+- Literature Review in Learning with Tangible Technologies-2004
+
+
+------------------------
+
+
+
+
+----------------------------------------------------------------
+
+
+ISAR: An Authoring System for Interactive Tabletops
+Zardosht Hodaie
+ 
+Augmented Reality, Mixed Reality, and Physical Computing have been subject of intensive research in the past three decades showing their potentials in different application domains. Authoring systems and end-user development toolkits allow end-users to develop their own mixed-reality applications tailored to their specific needs. 
+Although several authoring systems are developed for augmented reality, they target mostly development of mobile or desktop augmented reality applications. 
+In particular, an authoring system for development of tangible augmented reality applications on a tabletop is missing. Going beyond the traditional desktop computing and bringing the user interface into the augmented reality tabletop systems involves a manifold of challenges that limit application development only to experts. This high entrance barrier prevents end-users and experts of other non-technical domains, such as education, from experimenting with the technology and slows down its adoption rate.  
+ 
+This dissertation introduces ISAR, an augmented reality tabletop system and an authoring environment targeted at non-technical end-users. ISAR allows users without technical expertise to create interactive applications for the tabletop on their own without programming. ISAR was developed in an iterative process as a conceptual framework with a reference implementation for interactive tabletop applications based on a camera-projector setup. By hiding the low-level technical complexities, ISAR allows end-users to experiment with the development of their own tangible tabletop applications and better understand and evaluate the application of interactive tabletops in their specific application domains, such as education, which can in turn accelerate adoption of this technology. ISAR was evaluated by demonstrating how it can be used to create applications in different domains, such as education, assistance systems, and rehabilitation. The evaluation demonstrated that end-users can create these applications and use them in their environment. For example the reference implementation can be used by teacher to produce interactive tabletops applications to learn  taxonomies and domain specific languages. 
+
+
+
+==============================================================================
+
+Augmented Reality, Mixed Reality, and Physical Computing have been subject of intensive research in the past three decades showing their potentials in different application domains. 
+
+An area of research in this field are authoring systems and end-user development environments that aim to enable end-users in developing their own mixed-reality applications. 
+
+However the focus of these authoring systems has been mostly mobile augmented reality applications 
+
+
+
+The focus has been mostly on mobile  augmented reality applications for the consumer application and industrial applications. 
+
+
+However the end-user have not been able to develop these applications for themselvs, particularily for tangile AR applications in particulr for tabletop applicatons, such as  parts assemby, education, and physical computing. 
+
+
+
+
+
+
+Augmented Reality, Mixed Reality, and Physical Computing have been subject of intensive research in the past three decades. 
+
+The focus has been mostly on mobile  augmented reality applications for the consumer application and industrial applications. However the end-user have not been able to develop these applications for themselvs, particularily for tangile AR applications in particulr for tabletop applicatons, such as assemby, education, and physical computing. 
+
+
+
+
+
+
+
+
+
+
+
+Going beyond the traditional desktop computing and bringing the user interface into the augmented reality tabletop systems involves a manifold of challenges that limit application development to experts. This high entrance barrier prevents end-users and experts of other non-technical domains from experimenting with the technology and slows down its adoption rate. 
+
+In this dissertation we introduce ISAR, an augmented reality tabletop systems and an authoring environment targeted at non-technical end-users.
+
+ISAR allows users without technical expertise to create interactive applications on the tabletop on their own without programming. 
+ 
+ 
+ 
+ISAR was developed in an iterative process a conceptual framework and its reference implementation for an end-user development environment for an interactive tabletop based on a camera-projector setup. 
+
+By hiding the low-level technical complexities and allowing the end-users to experiment with the technologies on their own, end-user development environments address the above problem and can accelerate the adoption of Mixed Reality solutions. 
+
+ISAR was evaluated by demonstrating how it can be used to create applications in different domains, such as education, assistance systems, and rehabilitation. 
+
+
+
+The evaluation showed that end-users can create these applications and use them in their environment. For example the reference implementation can be used by teacher to produce interactive tabletops applications, such as leaning of taxonomies and domain specific languages. 
+
+
+
+
+
+
+
+
+
+
+
+
+* wisiwyg authoring of scene with a rich set of different annotations
+* markerless object tracking
+* a method for fast and simple training and integration of object detection and tracking models
+* a configureable set of events and actions for defining interactions withe table
+
+The main contribution is a simple authoring system for end-user, that allows everyone to create applications for interactive table only using a projector and a webcam. 
+
+
+
+
+
+
+- read / check the paper about authoring APRIL -- DONE
+
+- read / check the diss about interactive surfaces -- DONE (will come back to it again for its related works chapter)
+- read / check the papers about COPSE and TULIP -- DONE
+- read / check the paper about AR Authoring analysis -- DONE
+- read / check Juan's diss -- DONE
+
+- read / check the paper Interaction design for tangible AR applications
+
+- read / check the paper DART, ten years later -- DONE
+- read / check paper about Content creation and authoring challenges 
+
+
+- start write the abstract 
+- write the introduction
+
+	
+
+
+
+
+
+
+-- difusion of inovaiton
+-- user-centered evaluaiton creteria for a mixed reality authoring application
+-- Toolkit support for interactive projected displays
+-- Designer’s Augmented Reality Toolkit, Ten Years Later- Implications for New Media Authoring -- DONE
+-- DART: A Toolkit for Rapid Design Exploration of Augmented Reality Experiences
+-- TangoHapps - An Integrated Development EnvironmentforSmartTextiles
+-- Creating augmented reality authoring tools informed by designer workflow and goals
+-- End-User Development, End-User Programming and End-User Software Engineering- a Systematic
+-- Technical Skills in Developing Augmented Reality Application- Teachers' Readiness
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hallo Herr Lüdemann, 
+
+vielen Dank für Ihre schnelle Antwort und Ihr Interesse an das Projekt. Mein Promotionsthema befasst sich mit der Anwendung der Augmented Reality in der Ausbildung mithilfe von interaktiven Tischen (Interactive Tabletops). Ich habe ein Autoren-System entwickelt, mit dessen Hilfe die Lehrer Lerninhalte für einen interaktiven Tisch erzeugen könnten. Hier können Sie ein kurzes Video des Systems sehen: https://youtu.be/KyvFT0S5rww 
+Ich werde Sie dann sehr gerne anfangs September anrufen. Passt es bei Ihnen gleich Montag 2. September? 
+
+Viele Grüße, 
+Zardosht Hodaie
+
+
+
+Many activities, such as learning a craft, involve learning how to manipulate physical objects by following a step-by-step procedure. We introduce the notion of Manual-Procedural Activity to distinguish these kind of activities. Learning a manual-procedural activity includes acquiring cognitive knowledge about domain of the task, procedural knowledge about the steps of the task, as well as motor skills for manipulating objects and using tools. 
+Behavioral modeling is the dominant form of teaching a manual-procedural activity, in which the trainer demonstrates how to do the activity step-by-step and the trainee acquires the required skill by mimicking and repeating the trainer's actions. This form of learning requires that the trainer shares the same physical workplace and context with the trainee. Watching a video of how to do a manual activity can be a replacement for the trainer. However,  video training lacks a shared context and accordingly the rich interaction between trainee and the trainer. 
+In this dissertation we address the problem of learning a manual-procedural activity through design and implementation of an Interactive Spatial Augmented Reality System (ISAR). Previous research has shown the effectiveness of Augmented Reality and Interactive Tabletops in education and training, especially when training involves the physical world. However these systems are still not widely used in training of manual-procedural activities. One of the reasons for this is dependence of the teachers and content creators on programmers for creating the learning materials, which leads to limited content. Additionally, most solutions are based on bulky and expensive Head Mounted Displays or mobile devices, which limit the usability specially when the students need both hands free. 
+ISAR is an interactive camera-projector Augmented Reality system that projects virtual learning material onto real world objects and provides context-aware guidance through the steps of the task. We provide an authoring tool for the teachers to create the learning materials for ISAR themselves without reliance on the programmers. Furthermore, the spatial augmented reality setup allows for an unobtrusive hands-free interaction, which is essential for learning manual activities. In two case studies we show the effectiveness of ISAR for learning the domain and the steps of manual-procedural activities. 
+
+
+
+
+
+ISAR is an authoring system and an interactive tabletop based on a camera-projector setting. The goal of the project is to enable teachers to create learning content for the interactive tabletop themselves, without any need for programming. 
+Using ISAR's Authoring System the teacher creates learning content by designing scenes that are then projected on the tabletop for the students. A scene is a combination of physical objects enriched with virtual content, called annotations. The teacher can also define how the students interact with the table by defining interaction rules. An interaction rule defines how the table responds to different events. 
+The defined learning content are projected using ISAR's Training System on the table. The students learn by interacting with the physical objects and virtual content. 
+ISAR can be used different learning scenarios, e.g learning domain of a task, leaning workflows, and practicing hand-eye coordination. 
+The motivation to build ISAR was the observation that despite advances in the Augmented Reality, this technology is not yet available in the school. We argue that one of the reasons for this absence is the fact the teachers cannot create learning material themselves, and hence are dependent on programmers for experimenting with this technology. By offering a simple system that can be setup using low-cost hardware available at consumer market, ISAR empowers the teachers to try augmented reality and interactive tabletops in their classrooms. 
+
+
+
+
+
+
+
+
+Sehr geehrte Frau Prof. Klinker, 
+ich schreibe meine Doktorarbeit beim Prof. Brügge mit dem Titel „Interactive Spatial Augmented Reality for Learning Manual-Procedural Activities“. Die Doktorarbeit befasst sich mit der Entwicklung und Evaluierung eines Autorensystems für einen interaktiven Tisch (interactive Tabletop), dass es Lehrern ermöglicht, Lerninhalte für den Tisch  zu erzeugen. 
+Ich möchte Sie fragen, ob Sie Interesse haben, Zweitgutachterin zu werden. Anbei schicke ich Ihnen die Zusammenfassung meiner Arbeit, so wie einen Link zu einem Video-Demonstration des entwickelten Systems. Ich schreibe zurzeit die Dissertation und plane meine Arbeit Ende des Jahres abzugeben. 
+Ich werde mich über Ihre Antwort und einen Termin zur Besprechung meiner Arbeit sehr freuen. 
+
+Mit freundlichen Grüßen,
+Zardosht Hodaie
+
+
+Abstract: <PDF Attachment>
+Video Demonstration: https://www.dropbox.com/s/r917nrucbyl9i2q/isar_with_caption.mp4?dl=0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bodenständig
+Bescheiden
+
+
+
+
+
+
+
+
+
+
+
+
+
+gst-launch-1.0 v4l2src device=/dev/video0 ! 'video/x-raw, width=1920, height=1080, format=(string)RGB' ! nvvidconv ! 'video/x-raw(memory:NVMM), width=1920, height=1080, format=NV12' ! nvtee ! nvivafilter cuda-process=true pre-process=true post-process=true customer-lib-name="libnvsample_cudaprocess.so" ! 'video/x-raw(memory:NVMM), format=(string)NV12' ! nvoverlaysink display-id=0 -e
+
+
+
+
+
+
+
+
+    gst_str = ('v4l2src device=/dev/video{} ! '
+               'video/x-raw, width=(int){}, height=(int){}, '
+               'format=(string)RGB ! '
+               'videoconvert ! appsink').format(dev, width, height)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+	-D CMAKE_INSTALL_PREFIX=/usr/local \
+	-D BUILD_opencv_python3=ON \
+	-D BUILD_opencv_python2=OFF \
+	-D PYTHON_EXECUTABLE=~/.virtualenvs/cv/bin/python \
+	-D PYTHON3_EXECUTABLE=$(which python3) \
+	-D PYTHON3_INCLUDE_DIR=$(python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
+	-D PYTHON_LIBRARY=$(python3 -c "from distutils.sysconfig import get_config_var;from os.path import dirname,join ; print(join(dirname(get_config_var('LIBPC')),get_config_var('LDLIBRARY')))") \
+	-D INSTALL_PYTHON_EXAMPLES=ON \
+	-D INSTALL_C_EXAMPLES=ON \
+	-D OPENCV_ENABLE_NONFREE=ON \
+	-D WITH_TBB=ON \
+	-D WITH_V4L=ON \
+	-D WITH_LIBV4L=ON \
+	-D WITH_GSTREAMER=ON \
+	-D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+	-D BUILD_EXAMPLES=ON \
+	..
+
+
+
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+
+
+            -D OPENCV_PYTHON3_INSTALL_PATH=$cwd/OpenCV-$cvVersion-py3/lib/python3.5/site-packages \
+        -D WITH_QT=ON \
+        -D WITH_OPENGL=ON \
+        -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
+        -D BUILD_EXAMPLES=ON ..
+
+
+
+
+cmake -D WITH_CUDA=OFF 
+	-D BUILD_TIFF=ON 
+	-D BUILD_opencv_java=ON 
+	-D WITH_FFMPEG=ON 
+	-D BUILD_opencv_python3=ON 
+	-D ENABLE_AVX=ON 
+	-D WITH_OPENGL=ON 
+	-D WITH_OPENCL=ON 
+	-D WITH_IPP=ON 
+	-D WITH_TBB=ON 
+	-D WITH_EIGEN=ON 
+	-D WITH_V4L=ON 
+	-D WITH_VTK=OFF 
+	-D BUILD_TESTS=OFF 
+	-D BUILD_PERF_TESTS=OFF 
+	-D CMAKE_BUILD_TYPE=RELEASE 
+	-D BUILD_opencv_python2=OFF 
+	-D CMAKE_INSTALL_PREFIX=$(python3 -c "import sys; print(sys.prefix)") 
+	-D PYTHON3_EXECUTABLE=$(which python3) 
+	-D PYTHON3_INCLUDE_DIR=$(python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") 
+	-D PYTHON3_PACKAGES_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") 
+	-D CMAKE_BUILD_TYPE=RELEASE 
+	-D CMAKE_INSTALL_PREFIX=/usr/local 
+	-D INSTALL_PYTHON_EXAMPLES=ON 
+	-D INSTALL_C_EXAMPLES=OFF 
+	-D PYTHON_EXECUTABLE=/home/user/anaconda3/bin/python 
+	-D BUILD_EXAMPLES=ON 
+	-D CMAKE_BUILD_TYPE=RELEASE ..
+
+
+
+
+
+
+
+
+
+
+sudo apt remove x264 libx264-dev
+ 
+## Install dependencies
+sudo apt install build-essential checkinstall cmake pkg-config yasm
+sudo apt install git gfortran
+sudo apt install libjpeg8-dev libpng-dev
+ 
+sudo apt install software-properties-common
+sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
+sudo apt update
+ 
+sudo apt install libjasper1
+sudo apt install libtiff-dev
+ 
+sudo apt install libavcodec-dev libavformat-dev libswscale-dev libdc1394-22-dev
+sudo apt install libxine2-dev libv4l-dev
+cd /usr/include/linux
+sudo ln -s -f ../libv4l1-videodev.h videodev.h
+cd "$cwd"
+ 
+sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+sudo apt install libgtk2.0-dev libtbb-dev qt5-default
+sudo apt install libatlas-base-dev
+sudo apt install libfaac-dev libmp3lame-dev libtheora-dev
+sudo apt install libvorbis-dev libxvidcore-dev
+sudo apt install libopencore-amrnb-dev libopencore-amrwb-dev
+sudo apt install libavresample-dev
+sudo apt install x264 v4l-utils
+ 
+# Optional dependencies
+sudo apt install libprotobuf-dev protobuf-compiler
+sudo apt install libgoogle-glog-dev libgflags-dev
+sudo apt install libgphoto2-dev libeigen3-dev libhdf5-dev doxygen
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ==============================================
+// ==============================================
+// ==============================================
+// ==============================================
+
+
+
+
+
+====================================================
+
+
+
+* Ich brauche deine Hilfe. Bitte hilf mir diese arbeit fertig stellen. 
+
+
+* Ich hab viele probleme. Ich habe meien verbinung zu dieser arbeit verloren. Ich kann es nicht mehr sehen, und möchte es nur los werden. Je mehr es dauert, desto schwieriger es wird, weil es ekelt mich mehr an. Ich hab das gefühl, ich werde langsam psychisch krank, und depressive. 
+
+* Ich kann nicht mehr lesen. Kann nicht konzentrieren. Jede 2. minuten werde ich an meine arbeit denken, und ob was ich gerade lese sinn macht oder nicht.  
+
+* Ich hab meine freude an lesen und lernen und schreiben verloren :(. So lange diese arbeite mir am hals hängt, bin ich gelähmt. 
+
+* Ich will in der Zukunft etwas machen, das mehr mit Mathematik stat mit Wörtern zu tun hat. 
+
+* Ich möchte nicht weiter in human-computer interaction arbeiten. Im allgemeinen, ich möchte nicht weiter etwas für den end-user entwickeln. Etwas, das ein User Interface hat. 
+
+* Ich möchete in autonomous driving arbeiten. 
+
+
+
+===================================================
+
+
+
+
+
+--------------------------------------------------------------
+
+
+Dense Methods for Image Alignment with an Application to 3D
+https://www.labri.fr/perso/vlepetit/pubs/crivellaro_tr14.pdf
+
+Marker Detection for Augmented Reality Applications
+http://studierstube.icg.tugraz.at/thesis/marker_detection.pdf
+
+https://www.mendeley.com/community/2d-tracking/
+
+
+Inverse computional for image alignment
+
+https://www.google.de/search?ei=_x5vW92CH4j5kwWpnbTIBg&q=inverse+computional+for+image+alignment+&oq=inverse+computional+for+image+alignment+&gs_l=psy-ab.3...13438.17047.0.19377.26.17.0.0.0.0.245.2109.1j11j2.14.0....0...1c.1.64.psy-ab..12.8.1236...33i22i10i29i30k1j33i10k1j33i10i21k1j33i10i160k1.0.HC141jZMZI8
+
+My Warping is a "2d euclidean warping", 2d Euclidean Tracking
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------
+
+
+
+
+* Read about object tracking for AR with focus on camera-projector 
+
+* Search for Tracking / Recognition libraries
+
+* Try an AR framework / Tracking library, like ARToolkit
+
+* Figure out / change the architecture, pipeline concept
+
+* (Re) Implement the use cases using a better tracking approach
+
+* Implement automatic dataset generation if needed
+
+* Implement the camera-projector Butterfly game:
+	* This will serve as basis for hand skill training
+	* Butterflies are projected on the table, the user should hit them with the hand, and they disappear. You can apply different variations in order support different skills, such as speed of movement, the movement pattern, number of butterflies, etc. 
+	* For learning hand skills, a pattern is projected on the table, and the users should follow that pattern. You measure how good the user follows that pattern, and give feedback. 
+
+* Download GIFT Tutoring and see how you can integrate it for your three use-cases.
+
+
+============================================================
+* Image screenshot of authoring
+* Image of the whole setup
+* Image of projection of inforamation on the tools on the table
+
+* architecture / workflow / 
+
+
+
+============================================================
+
+- define requirements for learning psychomotor skills based on psychomotor taxonomies (see Santo's paper)
+- Add markers to the hand, multiple cameras, record location and orientation (trajectory), compare using DTW, and other methods
+
+
+=============================================================
+
+
+- define tracking areas, 
+- define objects to track
+- define gestures for steps
+- add AR annotations during editing of workflow (expert first performs the workflow, then can edit the recorded workflow like adding descriptions, adding AR overlays, adding video or sound snippets, adding/removing steps, changing order of steps)
+
+
+==============================================================
+
+Main chapters: 
+
+- Learning a Domain
+	-- demonstrative use case: remembering object names (BA Julian Sauerhammer)
+
+
+- Learning a Procedure
+	-- use case: Assembly
+
+
+
+- Learning Hand Skills
+   -- define use case with Siemens (probably Welding)
+
+
+
+[ Integration / Adaption of an existing ITS for above goals ]
+[ Authoring through Programming-by-Demonstration ]
+
+
+
+
+
+
+==================================================
+
+A Projector Lightbulb Could Turn Your Desk Into A Touchscreen
+https://www.youtube.com/watch?v=0pAEeQaAI70
+
+Light Guide Systems for Fuel Injector Training
+https://www.youtube.com/watch?v=gpqYGUJibBc
+
+
+==================================================
+
+         DAY
+----------------------
+- Literature Review
+- Writing Diss
+- Coding Diss
+- Learning
+
+
+      LEARNING
+----------------------
+- AR
+- OpenCV / Computer Vision
+- Python
+- ML / Neuronal Networks (TensorFlow, Keras, Yolo)
+
+
+
+     DISS CODING TOPICS
+-----------------------------
+
+-- Hand tracking, hand skills, recording / recognition of hand gesture quality [ML-CV] -- Starting point BA of Wolfgang Hobmaier
+
+-- Interaction with the workbench (projector-camera, object detection and tracking) [AR-CV-ML]  -- Starting point thesis of Ravee and Daniel
+
+-- Integrating code into one single app [Python]
+
+-- Authoring / Execution of Assembly
+
+
+         SCENARIOS
+----------------------------
+- Learning with physical objects
+- Learning a Workflow
+- Learning Hand skills
+
+
+
+
+        ROADMAP PAPERS
+-------------------------------
+- Intro and system overview paper 
+- Learning hand skills paper
+- Learning a workflow paper
+- Learning with physical objects paper
+
+
+
+* Timeplan (März 2019 Rigorosem; Mid January 2019 Abgabe; Dezember 2018 Red Pen version to Bernd; Introduction, Background and Related Work, Requirements, System Design, Object Design-Models-UI-Algorithms, Case Study 1 (Learning Assembly), Case Study 2 (Coocking?), Authoring a Manual-Procedural Activity, Internet as a Teacher, Conclusion and Outlook )
+
+
+===================================================
+
+How is it related to the video paper? (the ITS short paper about effect of voice-controlling video playback on the learning)
+
+I argue that such a system needs to provide a natural user interaction. (In accordance with the vision of simulating a human instructor, with whom the trainees also communicate using speech).
+Both for authoring and for execution, the speech system is used as a means of controlling and interfacing with the system. 
+
+(IDEA): The authoring system must support the simple multi-camera recording of the videos. 
+
+
+
+====================================================
+
+-- Give me a list of manual procedural activities (industry and home)
+	* Industry has a clear case: the manual assembly; 
+	* Home has many examples, for example cooking)
+
+-- What elements are common in all these activities? for example: 
+	* the need to learn the procedure
+	* the need to learn the motor skill (hand movements)
+
+-- An ITS for manual procedural activities should address both aspects: 
+	* It should help you gain procedural knowledge
+	* And it should help you gain psychomotor skills
+
+
+=====================================================
+Learning goals for "Manual Procedural Activities": 
+	It is not only the psychomotor domain. It is a mixture of cognitive and psychomotor domains
+
+What are the learning goals for the cognitive domain?
+	...
+	...
+	...
+	...
+	...
+	...
+	...
+	...
+
+What are the learning goals for psychomotor domain?
+	...
+	...
+	...
+	...
+	...
+	...
+	...
+	...
+
+For manual procedural activities, I need to master motor skills (psychomotor domain) and master the procedure (cognitive domain). 
+
+
+
+==========================================================
+TUMA: Intelligent Tutoring System for Manual Activities
+
+1) What is lacking? Motivation: the ITS hasn't been used for manual activities (they have, but for dancing, marshal arts, shooting, but not for activities done only with hands). Motivation: ITS for vocational training, apprenticeship, psychomotor training. Clear case, industry. But also other use cases possible: Teaching motor skills to children with disabilities. Learning new manual activities. 
+
+2) What is a general model for intelligent tutoring systems?  
+
+3) I extend this model to cover psychomotor domain (specifically activities done by hand)
+
+4) Based on this model extension, I build a ITS that supports learning manual activities. The system also supports authoring of new workflows for manual activities.
+
+5) I demonstrate feasibility, applicability, and validity of my model and system by building and evaluating multiple case studies: 
+	* Industry
+	* Cooking
+	* Knot
+	* Chess(?)
+
+
+
+
+====================================================================
+
+motor skills
+apprenticeship
+procedural training
+vocational training
+pschycomotor 
+experimential training
+Intelligent tutoring systems
+behavioral modeling vs. cognitive modeling: The former is one most people are familiar with, as it is arguably the easiest way to teach a psychomotor skill and involves imitation of the demonstrated act.
+Competence in the workplace: How cognitive performance models and situated instruction can accelerate skill acquisition
+Generalizing the Genres for ITS: Authoring Considerations for Representative Learning Tasks
+
+
+
+
+=====================================================================
+
+
+CASMA: 
+
+* 1) Execution Mode: To guide someone through a manual process (procedure, workflow)
+* 2) Authoring Mode: Record a manual process as it is being done by an expert and automatically generate the workflow model to be used in the execution mode. 
+
+Constraint: Limited to a desk / table / workbench
+==============================================================================================
+
+
+
+* Siemens Hackatho: 
+
+* context aware assistance system for learning manual procedures
+
+* Ulli Waltinger's idea: Collecting data from Internet. From Chefkoch. 
+
+
+
+
+
+==============================================================
+
+
+* Methods-Time Measurement - MTM (very interesting, Have a look at the Montage, Handhabung, Idustrie Roboter Vorlesung script)
+* Cocktail mixing
+
+=============================================================
+[Numbers correspond to Heilmeier questions]
+
+1. What should it do? 
+* It should help you in doing a manual process. 
+* It should also help you record a manual process for helping someone else later (as if you are an expert creating a tutorial on how to do the process). 
+
+How? 
+* By tracking you and your environment as you do the process step by step.
+* By providing / projection required information (step description, images, video, speaking out) on the desk. 
+* By highlighting parts of the desk based on your current step. 
+* By detecting and pointing out your mistakes. 
+* By notifying you about dynamic information based on the current task step (timer done, required temperature achieved, correct amount of liquid poured, ...)
+* [For recording] It should record you as you perform the process. It should record different views of you. The recorded information are those used to help as the process is being done by someone else.
+
+5. Why is it good? 
+* It helps you learn a manual process better
+* It helps you do a manual process faster
+* It helps you do a manual process easier (with less cognitive load)
+
+2. How is it done today? What are the limits of current practice? 
+
+
+3. What is new in your approach? Why do you think it will be successful? 
+
+
+
+4. Who cares? 
+
+
+
+6. What are the risks and payoffs?
+
+
+7. How much will it cost? 
+
+
+8. How long will it take? 
+
+
+9. What are the midterm and final "exams" to check for success?  How will progress be measured?
+
+
+==========================================================================
+
+
+
+
+==========================================================================
+
+
+ Read the diss about medical quality control:
+
+Assistive Systems for Quality Assurance by Context-Aware User Interfaces in Health Care and Production  
+Stefan Rüther - 2014
+
+
+
+
+
+-----------------------------------------------
+Read thesis of Oliver Korn
+
+
+
+
+------------------------------------------------
+* PhD thesis of Andreas Bächler
+
+
+
+
+
+
+
+
+
+
+
 

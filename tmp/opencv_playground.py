@@ -360,8 +360,11 @@ def f10():
 
 
 def f11():
-    cropped_image = cv2.imread("images/cropped_image.jpg")
-    template_image = cv2.imread("images/template_image.jpg")
+    # cropped_image = cv2.imread("images/cropped_image.jpg")
+    # template_image = cv2.imread("images/template_image.jpg")
+
+    cropped_image = cv2.imread("images/cropped_image2.jpg")
+    template_image = cv2.imread("images/template_image2.jpg")
 
     cropped_image = cv2.resize(cropped_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     template_image = cv2.resize(template_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
@@ -437,6 +440,12 @@ def find_matches(physical_object_descriptors, cropped_image_descriptors, algorit
     logger.debug("Number of good matches: %s", len(good_matches))
     return good_matches
 
+def f12():
+    pass
+
+
+
+
 if __name__ == "__main__":
     # f2()
     # f3()
@@ -448,6 +457,7 @@ if __name__ == "__main__":
     # f9()
     # f10()
     f11()
+    # f12()
 
     # img = cv2.imread("tmp_files/tmp_image.jpg")
     # cv2.imshow("tmp_package", img)
