@@ -83,7 +83,7 @@ class PoseEstimator(mp.Process):
             try:
                 better_pe = best_pe if best_pe is not None and best_pe.error < pe_result.error else pe_result
                 if self.recompute_homography_using_ECC_threshold_min < better_pe.error < self.recompute_homography_using_ECC_threshold_max:
-                    logger.info("Re-computing homography using ECC.")
+                    logger.debug("Re-computing homography using ECC.")
                     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 1000, 1e-6)
                     physical_object_image_gray, cropped_image_gray = self.convert_to_gray_scale(physical_object_image, cropped_image)
                     better_homography_float32 = better_pe.homography.astype(np.float32)

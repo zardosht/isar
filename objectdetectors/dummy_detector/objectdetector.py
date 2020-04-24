@@ -10,7 +10,7 @@ from objectdetectors.dummy_detector import physical_objects, temp_folder_path
 
 logger = logging.getLogger("isar.objectdetectors.dummy_detector")
 
-activate = True
+activate = False
 
 name = "DUMMY_DETECTOR"
 description = "Dummy detector"
