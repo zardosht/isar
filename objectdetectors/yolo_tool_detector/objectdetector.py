@@ -19,7 +19,7 @@ logger = logging.getLogger("isar.objectdetectors.yolo_simple_tool_detector.detec
 name = "YOLO_SIMPLE_TOOL_DETECTOR"
 description = "Yolo simple tool detector"
 
-activate = False
+activate = True
 
 debug = False
 
