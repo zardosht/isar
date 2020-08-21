@@ -85,24 +85,25 @@ class PoseEstimator(mp.Process):
                 if self.recompute_homography_using_ECC_threshold_min < better_pe.error < self.recompute_homography_using_ECC_threshold_max:
                     logger.debug("Re-computing homography using ECC.")
                     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 1000, 1e-6)
+                    # pylint: disable=unbalanced-tuple-unpacking
                     physical_object_image_gray, cropped_image_gray = self.convert_to_gray_scale(physical_object_image, cropped_image)
                     better_homography_float32 = better_pe.homography.astype(np.float32)
 
                     if isar.PLATFORM == "Darwin":
-                        (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray,
+                        (_, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray,
                                                            better_homography_float32,
                                                            cv2.MOTION_AFFINE, criteria)
                     else:
-                        (cc, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray,
+                        (_, h_ECC) = cv2.findTransformECC(physical_object_image_gray, cropped_image_gray,
                                                            better_homography_float32,
                                                            cv2.MOTION_AFFINE, criteria,
                                                            inputMask=None,
                                                            gaussFiltSize=5)
 
-                    errror_ecc = self.compute_error(h_ECC, physical_object_image, cropped_image, "_ecc")
-                    if h_ECC is not None and errror_ecc < better_pe.error:
+                    error_ecc = self.compute_error(h_ECC, physical_object_image, cropped_image, "_ecc")
+                    if h_ECC is not None and error_ecc < better_pe.error:
                         pe_result.homography = h_ECC
-                        pe_result.error = errror_ecc
+                        pe_result.error = error_ecc
             except Exception as exp:
                 logger.error("Error recomputing homography using ECC")
                 logger.error(exp)
@@ -153,7 +154,7 @@ class PoseEstimator(mp.Process):
 
         if self.recompute_homography_using_only_inliers:
             # get the inlier matches (list of tuples of points)
-            # run find homography again unsing only the inliers this time instead of LEMDS or RHO instead of RANSAC
+            # run find homography again using only the inliers this time instead of LEMDS or RHO instead of RANSAC
             boolean_inliers_mask = (mask > 0)
             inlier_points1 = points1[boolean_inliers_mask.repeat(2, axis =1)].reshape((-1, 2))
             inlier_points2 = points2[boolean_inliers_mask.repeat(2, axis =1)].reshape((-1, 2))
@@ -170,8 +171,8 @@ class PoseEstimator(mp.Process):
 
     @staticmethod
     def checkAndScaleImages(physical_obj_image, cropped_image):
-        heigt, width, _ = physical_obj_image.shape
-        if heigt < MIN_IMAGE_DIMENSION or width < MIN_IMAGE_DIMENSION:
+        height, width, _ = physical_obj_image.shape
+        if height < MIN_IMAGE_DIMENSION or width < MIN_IMAGE_DIMENSION:
             scaled_phys_obj_image = np.copy(physical_obj_image)
             scaled_phys_obj_image = cv2.resize(physical_obj_image, None, fx=SCALE_FACTOR, fy=SCALE_FACTOR, interpolation=cv2.INTER_CUBIC)
             scaled_cropped_image = np.copy(cropped_image)
@@ -262,7 +263,7 @@ class PoseEstimator(mp.Process):
 
     @staticmethod
     def compute_error(homography, physical_object_image, cropped_image, debug_postfix=""):
-        height, width, channels = cropped_image.shape
+        height, width, _ = cropped_image.shape
 
         # warpped_original = cv2.warpPerspective(physical_object_image, homography, (width, height))
         warpped_original = cv2.warpAffine(physical_object_image, homography, (width, height), flags = cv2.INTER_LINEAR)

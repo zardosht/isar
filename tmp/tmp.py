@@ -1,9 +1,25 @@
 
-import cv2
+def add_one(*nums):
+    result = [None] * len(nums)
+    print(result)
+    for i in range(len(nums)):
+        result[i] = nums[i] + 1
+    
+    return tuple(result)
 
-print(cv2.__version__)
+# pylint: disable=unbalanced-tuple-unpacking
+a, b = add_one(1, 5)
+print(a, b)
 
 
+
+
+# # ===================================================================
+
+
+# import cv2
+
+# print(cv2.__version__)
 
 
 

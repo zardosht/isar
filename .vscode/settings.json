@@ -1,3 +1,15 @@
 {
-    "python.pythonPath": "/home/zardosht/.virtualenvs/MIRAS/bin/python"
+    "python.pythonPath": "/home/zardosht/.virtualenvs/MIRAS/bin/python",
+    "cSpell.words": [
+        "FLANN",
+        "Filt",
+        "KDTREE",
+        "LEMDS",
+        "LMEDS",
+        "Reproj",
+        "imwrite",
+        "itertools",
+        "ssim",
+        "xfeatures"
+    ]
 }
