@@ -118,7 +118,7 @@ def run_object_detection(frame: CameraFrame):
             br = (pred_result['bottomright']['x'], pred_result['bottomright']['y'])
             label = pred_result['label']
             confidence = pred_result['confidence']
-            prediction = ObjectDetectionPrediction(label, confidence, tl, br, frame.size)
+            prediction = ObjectDetectionPrediction(label, confidence, tl, br)
             prediction.image = frame.raw_image[tl[1]:br[1], tl[0]:br[0]].copy()
             if debug: cv2.imwrite(str(os.path.join(temp_folder_path, label + "_prediciton.jpg")), prediction.image)
             # prediction.pose_estimation will be set in the get_predictions

@@ -135,8 +135,9 @@ class PoseEstimator(mp.Process):
         # matches = self.find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='FLANN')
 
         # Draw top matches
-        imMatches = cv2.drawMatches(physical_object_image, physicalObjectKeyPoints, cropped_image, croppedImageKeyPoints, matches, None)
-        if debug: cv2.imwrite(str(os.path.join(temp_folder_path, "matches.jpg")), imMatches)
+        if debug:
+            imMatches = cv2.drawMatches(physical_object_image, physicalObjectKeyPoints, cropped_image, croppedImageKeyPoints, matches, None)
+            cv2.imwrite(str(os.path.join(temp_folder_path, "matches.jpg")), imMatches)
 
         points1, points2 = self.find_points_from_matches(physicalObjectKeyPoints, croppedImageKeyPoints, matches)
 

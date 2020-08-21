@@ -37,7 +37,7 @@ def get_predictions(obj_detection_request):
     predictions = []
     tl = (x, y)
     br = (x + width, y + height)
-    prediction = ObjectDetectionPrediction("Rubber Duck", 0.8, tl, br, frame.size)
+    prediction = ObjectDetectionPrediction("Rubber Duck", 0.8, tl, br)
     prediction.image = frame.raw_image[tl[1]:br[1], tl[0]:br[0]].copy()
     cv2.imwrite(str(os.path.join(temp_folder_path, "dummy_prediciton_image.jpg")), prediction.image)
     predictions.append(prediction)

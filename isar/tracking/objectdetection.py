@@ -216,10 +216,9 @@ class ObjectDetectionObserverThread(threading.Thread):
 
 
 class ObjectDetectionPrediction:
-    def __init__(self, label, confidence, top_left, bottom_right, camera_frame_size):
+    def __init__(self, label, confidence, top_left, bottom_right):
         self.label = label
         self.confidence = confidence
-        self.camera_frame_size = camera_frame_size
         self.top_left = top_left
         self.bottom_right = bottom_right
         self.image = None

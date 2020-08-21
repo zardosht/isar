@@ -39,7 +39,7 @@ class ServiceNames(Enum):
 
 def start_services():
     try:
-        camera1_service = CameraService(ServiceNames.CAMERA1, 0)
+        camera1_service = CameraService(ServiceNames.CAMERA1, 1)
         camera1_service.start()
         __services[ServiceNames.CAMERA1] = camera1_service
     except Exception as exp:
