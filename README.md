@@ -1,3 +1,5 @@
+# ISAR: An Authoring System for Interactive Tabletops
+
 ISAR is an augmented Reality (AR) authoring system for interactive tabletops.
 
 Authoring systems for AR try to compensate the complexity and challenge of development of AR applications by providing frameworks that can be reused. These frameworks are available at different levels of abstraction, from software libraries to high-level GUI solutions
@@ -36,6 +38,6 @@ ISAR can be used to create interactive applications that support medical rehabil
 *Hit the flies and follow the path game for rehabilitation.* 
 
 
-The source code of ISAR can be found [here](https://github.com/zardosht/isar) and [here](https://www.youtube.com/watch?v=KyvFT0S5rww) is a short video demonstrating the system. 
+A short video demo of the system can be found here: https://www.youtube.com/watch?v=KyvFT0S5rww
 
 <br/>
