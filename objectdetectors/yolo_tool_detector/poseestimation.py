@@ -48,7 +48,7 @@ class PoseEstimator(mp.Process):
                 sys.exit(0)
 
             # compute pose from template and target images
-            # put a PoseEstimationOutput instance int the results queue
+            # put a PoseEstimationOutput instance into the results queue
             t1 = time.time()
             try:
                 estimated_pose = self.find_best_homography(pe_input.template_image, pe_input.target_image,
@@ -61,7 +61,6 @@ class PoseEstimator(mp.Process):
             self.result_queue.put(estimated_pose)
             logger.debug("Finding best homograpy for {} took {}".format(pe_input.object_name, time.time() - t1))
 
-        return
 
     def find_best_homography(self, physical_object_image, cropped_image, best_pe):
         pe_result = self.compute_homography(physical_object_image, cropped_image)
@@ -108,37 +107,25 @@ class PoseEstimator(mp.Process):
             return best_pe
 
     def compute_homography(self, physical_object_image, cropped_image):
-        # physicalObjectImage, croppedImage = convertToGrayScale(physicalObjectImage, croppedImage)
+        # If the image of the physical object is too small, 
+        # scale it up to improve feature detection
         physical_object_image, cropped_image = self.checkAndScaleImages(physical_object_image, cropped_image)
-
-        # physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
-        #     = extractFeaturePoints(physicalObjectImage, croppedImage, algorithm='SURF')
-        # physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
-        #     = extractFeaturePoints(physicalObjectImage, croppedImage, algorithm='SIFT')
-        # physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
-        #     = extractFeaturePoints(physicalObjectImage, croppedImage, algorithm='ORB')
+        # I tried SIFT, SURF, and ORB too. AKAZE gives the best and fastest result. 
         physicalObjectKeyPoints, physicalObjectDescriptors, croppedImageKeyPoints, croppedImageDescriptors \
             = self.extract_feature_points(physical_object_image, cropped_image, algorithm='AKAZE')
-
-        # matches = findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_L1')
+        # I also tried BRUTE_FORCE_L1, BRUTE_FORCE_HAMMING with ratio test, and FLANN. 
         matches = self.find_matches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratio_test=False)
-        # matches = findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='BRUTE_FORCE_HAMMING', ratioTest=True)
-        # matches = findMatches(physicalObjectDescriptors, croppedImageDescriptors, algorithm='FLANN')
-
-        # Draw top matches
-        imMatches = cv2.drawMatches(physical_object_image, physicalObjectKeyPoints, cropped_image, croppedImageKeyPoints, matches, None)
-        if debug: cv2.imwrite(str(os.path.join(temp_folder_path, "matches.jpg")), imMatches)
-
+        if debug: 
+            # Draw top matches
+            im_matches = cv2.drawMatches(physical_object_image, physicalObjectKeyPoints, cropped_image, croppedImageKeyPoints, matches, None)
+            cv2.imwrite(str(os.path.join(temp_folder_path, "matches.jpg")), im_matches)
         points1, points2 = self.find_points_from_matches(physicalObjectKeyPoints, croppedImageKeyPoints, matches)
-
-        # h1, mask = cv2.findHomography(points1, points2, cv2.RANSAC, ransac_reprojection_threshold)
         try:
             h1, mask = cv2.estimateAffine2D(points1, points2, method=cv2.RANSAC,
                                             ransacReprojThreshold=self.ransac_reprojection_threshold)
         except:
             h1 = DEFAULT_HOMOGRAPHY
 
-        # error = compute_error(h1, physical_object_image, cropped_image)
         homography_result = PoseEstimationOutput(None, h1, None)
 
         if self.recompute_homography_using_only_inliers:
@@ -153,8 +140,7 @@ class PoseEstimator(mp.Process):
             # h2, mask = cv2.findHomography(inlier_points1, inlier_points2, cv2.RHO, prosac_reprojection_error)
             if h2 is not None:
                 homography_result.homography = h2
-                # homography_result.error = compute_error(h2, physical_object_image, cropped_image)
-
+                
         logger.debug("Homography: %s", homography_result.homography)
         return homography_result
 
