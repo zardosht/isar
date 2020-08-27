@@ -38,6 +38,6 @@ ISAR can be used to create interactive applications that support medical rehabil
 *Hit the flies and follow the path game for rehabilitation.* 
 
 
-A short video demo of the system can be found here: https://www.youtube.com/watch?v=KyvFT0S5rww
+A video demo of the system can be found here: https://www.youtube.com/watch?v=KyvFT0S5rww
 
 <br/>
